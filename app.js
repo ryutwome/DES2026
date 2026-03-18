@@ -231,12 +231,16 @@ const VOICE_ROOMS = {
 
 /* ── STORIES ── */
 const SEED_STORIES = [
-  {personaId:'meenakshiamma', text:"My mother's sambar recipe — she would wake at 5am to grind the masala fresh on the stone. That smell coming from the kitchen, amma, it would pull you out of bed like nothing else! I still make it every Sunday."},
-  {personaId:'meenakshiamma', text:"Our school in Mylapore had a huge banyan tree in the courtyard. During free periods we would sit under it and tell stories. Sixty years later I can still feel the cool shade. // TODO expand"},
-  {personaId:'rameshbhai', text:"1983 World Cup final — I was in my shop in Surat with a small black-and-white TV. When Kapil Dev caught Viv Richards I locked the shop and ran into the street shouting! Best moment of my life after my children being born."},
-  {personaId:'rameshbhai', text:"In my textile business, every Diwali every worker got new clothes made from our own fabric. My father started it, I continued for 30 years. Relationships are the real business. // TODO expand"},
-  {personaId:'krishnaswamy', text:"My father was a maths teacher. Every evening at 7pm sharp we had 'puzzle time' — he gave us a problem to solve before dinner. I thought it was torture then. Now I understand it was the greatest gift he gave me."},
-  {personaId:'krishnaswamy', text:"Bisibelebath with cashews and ghee on top — my mother's version. Now health people say no ghee. I am 74 years old and I still add the ghee. Some things should not be optimised. // TODO expand"}
+  {personaId:'meenakshiamma', text:"🙏 My mother's sambar recipe — she would wake at 5am to grind the masala fresh on the stone... That smell coming from the kitchen, amma, it would pull you out of bed like nothing else! I still make it every Sunday. My grandchildren say the whole apartment smells like childhood. 🌸"},
+  {personaId:'meenakshiamma', text:"Our school in Mylapore had a huge banyan tree in the courtyard... During free periods we would sit under it and tell stories... Sixty years later I can still feel the cool shade and smell of those textbooks... Some things stay with you forever, no? 🙏"},
+  {personaId:'rameshbhai', text:"Jai Shree Krishna! 🙏 1983 World Cup final — I was in my shop in Surat with a small black-and-white TV... When Kapil Dev caught Viv Richards I locked the shop and ran into the street shouting! My neighbours thought something terrible had happened! 😄 Best moment of my life after my children being born. 🌹"},
+  {personaId:'rameshbhai', text:"In my textile business... every Diwali every worker got new clothes made from our own fabric... My father started it, I continued for 30 years... Relationships are the real business bhai... the balance sheet shows numbers but not this 🙏🌸"},
+  {personaId:'krishnaswamy', text:"My father was a maths teacher... Every evening at 7pm sharp we had 'puzzle time' — he gave us a problem to solve before dinner... I thought it was torture then... Now I understand it was the greatest gift he gave me... Logical thinking is not taught, it is practised daily. Gottu. 🙏"},
+  {personaId:'sunitadevi', text:"🙏 Dal baati churma — this is not just food, this is our whole Lucknow childhood in one dish... My dadi would make the baatis in a clay pot over wood fire... I have taught my daughter but she says her version is not the same... It never is... that is the truth of recipes passed down 🌸"},
+  {personaId:'harbhajan', text:"🙏 Baisakhi in my village was the biggest day of the year — harvest celebration, bhangra from morning till night... My roses are in full bloom around that time every year... I like to think it is not coincidence 🌹 Sat sri akal to all!"},
+  {personaId:'lalitha', text:"Puran poli on Gudhi Padwa — my mother-in-law's recipe that I have been making for 35 years 🙏... The secret is cooking the chana dal until completely soft and adding fresh coconut... A recipe is a love letter to the future... chan, no? 🌸"},
+  {personaId:'padmavathi', text:"🌺 I saw my first Kuchipudi performance at age eight in our village temple... The dancer was maybe fourteen but she moved like she was made of water... I cried without knowing why — something opened in me that evening that never closed... Some things you are meant to find 🙏🌸"},
+  {personaId:'abdulrehman', text:"🙏 Hyderabadi dum biryani — my wife's family recipe, three generations old... The secret is the dum itself, cooking sealed with dough on a low flame for exactly 40 minutes... I have tried telling the timing to my son but he gets impatient... True biryani cannot be rushed, like all things worth having in life 🌹 Subhanallah."}
 ];
 
 /* ── GAME DATA ── */
@@ -291,20 +295,37 @@ function seedData(interests) {
   S.stories.sort((a,b)=>b.timestamp-a.timestamp);
 
   const joined = new Set();
-  const map = {cooking:['bhajan'],cricket:['cricket'],music:['bollywood'],gardening:['bhajan'],literature:['bollywood'],spirituality:['bhajan']};
+  const map = {
+    cooking:['recipes','bhajan'],
+    cricket:['cricket'],
+    music:['bollywood','bhajan'],
+    gardening:['society','bhajan'],
+    literature:['bollywood'],
+    spirituality:['bhajan','society']
+  };
   interests.forEach(i=>(map[i]||[]).forEach(c=>joined.add(c)));
-  if(joined.size===0) joined.add('cricket');
-  S.joinedCommunities=[...joined].slice(0,3);
+  // Always add society so there are at least some communities
+  joined.add('society');
+  if(joined.size<2) joined.add('cricket');
+  S.joinedCommunities=[...joined].slice(0,4);
 
   S.joinedCommunities.forEach(cId=>{
     const c=COMMUNITIES[cId]; if(!c) return;
     S.communities[cId]=c.seed.map((m,i)=>({...mkMsg(m.from,'text',m.text),timestamp:Date.now()-((c.seed.length-i)*3*60000)}));
   });
 
-  // Seed one chat per persona
-  PERSONA_LIST.forEach(p=>{
-    if(!S.chats[p.id]) S.chats[p.id]=[mkMsg(p.id,'text',p.fallbacks[0])];
+  // Seed one chat per persona with staggered timestamps for realistic chat list
+  const now=Date.now();
+  PERSONA_LIST.forEach((p,i)=>{
+    if(!S.chats[p.id]){
+      const msg=mkMsg(p.id,'text',p.fallbacks[0]);
+      msg.timestamp=now-(i*7*60000)-(Math.random()*3*60000); // stagger by minutes
+      S.chats[p.id]=[msg];
+    }
   });
+  // Give some personas unread counts
+  S.unreadChats={};
+  PERSONA_LIST.slice(0,4).forEach((p,i)=>{S.unreadChats[p.id]=Math.floor(Math.random()*4)+1;});
 
   // Seed voice rooms
   Object.values(VOICE_ROOMS).forEach(r=>{
