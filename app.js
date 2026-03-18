@@ -379,6 +379,7 @@ const IC = {
   reply:`<svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M10 9V5l-7 7 7 7v-4.1c5 0 8.5 1.6 11 5.1-1-5-4-10-11-11z"/></svg>`,
   controller:`<svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M15 7.5V2H9v5.5l3 3 3-3zM7.5 9H2v6h5.5l3-3-3-3zM9 16.5V22h6v-5.5l-3-3-3 3zM16.5 9l-3 3 3 3H22V9h-5.5z"/></svg>`,
   phone:`<svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z"/></svg>`,
+  video:`<svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M17 10.5V7c0-.55-.45-1-1-1H4c-.55 0-1 .45-1 1v10c0 .55.45 1 1 1h12c.55 0 1-.45 1-1v-3.5l4 4v-11l-4 4z"/></svg>`,
 };
 
 /* ── VOICE ── */
@@ -563,7 +564,8 @@ function header(title,{back=false,avatarName=null,right=[],subtitle=null}={}){
   let h=`<div class="header">`;
   if(back) h+=`<button class="header__back" onclick="goBack()" aria-label="Back">${IC.back}</button>`;
   if(avatarName) h+=`<div class="header__avatar">${avatar(avatarName,'sm')}</div>`;
-  h+=`<div class="header__title" onclick="headerTap()"><h1>${title}</h1>${subtitle?`<div class="header__subtitle">${subtitle}</div>`:''}</div>`;
+  const subClass=subtitle==='online'?'header__subtitle header__subtitle--online':'header__subtitle';
+  h+=`<div class="header__title" onclick="headerTap()"><h1>${title}</h1>${subtitle?`<div class="${subClass}">${subtitle}</div>`:''}</div>`;
   if(right.length) h+=`<div class="header__actions">${right.map(b=>`<button class="header__action-btn" aria-label="${b.label}" onclick="${b.fn}">${b.icon}</button>`).join('')}</div>`;
   h+=`</div>`;
   return h;
@@ -817,8 +819,14 @@ function renderChats(){
 /* ── CHAT SCREEN ── */
 function renderChat(personaId){
   const p=PERSONAS[personaId];if(!p){navigate('#/chats');return;}
+  const onlineStatuses=['online','online','last seen today at 10:32 AM','last seen yesterday at 8:14 PM','online'];
+  const status=onlineStatuses[Math.abs(personaId.split('').reduce((a,c)=>a+c.charCodeAt(0),0))%onlineStatuses.length];
   mount(`
-    ${header(p.name,{back:true,avatarName:p.name,subtitle:p.city,right:[{icon:IC.phone,label:'Call',fn:`toast('Voice calls coming soon')`}]})}
+    ${header(p.name,{back:true,avatarName:p.name,subtitle:status,right:[
+      {icon:IC.phone,label:'Voice call',fn:`toast('Calling ${p.name.split(' ')[0]}... 📞')`},
+      {icon:IC.video,label:'Video call',fn:`toast('Video calling ${p.name.split(' ')[0]}... 📹')`},
+      {icon:IC.more,label:'More',fn:''}
+    ]})}
     <div class="screen chat-screen" id="chat-wrap">
       <div class="chat-messages" id="msgs"></div>
     </div>

@@ -78,6 +78,7 @@ body {
   letter-spacing: 0.2px; color: #fff;
 }
 .header__subtitle { font-size: 13px; opacity: 0.9; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.header__subtitle--online { color: #b2dfdb; opacity: 1; }
 .header__actions { display: flex; align-items: center; flex-shrink: 0; }
 .header__action-btn {
   background: none; border: none; color: #fff; cursor: pointer;
