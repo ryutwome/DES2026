@@ -1,0 +1,108 @@
+<h2>Bottom Navigation style</h2>
+<p class="subtitle">WhatsApp 2024+ uses a bottom nav bar on Android. Which treatment matches what you see in real WhatsApp?</p>
+
+<div class="cards">
+
+  <div class="card" data-choice="pill-active" onclick="toggleSelect(this)">
+    <div class="card-image" style="background:#fff; border-top:1px solid #e9edef; padding:8px 0 4px; display:flex; justify-content:space-around; align-items:flex-start;">
+      <!-- Active tab with pill bg -->
+      <div style="display:flex;flex-direction:column;align-items:center;gap:3px;min-width:60px;">
+        <div style="background:#d9fdd3;border-radius:16px;padding:2px 16px;display:flex;align-items:center;justify-content:center;">
+          <span style="font-size:20px;">💬</span>
+        </div>
+        <span style="font-size:11px;color:#00A884;font-weight:600;font-family:Roboto,sans-serif;">Chats</span>
+      </div>
+      <div style="display:flex;flex-direction:column;align-items:center;gap:3px;min-width:60px;">
+        <div style="padding:4px 16px;">
+          <span style="font-size:20px;opacity:0.5;">🔄</span>
+        </div>
+        <span style="font-size:11px;color:#8696a0;font-family:Roboto,sans-serif;">Updates</span>
+      </div>
+      <div style="display:flex;flex-direction:column;align-items:center;gap:3px;min-width:60px;">
+        <div style="padding:4px 16px;">
+          <span style="font-size:20px;opacity:0.5;">👥</span>
+        </div>
+        <span style="font-size:11px;color:#8696a0;font-family:Roboto,sans-serif;">Communities</span>
+      </div>
+      <div style="display:flex;flex-direction:column;align-items:center;gap:3px;min-width:60px;">
+        <div style="padding:4px 16px;">
+          <span style="font-size:20px;opacity:0.5;">📞</span>
+        </div>
+        <span style="font-size:11px;color:#8696a0;font-family:Roboto,sans-serif;">Calls</span>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>A — Material You pill (real WhatsApp 2024+)</h3>
+      <p>Active tab has a green pill background (#d9fdd3), colored icon and label. Inactive tabs gray. 4 tabs: Chats, Updates, Communities, Calls.</p>
+    </div>
+  </div>
+
+  <div class="card" data-choice="underline-active" onclick="toggleSelect(this)">
+    <div class="card-image" style="background:#fff; border-top:1px solid #e9edef; padding:8px 0 4px; display:flex; justify-content:space-around; align-items:flex-start;">
+      <div style="display:flex;flex-direction:column;align-items:center;gap:3px;min-width:48px;border-top:2px solid #00A884;padding-top:6px;">
+        <span style="font-size:20px;">💬</span>
+        <span style="font-size:11px;color:#00A884;font-weight:600;font-family:Roboto,sans-serif;">Chats</span>
+      </div>
+      <div style="display:flex;flex-direction:column;align-items:center;gap:3px;min-width:48px;padding-top:8px;">
+        <span style="font-size:20px;opacity:0.5;">📷</span>
+        <span style="font-size:11px;color:#8696a0;font-family:Roboto,sans-serif;">Stories</span>
+      </div>
+      <div style="display:flex;flex-direction:column;align-items:center;gap:3px;min-width:48px;padding-top:8px;">
+        <span style="font-size:20px;opacity:0.5;">👥</span>
+        <span style="font-size:11px;color:#8696a0;font-family:Roboto,sans-serif;">Communities</span>
+      </div>
+      <div style="display:flex;flex-direction:column;align-items:center;gap:3px;min-width:48px;padding-top:8px;">
+        <span style="font-size:20px;opacity:0.5;">🎮</span>
+        <span style="font-size:11px;color:#8696a0;font-family:Roboto,sans-serif;">Games</span>
+      </div>
+      <div style="display:flex;flex-direction:column;align-items:center;gap:3px;min-width:48px;padding-top:8px;">
+        <span style="font-size:20px;opacity:0.5;">🎤</span>
+        <span style="font-size:11px;color:#8696a0;font-family:Roboto,sans-serif;">Voice</span>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>B — Keep current 5-tab with underline</h3>
+      <p>Current app style. Green underline on active tab. Keeps Stories, Games, Voice Rooms as tabs. Doesn't match real WhatsApp but preserves all your custom features.</p>
+    </div>
+  </div>
+
+  <div class="card" data-choice="pill-5tab" onclick="toggleSelect(this)">
+    <div class="card-image" style="background:#fff; border-top:1px solid #e9edef; padding:8px 0 4px; display:flex; justify-content:space-around; align-items:flex-start;">
+      <div style="display:flex;flex-direction:column;align-items:center;gap:3px;min-width:52px;">
+        <div style="background:#d9fdd3;border-radius:16px;padding:2px 12px;">
+          <span style="font-size:18px;">💬</span>
+        </div>
+        <span style="font-size:10px;color:#00A884;font-weight:600;font-family:Roboto,sans-serif;">Chats</span>
+      </div>
+      <div style="display:flex;flex-direction:column;align-items:center;gap:3px;min-width:52px;">
+        <div style="padding:4px 12px;">
+          <span style="font-size:18px;opacity:0.5;">📷</span>
+        </div>
+        <span style="font-size:10px;color:#8696a0;font-family:Roboto,sans-serif;">Stories</span>
+      </div>
+      <div style="display:flex;flex-direction:column;align-items:center;gap:3px;min-width:52px;">
+        <div style="padding:4px 12px;">
+          <span style="font-size:18px;opacity:0.5;">👥</span>
+        </div>
+        <span style="font-size:10px;color:#8696a0;font-family:Roboto,sans-serif;">Communities</span>
+      </div>
+      <div style="display:flex;flex-direction:column;align-items:center;gap:3px;min-width:52px;">
+        <div style="padding:4px 12px;">
+          <span style="font-size:18px;opacity:0.5;">🎮</span>
+        </div>
+        <span style="font-size:10px;color:#8696a0;font-family:Roboto,sans-serif;">Games</span>
+      </div>
+      <div style="display:flex;flex-direction:column;align-items:center;gap:3px;min-width:52px;">
+        <div style="padding:4px 12px;">
+          <span style="font-size:18px;opacity:0.5;">🎤</span>
+        </div>
+        <span style="font-size:10px;color:#8696a0;font-family:Roboto,sans-serif;">Voice</span>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>C — Material You pill + keep all 5 tabs</h3>
+      <p>Pill active state (real WhatsApp look) but keep all 5 custom tabs. Best of both worlds — looks like WhatsApp 2026, keeps your research features.</p>
+    </div>
+  </div>
+
+</div>

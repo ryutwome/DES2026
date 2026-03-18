@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>WhatsApp 2026 — Corrected Mockup</title>
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: #1a1a2e; display: flex; justify-content: center; align-items: flex-start; min-height: 100vh; padding: 20px; font-family: 'Roboto', -apple-system, BlinkMacSystemFont, sans-serif; gap: 32px; flex-wrap: wrap; }
+  .phone-wrap { display: flex; flex-direction: column; align-items: center; }
+  .phone-label { color: #fff; font-size: 12px; text-align: center; margin-bottom: 8px; opacity: 0.6; font-family: sans-serif; letter-spacing: 0.5px; text-transform: uppercase; }
+  .phone {
+    width: 360px; height: 760px;
+    background: #fff;
+    border-radius: 36px;
+    overflow: hidden;
+    box-shadow: 0 24px 80px rgba(0,0,0,0.6);
+    display: flex; flex-direction: column;
+    position: relative;
+  }
+
+  /* STATUS BAR */
+  .status-bar { background: #fff; height: 24px; display: flex; align-items: center; justify-content: flex-end; padding: 0 16px; gap: 6px; flex-shrink: 0; }
+  .status-bar span { color: #111b21; font-size: 11px; font-weight: 600; }
+
+  /* HEADER — white bg */
+  .header { background: #fff; padding: 4px 8px 0; flex-shrink: 0; }
+  .header-row1 { display: flex; align-items: center; justify-content: space-between; padding: 4px 8px 8px; }
+  .header-title { color: #00A884; font-size: 24px; font-weight: 700; letter-spacing: 0.2px; }
+  .header-actions { display: flex; gap: 0; }
+  .header-btn { width: 44px; height: 44px; border-radius: 50%; border: none; background: none; cursor: pointer; display: flex; align-items: center; justify-content: center; color: #111b21; }
+  .header-btn:hover { background: #f5f6f6; }
+
+  /* SEARCH BAR — gray on white */
+  .search-bar { background: #f0f2f5; border-radius: 24px; display: flex; align-items: center; padding: 10px 16px; gap: 10px; margin: 0 8px 10px; }
+  .search-bar span { color: #667781; font-size: 15px; flex: 1; }
+
+  /* FILTER CHIPS */
+  .filter-chips { display: flex; gap: 8px; padding: 0 16px 10px; overflow-x: auto; flex-shrink: 0; scrollbar-width: none; }
+  .filter-chips::-webkit-scrollbar { display: none; }
+  .chip { border-radius: 20px; padding: 6px 14px; font-size: 14px; font-weight: 500; white-space: nowrap; cursor: pointer; border: 1.5px solid transparent; }
+  .chip--active { background: #d9fdd3; color: #00A884; border-color: #00A884; }
+  .chip--inactive { background: #fff; color: #111b21; border-color: #e9edef; }
+
+  /* CHAT LIST */
+  .chat-list { flex: 1; overflow-y: auto; background: #fff; scrollbar-width: none; }
+  .chat-list::-webkit-scrollbar { display: none; }
+
+  /* ARCHIVED ROW */
+  .archived-row { display: flex; align-items: center; padding: 12px 20px; gap: 16px; cursor: pointer; }
+  .archived-row:hover { background: #f5f6f6; }
+  .archived-icon { color: #667781; }
+  .archived-text { font-size: 16px; color: #111b21; flex: 1; }
+  .archived-count { font-size: 14px; color: #667781; }
+
+  /* CHAT ITEM */
+  .chat-item { display: flex; align-items: center; padding: 10px 16px; gap: 14px; cursor: pointer; position: relative; }
+  .chat-item:hover { background: #f5f6f6; }
+  .chat-item::after { content: ''; position: absolute; bottom: 0; left: 78px; right: 0; height: 0.5px; background: #e9edef; }
+
+  .avatar { width: 50px; height: 50px; border-radius: 50%; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 20px; font-weight: 600; color: #fff; }
+
+  .chat-info { flex: 1; min-width: 0; }
+  .chat-row1 { display: flex; justify-content: space-between; align-items: center; margin-bottom: 3px; gap: 8px; }
+  .chat-name { font-size: 16px; font-weight: 600; color: #111b21; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; flex: 1; }
+  .chat-time { font-size: 12px; color: #667781; flex-shrink: 0; }
+  .chat-time--unread { color: #00A884; }
+  .chat-row2 { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+  .chat-preview { font-size: 14px; color: #667781; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; flex: 1; display: flex; align-items: center; gap: 3px; }
+  .chat-meta { display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
+  .unread-badge { background: #00A884; color: #fff; border-radius: 10px; min-width: 20px; height: 20px; font-size: 12px; font-weight: 600; display: flex; align-items: center; justify-content: center; padding: 0 5px; }
+  .muted-icon { color: #8696a0; }
+  .pin-icon { color: #8696a0; }
+
+  /* FAB — green rounded square like real WA */
+  .fab { position: absolute; bottom: 72px; right: 16px; width: 56px; height: 56px; border-radius: 16px; background: #00A884; color: #fff; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 16px rgba(0,168,132,0.45); }
+
+  /* BOTTOM NAV */
+  .bottom-nav { background: #fff; border-top: 1px solid #e9edef; display: flex; justify-content: space-around; align-items: flex-end; padding: 6px 0 12px; flex-shrink: 0; }
+  .nav-tab { display: flex; flex-direction: column; align-items: center; gap: 2px; cursor: pointer; flex: 1; }
+  .nav-icon-pill { border-radius: 16px; padding: 4px 14px; display: flex; align-items: center; justify-content: center; position: relative; min-width: 48px; }
+  .nav-icon-pill--active { background: #d9fdd3; }
+  .nav-tab--active .nav-icon-pill { color: #00A884; }
+  .nav-tab--inactive .nav-icon-pill { color: #54656f; }
+  .nav-label { font-size: 11px; }
+  .nav-tab--active .nav-label { color: #00A884; font-weight: 600; }
+  .nav-tab--inactive .nav-label { color: #54656f; }
+  .nav-badge { position: absolute; top: -1px; right: 6px; background: #00A884; color: #fff; border-radius: 8px; font-size: 9px; font-weight: 700; min-width: 14px; height: 14px; display: flex; align-items: center; justify-content: center; padding: 0 3px; }
+
+  /* YOU tab — profile photo */
+  .you-avatar { width: 26px; height: 26px; border-radius: 50%; background: #ccc; overflow: hidden; display: flex; align-items: center; justify-content: center; font-size: 11px; color: #fff; font-weight: 600; border: 1.5px solid #e9edef; }
+</style>
+</head>
+<body>
+
+<!-- REAL WHATSAPP REFERENCE ANNOTATIONS -->
+<div class="phone-wrap">
+  <p class="phone-label">Real WhatsApp 2026 (annotated)</p>
+  <div class="phone">
+    <div class="status-bar"><span>9:41</span></div>
+
+    <!-- WHITE header, green title text -->
+    <div class="header">
+      <div class="header-row1">
+        <span class="header-title">WhatsApp</span>
+        <div class="header-actions">
+          <button class="header-btn"><i data-lucide="qr-code" style="width:22px;height:22px;"></i></button>
+          <button class="header-btn"><i data-lucide="more-vertical" style="width:22px;height:22px;"></i></button>
+        </div>
+      </div>
+      <!-- gray search on white bg -->
+      <div class="search-bar">
+        <i data-lucide="search" style="width:18px;height:18px;color:#667781;flex-shrink:0;"></i>
+        <span>Ask Meta AI or Search</span>
+      </div>
+    </div>
+
+    <!-- Filter chips on white -->
+    <div class="filter-chips">
+      <button class="chip chip--active">All</button>
+      <button class="chip chip--inactive">Unread 1</button>
+      <button class="chip chip--inactive">Favorites</button>
+      <button class="chip chip--inactive">Groups 1</button>
+    </div>
+
+    <div class="chat-list">
+      <!-- Archived row — no divider, just spacing -->
+      <div class="archived-row">
+        <i data-lucide="archive-restore" style="width:22px;height:22px;" class="archived-icon"></i>
+        <span class="archived-text">Archived</span>
+        <span class="archived-count">6</span>
+      </div>
+
+      <!-- Pinned chats — pin icon RIGHT side of timestamp row -->
+      <div class="chat-item">
+        <div class="avatar" style="background:#5B6EAE;">
+          <i data-lucide="users" style="width:22px;height:22px;"></i>
+        </div>
+        <div class="chat-info">
+          <div class="chat-row1">
+            <span class="chat-name">Game Design 2026</span>
+            <span class="chat-time">3/10/26</span>
+            <i data-lucide="pin" style="width:14px;height:14px;color:#8696a0;flex-shrink:0;"></i>
+          </div>
+          <div class="chat-row2">
+            <span class="chat-preview">Spandan: notorand and scotland ya...</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="chat-item">
+        <div class="avatar" style="background:#2C3E8C; font-size:13px; font-weight:700;">ब्र:</div>
+        <div class="chat-info">
+          <div class="chat-row1">
+            <span class="chat-name">BDes 26</span>
+            <span class="chat-time">3/14/26</span>
+            <i data-lucide="pin" style="width:14px;height:14px;color:#8696a0;flex-shrink:0;"></i>
+          </div>
+          <div class="chat-row2">
+            <span class="chat-preview">Anirudh: Dear all, We invite you to...</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Regular chats -->
+      <div class="chat-item">
+        <div class="avatar" style="background:#E67E22;">R</div>
+        <div class="chat-info">
+          <div class="chat-row1">
+            <span class="chat-name">Rameshbhai Patel</span>
+            <span class="chat-time chat-time--unread">1:19 PM</span>
+          </div>
+          <div class="chat-row2">
+            <span class="chat-preview">Kem cho! Did you watch the match?</span>
+            <div class="chat-meta">
+              <i data-lucide="bell-off" style="width:14px;height:14px;" class="muted-icon"></i>
+              <span class="unread-badge">1</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="chat-item">
+        <div class="avatar" style="background:#8E44AD;">M</div>
+        <div class="chat-info">
+          <div class="chat-row1">
+            <span class="chat-name">Meenakshiamma</span>
+            <span class="chat-time">Yesterday</span>
+          </div>
+          <div class="chat-row2">
+            <span class="chat-preview">
+              <svg width="16" height="10" viewBox="0 0 18 11" fill="#53bdeb" style="flex-shrink:0"><path d="M17.394.606a.75.75 0 0 1 0 1.06L8.9 10.16a.75.75 0 0 1-1.06 0L4.606 6.928a.75.75 0 1 1 1.06-1.06l2.704 2.703 7.963-7.965a.75.75 0 0 1 1.06 0zM1 5.868l2.704 2.704a.75.75 0 1 0 1.06-1.06L2.06 4.806A.75.75 0 0 0 1 5.868z"/></svg>
+              Enna koduma saravanan idhu 😂
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <div class="chat-item">
+        <div class="avatar" style="background:#27AE60;">S</div>
+        <div class="chat-info">
+          <div class="chat-row1">
+            <span class="chat-name">Sunita Devi</span>
+            <span class="chat-time">Mon</span>
+          </div>
+          <div class="chat-row2">
+            <span class="chat-preview">Aaj bahut achha laga 🙏</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="chat-item">
+        <div class="avatar" style="background:#C0392B;">H</div>
+        <div class="chat-info">
+          <div class="chat-row1">
+            <span class="chat-name">Harbhajan Singh Ji</span>
+            <span class="chat-time">Sat</span>
+          </div>
+          <div class="chat-row2">
+            <span class="chat-preview">Waheguru ji ka khalsa 🌸</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- FAB — rounded square green -->
+    <button class="fab">
+      <i data-lucide="message-circle-plus" style="width:26px;height:26px;"></i>
+    </button>
+
+    <!-- BOTTOM NAV — 5 tabs: Chats, Updates, Communities, Calls, You -->
+    <div class="bottom-nav">
+      <div class="nav-tab nav-tab--active">
+        <div class="nav-icon-pill nav-icon-pill--active">
+          <i data-lucide="message-square" style="width:22px;height:22px;"></i>
+          <span class="nav-badge">1</span>
+        </div>
+        <span class="nav-label">Chats</span>
+      </div>
+      <div class="nav-tab nav-tab--inactive">
+        <div class="nav-icon-pill">
+          <i data-lucide="circle-dot" style="width:22px;height:22px;"></i>
+        </div>
+        <span class="nav-label">Updates</span>
+      </div>
+      <div class="nav-tab nav-tab--inactive">
+        <div class="nav-icon-pill">
+          <i data-lucide="users-round" style="width:22px;height:22px;"></i>
+        </div>
+        <span class="nav-label">Communities</span>
+      </div>
+      <div class="nav-tab nav-tab--inactive">
+        <div class="nav-icon-pill">
+          <i data-lucide="phone" style="width:22px;height:22px;"></i>
+        </div>
+        <span class="nav-label">Calls</span>
+      </div>
+      <div class="nav-tab nav-tab--inactive">
+        <div class="nav-icon-pill">
+          <div class="you-avatar">R</div>
+        </div>
+        <span class="nav-label">You</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- YOUR APP — adapted: keep custom tabs but WA visual style -->
+<div class="phone-wrap">
+  <p class="phone-label">Your app — proposed adaptation</p>
+  <div class="phone" style="position:relative;">
+    <div class="status-bar"><span>9:41</span></div>
+
+    <div class="header">
+      <div class="header-row1">
+        <span class="header-title">WhatsApp</span>
+        <div class="header-actions">
+          <button class="header-btn"><i data-lucide="search" style="width:22px;height:22px;"></i></button>
+          <button class="header-btn"><i data-lucide="more-vertical" style="width:22px;height:22px;"></i></button>
+        </div>
+      </div>
+      <div class="search-bar">
+        <i data-lucide="search" style="width:18px;height:18px;color:#667781;flex-shrink:0;"></i>
+        <span>Search</span>
+      </div>
+    </div>
+
+    <div class="filter-chips">
+      <button class="chip chip--active">All</button>
+      <button class="chip chip--inactive">Unread</button>
+      <button class="chip chip--inactive">Favorites</button>
+    </div>
+
+    <div class="chat-list">
+      <div class="archived-row">
+        <i data-lucide="archive-restore" style="width:22px;height:22px;" class="archived-icon"></i>
+        <span class="archived-text">Archived</span>
+        <span class="archived-count">2</span>
+      </div>
+
+      <div class="chat-item">
+        <div class="avatar" style="background:#E67E22;">R</div>
+        <div class="chat-info">
+          <div class="chat-row1">
+            <span class="chat-name">Rameshbhai Patel</span>
+            <span class="chat-time chat-time--unread">10:23</span>
+            <i data-lucide="pin" style="width:13px;height:13px;color:#8696a0;flex-shrink:0;"></i>
+          </div>
+          <div class="chat-row2">
+            <span class="chat-preview">Kem cho! Did you watch the match?</span>
+            <div class="chat-meta"><span class="unread-badge">3</span></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="chat-item">
+        <div class="avatar" style="background:#8E44AD;">M</div>
+        <div class="chat-info">
+          <div class="chat-row1">
+            <span class="chat-name">Meenakshiamma</span>
+            <span class="chat-time">Yesterday</span>
+          </div>
+          <div class="chat-row2">
+            <span class="chat-preview">
+              <svg width="16" height="10" viewBox="0 0 18 11" fill="#53bdeb" style="flex-shrink:0"><path d="M17.394.606a.75.75 0 0 1 0 1.06L8.9 10.16a.75.75 0 0 1-1.06 0L4.606 6.928a.75.75 0 1 1 1.06-1.06l2.704 2.703 7.963-7.965a.75.75 0 0 1 1.06 0zM1 5.868l2.704 2.704a.75.75 0 1 0 1.06-1.06L2.06 4.806A.75.75 0 0 0 1 5.868z"/></svg>
+              Enna koduma saravanan idhu 😂
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <div class="chat-item">
+        <div class="avatar" style="background:#2980B9;">K</div>
+        <div class="chat-info">
+          <div class="chat-row1">
+            <span class="chat-name">Krishnaswamy Uncle</span>
+            <span class="chat-time">Mon</span>
+          </div>
+          <div class="chat-row2">
+            <span class="chat-preview">Very interesting problem...</span>
+            <div class="chat-meta"><i data-lucide="bell-off" style="width:13px;height:13px;" class="muted-icon"></i></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="chat-item">
+        <div class="avatar" style="background:#27AE60;">S</div>
+        <div class="chat-info">
+          <div class="chat-row1">
+            <span class="chat-name">Sunita Devi</span>
+            <span class="chat-time chat-time--unread">Sun</span>
+          </div>
+          <div class="chat-row2">
+            <span class="chat-preview">Aaj bahut achha laga 🙏</span>
+            <div class="chat-meta"><span class="unread-badge">1</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <button class="fab">
+      <i data-lucide="message-circle-plus" style="width:26px;height:26px;"></i>
+    </button>
+
+    <!-- Your 5 custom tabs with WA pill style -->
+    <div class="bottom-nav">
+      <div class="nav-tab nav-tab--active">
+        <div class="nav-icon-pill nav-icon-pill--active">
+          <i data-lucide="message-square" style="width:22px;height:22px;"></i>
+          <span class="nav-badge">4</span>
+        </div>
+        <span class="nav-label">Chats</span>
+      </div>
+      <div class="nav-tab nav-tab--inactive">
+        <div class="nav-icon-pill">
+          <i data-lucide="circle-play" style="width:22px;height:22px;"></i>
+        </div>
+        <span class="nav-label">Stories</span>
+      </div>
+      <div class="nav-tab nav-tab--inactive">
+        <div class="nav-icon-pill">
+          <i data-lucide="users-round" style="width:22px;height:22px;"></i>
+        </div>
+        <span class="nav-label">Comm.</span>
+      </div>
+      <div class="nav-tab nav-tab--inactive">
+        <div class="nav-icon-pill">
+          <i data-lucide="mic" style="width:22px;height:22px;"></i>
+        </div>
+        <span class="nav-label">Voice</span>
+      </div>
+      <div class="nav-tab nav-tab--inactive">
+        <div class="nav-icon-pill">
+          <i data-lucide="gamepad-2" style="width:22px;height:22px;"></i>
+        </div>
+        <span class="nav-label">Games</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>lucide.createIcons();</script>
+</body>
+</html>

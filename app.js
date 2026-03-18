@@ -368,11 +368,11 @@ const IC = {
   play:`<svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>`,
   pause:`<svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>`,
   attach:`<svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M16.5 6v11.5c0 2.21-1.79 4-4 4s-4-1.79-4-4V5a2.5 2.5 0 0 1 5 0v10.5c0 .55-.45 1-1 1s-1-.45-1-1V6H10v9.5a2.5 2.5 0 0 0 5 0V5c0-2.21-1.79-4-4-4S7 2.79 7 5v12.5c0 3.04 2.46 5.5 5.5 5.5s5.5-2.46 5.5-5.5V6h-1.5z"/></svg>`,
-  chats:`<svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z"/></svg>`,
-  stories:`<svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 14.5v-9l6 4.5-6 4.5z"/></svg>`,
-  communities:`<svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/></svg>`,
-  voiceRoom:`<svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M12 3a9 9 0 1 0 0 18A9 9 0 0 0 12 3zm-1 13V8l7 4-7 4z"/></svg>`,
-  games:`<svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M15 7.5V2H9v5.5l3 3 3-3zM7.5 9H2v6h5.5l3-3-3-3zM9 16.5V22h6v-5.5l-3-3-3 3zM16.5 9l-3 3 3 3H22V9h-5.5z"/></svg>`,
+  chats:`<i data-lucide="message-square" style="width:22px;height:22px;"></i>`,
+  updates:`<i data-lucide="circle-play" style="width:22px;height:22px;"></i>`,
+  communities:`<i data-lucide="users-round" style="width:22px;height:22px;"></i>`,
+  voiceRoom:`<i data-lucide="mic" style="width:22px;height:22px;"></i>`,
+  games:`<i data-lucide="gamepad-2" style="width:22px;height:22px;"></i>`,
   add:`<svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>`,
   close:`<svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>`,
   eye:`<svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/></svg>`,
@@ -520,7 +520,10 @@ function render(){
 const $=id=>document.getElementById(id);
 const app=()=>document.getElementById('app');
 
-function mount(html){document.getElementById('app').innerHTML=html;}
+function mount(html){
+  document.getElementById('app').innerHTML=html;
+  if(window.lucide) lucide.createIcons();
+}
 
 function toast(msg){
   const old=document.querySelector('.toast');if(old)old.remove();
@@ -574,16 +577,16 @@ function header(title,{back=false,avatarName=null,right=[],subtitle=null}={}){
 function bottomNav(active){
   const tabs=[
     {id:'chats',label:'Chats',icon:IC.chats,hash:'#/chats',badge:()=>{const t=Object.values(S.unreadChats||{}).reduce((a,b)=>a+b,0);return t>0?t:0;}},
-    {id:'stories',label:'Updates',icon:IC.updates,hash:'#/stories',badge:()=>0},
-    {id:'communities',label:'Communities',icon:IC.communities,hash:'#/communities',badge:()=>0},
-    {id:'voicerooms',label:'Calls',icon:IC.calls,hash:'#/voicerooms',badge:()=>0},
+    {id:'stories',label:'Stories',icon:IC.updates,hash:'#/stories',badge:()=>0},
+    {id:'communities',label:'Comm.',icon:IC.communities,hash:'#/communities',badge:()=>0},
+    {id:'voicerooms',label:'Voice',icon:IC.voiceRoom,hash:'#/voicerooms',badge:()=>0},
     {id:'games',label:'Games',icon:IC.games,hash:'#/games',badge:()=>0},
   ];
   return `<nav class="bottom-nav">${tabs.map(t=>{
     const b=t.badge();
     return`<button class="bottom-nav__tab${active===t.id?' active':''}" onclick="navTo('${t.hash}')" aria-label="${t.label}">
-      <div style="position:relative;display:inline-flex;align-items:center;justify-content:center;">
-        <div class="${active===t.id?'bottom-nav__icon-pill-active':''}" style="${active===t.id?'background:#d8fdd2;border-radius:999px;padding:2px 12px;':''}">${t.icon}</div>
+      <div class="bottom-nav__pill">
+        <div class="bottom-nav__icon">${t.icon}</div>
         ${b?`<span class="bottom-nav__badge">${b}</span>`:''}
       </div>
       <span class="bottom-nav__label">${t.label}</span>
