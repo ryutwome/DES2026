@@ -498,10 +498,10 @@ function parseRoute(hash){
 function render(){
   const hash=window.location.hash||'#/';
   const{screen,params}=parseRoute(hash);
-  if(!S.onboardingDone&&screen!=='onboarding'){renderOnboarding();return;}
+  if(!S.onboardingDone){set({onboardingDone:true,interests:['cooking','cricket','music','gardening','literature','spirituality']});seedData(S.interests);}
   switch(screen){
-    case'':renderOnboarding();break;
-    case'onboarding':renderOnboarding();break;
+    case'':renderChats();break;
+    case'onboarding':renderChats();break;
     case'chats':renderChats();break;
     case'chat':renderChat(params.personaId);break;
     case'stories':renderStories();break;
@@ -879,7 +879,7 @@ function renderStories(){
   mount(`
     ${resBar()}
     <div class="header">
-      <div class="header__title" onclick="headerTap()"><h1>Updates</h1></div>
+      <div class="header__title" onclick="headerTap()"><h1>Stories</h1></div>
       <div class="header__actions">
         <button class="header__action-btn" aria-label="Search">${IC.search}</button>
         <button class="header__action-btn" aria-label="More">${IC.more}</button>
