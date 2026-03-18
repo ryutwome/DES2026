@@ -823,7 +823,11 @@ function renderChats(){
     const ai=S.researcherMode?'<span class="ai-badge">AI</span>':'';
     const timeClass=unread?'chat-list-item__time chat-list-item__time--unread':'chat-list-item__time';
     const div=document.createElement('div');div.className='chat-list-item';
-    div.innerHTML=`<div class="chat-list-item__avatar">${avatar(p.name,'md')}</div><div class="chat-list-item__body"><div class="chat-list-item__top"><div class="chat-list-item__name">${p.name}${ai}</div><div class="${timeClass}">${fdate(time)}</div></div><div class="chat-list-item__bottom"><div class="chat-list-item__preview" style="display:flex;align-items:center;">${tickHtml}<span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${previewText}</span></div>${unread?`<div class="chat-list-item__badge">${unread}</div>`:''}</div></div>`;
+    const hasStory=(S.stories||[]).some(s=>s.authorId===id&&(Date.now()-s.timestamp)<7*86400000);
+    const avatarEl=hasStory
+      ?`<div class="chat-avatar-story-ring" onclick="event.stopPropagation();navigate('#/stories')">${avatar(p.name,'md')}</div>`
+      :`<div>${avatar(p.name,'md')}</div>`;
+    div.innerHTML=`<div class="chat-list-item__avatar">${avatarEl}</div><div class="chat-list-item__body"><div class="chat-list-item__top"><div class="chat-list-item__name">${p.name}${ai}</div><div class="${timeClass}">${fdate(time)}</div></div><div class="chat-list-item__bottom"><div class="chat-list-item__preview" style="display:flex;align-items:center;">${tickHtml}<span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${previewText}</span></div>${unread?`<div class="chat-list-item__badge">${unread}</div>`:''}</div></div>`;
     div.onclick=()=>{const u={...S.unreadChats};delete u[id];set({unreadChats:u});navigate('#/chat/'+id);};
     list.appendChild(div);
   });
@@ -879,11 +883,31 @@ function renderChat(personaId){
 function delay(ms){return new Promise(r=>setTimeout(r,ms));}
 
 /* ── STORIES ── */
-function renderStories(){
-  // Split stories into recent (< 6h) and older (viewed)
+let _storiesFilter='all';
+
+function renderStories(filter){
+  if(filter) _storiesFilter=filter;
   const now=Date.now();
-  const recent=(S.stories||[]).filter(s=>(now-s.timestamp)<6*3600000);
-  const viewed=(S.stories||[]).filter(s=>(now-s.timestamp)>=6*3600000);
+  const SEVEN_DAYS=7*86400000;
+  const myStories=(S.stories||[]).filter(s=>s.authorId==='user'&&(now-s.timestamp)<SEVEN_DAYS);
+  const allActive=(S.stories||[]).filter(s=>s.authorId!=='user'&&(now-s.timestamp)<SEVEN_DAYS);
+
+  let feed=allActive;
+  if(_storiesFilter==='communities'){
+    const communityPersonas=new Set((S.joinedCommunities||[]).flatMap(cId=>{
+      const c=COMMUNITIES[cId];return c?c.personas||[]:[];
+    }));
+    feed=allActive.filter(s=>communityPersonas.has(s.authorId));
+  } else if(_storiesFilter==='contacts'){
+    feed=allActive.filter(s=>PERSONAS[s.authorId]);
+  }
+
+  const filters=[
+    {id:'all',label:'All'},
+    {id:'communities',label:'Communities'},
+    {id:'contacts',label:'Contacts'},
+    {id:'mystories',label:'My Stories'},
+  ];
 
   mount(`
     ${resBar()}
@@ -895,174 +919,258 @@ function renderStories(){
       </div>
     </div>
     <div class="screen" style="position:relative;">
-      <div class="screen__scroll" style="background:#fff;" id="stories-list">
-
-        <!-- Status section label -->
-        <div class="stories-section-label">Status</div>
-
-        <!-- My Status row -->
-        <button class="status-contact-row" onclick="showStoryCompose()">
-          <div class="status-my-avatar-wrap">
-            ${avatar('Me','md')}
-            <div class="status-add-badge"><i data-lucide="plus" style="width:12px;height:12px;color:#fff;"></i></div>
-          </div>
-          <div class="status-contact-info">
-            <div class="status-contact-name">My Status</div>
-            <div class="status-contact-sub">Tap to add status update</div>
-          </div>
-        </button>
-
-        ${recent.length?`<div class="stories-sub-label">Recent updates</div>`:''}
-        <div id="stories-recent"></div>
-
-        ${viewed.length?`<div class="stories-sub-label stories-sub-label--collapsible" onclick="toggleViewedStories()">Viewed updates <i data-lucide="chevron-up" style="width:16px;height:16px;" id="viewed-chevron"></i></div>`:''}
-        <div id="stories-viewed"></div>
-
-        <!-- Channels section -->
-        <div class="stories-channels-section">
-          <div class="stories-section-label" style="padding-top:16px;">Channels</div>
-          <div class="stories-channels-sub">Stay updated on topics that matter to you. Find channels to follow below.</div>
-          <button class="stories-channels-btn" onclick="toast('Explore channels coming soon')">
-            <i data-lucide="grid-2x2" style="width:18px;height:18px;color:#00A884;"></i>
-            <span>Explore more</span>
-          </button>
-          <button class="stories-channels-btn" onclick="toast('Create channel coming soon')">
-            <i data-lucide="plus" style="width:18px;height:18px;color:#00A884;"></i>
-            <span>Create channel</span>
-          </button>
-        </div>
-
-        <div style="height:80px;"></div>
+      <div class="filter-chips" style="padding:8px 12px 0;">
+        ${filters.map(f=>`<button class="filter-chip${_storiesFilter===f.id?' active':''}" onclick="renderStories('${f.id}')">${f.label}</button>`).join('')}
       </div>
-
-      <!-- Dual FAB like real WA: pencil above, camera below -->
-      <button class="fab fab--secondary" onclick="showStoryCompose()" aria-label="Edit status" style="bottom:calc(144px + env(safe-area-inset-bottom,0px));">
-        <i data-lucide="pencil" style="width:22px;height:22px;color:#54656f;"></i>
-      </button>
-      <button class="fab" onclick="showStoryCompose()" aria-label="Add status" style="bottom:calc(80px + env(safe-area-inset-bottom,0px));">
-        <i data-lucide="camera" style="width:22px;height:22px;color:#fff;"></i>
+      <div class="screen__scroll" style="background:#f0f2f5;" id="stories-feed">
+        <div style="height:8px;"></div>
+        ${_storiesFilter==='mystories'?'<div id="my-stories-section"></div>':''}
+        <div id="stories-cards"></div>
+        <div style="height:88px;"></div>
+      </div>
+      <button class="fab" onclick="showStoryCompose()" aria-label="New story">
+        <i data-lucide="pencil-line" style="width:22px;height:22px;color:#fff;"></i>
       </button>
     </div>
     ${bottomNav('stories')}
   `);
 
+  if(_storiesFilter==='mystories'){
+    const sec=$('my-stories-section');
+    if(myStories.length===0){
+      sec.innerHTML=`<div class="stories-empty-mine">
+        <i data-lucide="book-open" style="width:40px;height:40px;color:#00A884;margin-bottom:8px;"></i>
+        <div style="font-size:16px;font-weight:600;color:#111b21;">No stories yet</div>
+        <div style="font-size:14px;color:#667781;margin-top:4px;">Tap the pencil button to share your first story</div>
+      </div>`;
+    } else {
+      sec.innerHTML=`<div style="padding:12px 16px 4px;font-size:13px;font-weight:600;color:#667781;text-transform:uppercase;letter-spacing:0.3px;">My Stories (${myStories.length}/3)</div>`;
+      myStories.forEach(s=>sec.appendChild(buildStoryCard(s,true)));
+    }
+    lucide.createIcons();
+    return;
+  }
+
+  const cardsEl=$('stories-cards');
+  if(!feed.length){
+    cardsEl.innerHTML=`<div class="stories-empty-mine" style="margin-top:32px;">
+      <i data-lucide="newspaper" style="width:40px;height:40px;color:#00A884;margin-bottom:8px;"></i>
+      <div style="font-size:16px;font-weight:600;color:#111b21;">No stories here yet</div>
+      <div style="font-size:14px;color:#667781;margin-top:4px;">Stories from your network will appear here</div>
+    </div>`;
+    lucide.createIcons();
+    return;
+  }
+  feed.sort((a,b)=>b.timestamp-a.timestamp).forEach(s=>cardsEl.appendChild(buildStoryCard(s,false)));
   lucide.createIcons();
-
-  const recentEl=$('stories-recent');
-  recent.forEach(s=>recentEl.appendChild(statusContactRow(s,false)));
-
-  const viewedEl=$('stories-viewed');
-  viewed.forEach(s=>viewedEl.appendChild(statusContactRow(s,true)));
 }
 
-function toggleViewedStories(){
-  const el=$('stories-viewed');
-  const ch=$('viewed-chevron');
-  if(el.style.display==='none'){el.style.display='';if(ch)ch.setAttribute('data-lucide','chevron-up');}
-  else{el.style.display='none';if(ch)ch.setAttribute('data-lucide','chevron-down');}
-  lucide.createIcons();
-}
-
-function statusContactRow(s, viewed){
+function buildStoryCard(s, isOwn){
   const p=PERSONAS[s.authorId];
-  const name=s.authorName||(p?p.name:'Unknown');
-  const div=document.createElement('button');
-  div.className='status-contact-row';
-  div.onclick=()=>navigate('#/story/'+s.id);
-  div.innerHTML=`
-    <div class="${viewed?'status-avatar-viewed':'status-avatar-ring-wrap'}">
-      ${avatar(name,'md')}
+  const name=s.authorName||(p?p.name:(isOwn?'You':'Unknown'));
+  const replyCount=(s.replies||[]).length;
+  const card=document.createElement('div');
+  card.className='story-feed-card';
+  card.id='scard-'+s.id;
+
+  const ttsBtn=canTTS()?`<button class="story-tts-btn" onclick="speakStoryCard(this,'${s.id}')" aria-label="Read aloud">
+    <i data-lucide="volume-2" style="width:20px;height:20px;"></i>
+  </button>`:'';
+
+  const deleteBtn=isOwn?`<button class="story-delete-btn" onclick="deleteMyStory('${s.id}')" aria-label="Delete story">
+    <i data-lucide="trash-2" style="width:18px;height:18px;"></i>
+  </button>`:'';
+
+  card.innerHTML=`
+    <div class="story-feed-card__header">
+      <div class="story-feed-card__avatar-wrap">
+        ${isOwn?`<div class="story-feed-card__avatar-mine">${avatar('You','md')}</div>`
+               :`<div class="chat-avatar-story-ring">${avatar(name,'md')}</div>`}
+      </div>
+      <div class="story-feed-card__meta">
+        <div class="story-feed-card__name">${isOwn?'You':name}</div>
+        <div class="story-feed-card__time">${fdate(s.timestamp)}</div>
+      </div>
+      <div style="display:flex;gap:4px;align-items:center;">
+        ${ttsBtn}${deleteBtn}
+      </div>
     </div>
-    <div class="status-contact-info">
-      <div class="status-contact-name">${name}</div>
-      <div class="status-contact-sub">${fdate(s.timestamp)}</div>
-    </div>`;
-  return div;
+    <div class="story-feed-card__text">${s.text}</div>
+    <div class="story-feed-card__footer">
+      <button class="story-replies-btn" onclick="toggleStoryComments('${s.id}')">
+        <i data-lucide="message-circle" style="width:18px;height:18px;"></i>
+        <span>${replyCount>0?`${replyCount} repl${replyCount===1?'y':'ies'}`:'Reply'}</span>
+      </button>
+    </div>
+    <div class="story-comments" id="comments-${s.id}" style="display:none;"></div>
+  `;
+  return card;
 }
-function storyCard(s){
-  const isUser=s.authorId==='user';
-  const p=!isUser&&PERSONAS[s.authorId];
-  const name=s.authorName||(p?p.name:'You');
-  const ai=(p&&S.researcherMode)?'<span class="ai-badge">AI</span>':'';
-  const div=document.createElement('div');div.className='story-card';
-  div.innerHTML=`
-    <div class="story-card__header">${avatar(name,'md')}<div class="story-card__author-info"><div class="story-card__author-name">${name}${ai}</div><div class="story-card__time">${fdate(s.timestamp)}</div></div></div>
-    <div class="story-card__text">${s.text}</div>
-    <div class="story-card__actions">
-      ${canTTS()?`<button class="bubble__speaker" onclick="speakTxt(this,'${s.id}')" aria-label="Read aloud">${IC.speaker}</button>`:''}
-      ${!isUser?`<button class="story-card__reply-btn" onclick="replyStory('${s.authorId}','${s.id}')">${IC.reply} Reply</button>`:''}
-      <button class="story-card__read-more" onclick="navigate('#/story/${s.id}')">Read more</button>
-    </div>`;
-  return div;
+
+function toggleStoryComments(storyId){
+  const el=$('comments-'+storyId);
+  if(!el) return;
+  if(el.style.display==='none'){
+    el.style.display='block';
+    renderStoryComments(storyId);
+  } else {
+    el.style.display='none';
+  }
 }
-function speakTxt(btn,storyId){
+
+function renderStoryComments(storyId){
+  const s=(S.stories||[]).find(x=>x.id===storyId);
+  if(!s) return;
+  const el=$('comments-'+storyId);
+  const replies=s.replies||[];
+
+  el.innerHTML=`
+    <div class="story-comments__list" id="clist-${storyId}">
+      ${replies.length===0?`<div class="story-comments__empty">Be the first to reply!</div>`
+        :replies.map(r=>`
+          <div class="story-comment">
+            <div class="story-comment__avatar">${avatar(r.from==='user'?'You':(PERSONAS[r.from]?.name||r.from),'sm')}</div>
+            <div class="story-comment__body">
+              <div class="story-comment__name">${r.from==='user'?'You':(PERSONAS[r.from]?.name||r.from)}</div>
+              <div class="story-comment__text">${r.text}</div>
+            </div>
+          </div>`).join('')}
+    </div>
+    <div class="story-comments__input">
+      <input class="story-comments__field" id="creply-${storyId}" placeholder="Write a reply..." />
+      <button class="story-comments__send" onclick="sendStoryReply('${storyId}')">
+        <i data-lucide="send" style="width:18px;height:18px;color:#fff;"></i>
+      </button>
+    </div>
+  `;
+  lucide.createIcons();
+}
+
+async function sendStoryReply(storyId){
+  const input=$('creply-'+storyId);
+  const text=input?.value?.trim();
+  if(!text) return;
+  input.value='';
+
+  const msg=mkMsg('user','text',text);
+  const upd=S.stories.map(x=>x.id===storyId?{...x,replies:[...(x.replies||[]),msg]}:x);
+  set({stories:upd});
+
+  const clist=$('clist-'+storyId);
+  if(clist){
+    clist.insertAdjacentHTML('beforeend',`
+      <div class="story-comment">
+        <div class="story-comment__avatar">${avatar('You','sm')}</div>
+        <div class="story-comment__body">
+          <div class="story-comment__name">You</div>
+          <div class="story-comment__text">${text}</div>
+        </div>
+      </div>`);
+    clist.scrollTop=clist.scrollHeight;
+  }
+
+  // Update reply count chip
+  const btn=$('scard-'+storyId)?.querySelector('.story-replies-btn span');
+  const s=(S.stories||[]).find(x=>x.id===storyId);
+  if(btn&&s){const c=(s.replies||[]).length;btn.textContent=`${c} repl${c===1?'y':'ies'}`;}
+
+  // AI reaction after short delay
+  const story=(S.stories||[]).find(x=>x.id===storyId);
+  if(!story||story.authorId==='user') return;
+  await delay(1500+Math.random()*1000);
+  const aiText=await claude(story.authorId,[msg],`React warmly and briefly to this reply on your story. Story: "${story.text.slice(0,100)}". Reply: "${text}"`);
+  const aiMsg=mkMsg(story.authorId,'text',aiText);
+  const upd2=S.stories.map(x=>x.id===storyId?{...x,replies:[...(x.replies||[]),aiMsg]}:x);
+  set({stories:upd2});
+  const clist2=$('clist-'+storyId);
+  if(clist2){
+    const p=PERSONAS[story.authorId];
+    clist2.insertAdjacentHTML('beforeend',`
+      <div class="story-comment">
+        <div class="story-comment__avatar">${avatar(p?.name||story.authorName,'sm')}</div>
+        <div class="story-comment__body">
+          <div class="story-comment__name">${p?.name||story.authorName}</div>
+          <div class="story-comment__text">${aiText}</div>
+        </div>
+      </div>`);
+    clist2.scrollTop=clist2.scrollHeight;
+  }
+  const btn2=$('scard-'+storyId)?.querySelector('.story-replies-btn span');
+  const s2=(S.stories||[]).find(x=>x.id===storyId);
+  if(btn2&&s2){const c=(s2.replies||[]).length;btn2.textContent=`${c} repl${c===1?'y':'ies'}`;}
+}
+
+function speakStoryCard(btn,storyId){
   const s=(S.stories||[]).find(x=>x.id===storyId);if(!s)return;
   speakMsg(btn,storyId,s.text);
 }
-function replyStory(personaId,storyId){
-  const s=(S.stories||[]).find(x=>x.id===storyId);
-  if(s){const m=mkMsg(personaId,'text',`[Story] "${s.text.slice(0,80)}..."`);m.storyRef=storyId;addMsg('chats',personaId,m);}
-  navigate('#/chat/'+personaId);
+
+function deleteMyStory(storyId){
+  set({stories:S.stories.filter(s=>s.id!==storyId)});
+  renderStories('mystories');
+  toast('Story deleted');
 }
 function renderStoryView(storyId){
-  const s=(S.stories||[]).find(x=>x.id===storyId);if(!s){navigate('#/stories');return;}
-  const isUser=s.authorId==='user';const name=s.authorName||(PERSONAS[s.authorId]?.name)||'You';
-  mount(`
-    ${header(name,{back:true,avatarName:name})}
-    <div class="screen" id="sv-wrap">
-      <div class="screen__scroll" style="background:#F0F2F5;padding:.75rem;" id="sv-content"></div>
-    </div>
-  `);
-  const content=$('sv-content');
-  content.appendChild(storyCard(s));
-  if(s.replies?.length){
-    content.insertAdjacentHTML('beforeend','<div class="section-heading">Replies</div>');
-    s.replies.forEach(r=>content.insertAdjacentHTML('beforeend',bubble(r)));
-  }
-  if(!isUser){
-    renderInputBar('sv-wrap',{placeholder:'Reply...',onSend:async({type,text})=>{
-      const msg=mkMsg('user',type,text);
-      const updStories=S.stories.map(x=>x.id===storyId?{...x,replies:[...(x.replies||[]),msg]}:x);
-      set({stories:updStories});
-      content.insertAdjacentHTML('beforeend',bubble(msg));
-      content.insertAdjacentHTML('beforeend',typingHTML());
-      scrollBot(content);
-      await delay(1500+Math.random()*1000);
-      const ti=$('typing');if(ti)ti.remove();
-      const aiText=await claude(s.authorId,[msg],`React to story: "${s.text.slice(0,100)}". User replied: "${text}".`);
-      const aiMsg=mkMsg(s.authorId,'text',aiText);
-      const updStories2=S.stories.map(x=>x.id===storyId?{...x,replies:[...(x.replies||[]),aiMsg]}:x);
-      set({stories:updStories2});
-      content.insertAdjacentHTML('beforeend',bubble(aiMsg));
-      scrollBot(content);
-    }});
-  }
+  // Stories now have inline comments — redirect to stories tab
+  navigate('#/stories');
 }
 function showStoryCompose(){
+  const myCount=(S.stories||[]).filter(s=>s.authorId==='user'&&(Date.now()-s.timestamp)<7*86400000).length;
+  if(myCount>=3){toast('You have 3 active stories. Delete one to post a new one.');return;}
+
   const bk=sheet(`<div class="bottom-sheet__handle"></div>
-    <div class="bottom-sheet__title">Share Your Story</div>
+    <div class="bottom-sheet__title">Share a Story</div>
     <div class="compose-chips" id="sc-chips"></div>
-    <textarea class="compose-textarea" id="sc-text" placeholder="What would you like to share?" rows="4"></textarea>
-    <div class="compose-actions">
-      <button class="compose-mic-btn" id="sc-mic">${IC.mic}</button>
-      <button class="compose-post-btn" id="sc-post" disabled>Post Story</button>
-    </div>`);
-  const chips=['Share a recipe memory','Your neighbourhood growing up','A film that changed you','A festival memory'];
+    <textarea class="compose-textarea" id="sc-text" placeholder="What would you like to share? Speak or type..." rows="5" style="font-size:16px;line-height:1.6;"></textarea>
+    <div style="display:flex;gap:10px;margin-top:8px;">
+      <button class="compose-mic-btn" id="sc-mic" title="Speak your story">${IC.mic}</button>
+      <button class="story-ai-btn" id="sc-ai" title="Polish with AI" style="display:none;">
+        <i data-lucide="sparkles" style="width:18px;height:18px;"></i> Polish
+      </button>
+      <button class="compose-post-btn" id="sc-post" disabled style="flex:1;">Post Story</button>
+    </div>
+    <div style="font-size:12px;color:#8696a0;margin-top:8px;text-align:center;">Stories visible to community members · Expire after 7 days · ${3-myCount} slot${3-myCount===1?'':'s'} remaining</div>
+  `);
+  lucide.createIcons();
+
+  const chips=['A recipe I love','A childhood memory','My opinion on...','Something I learned'];
   const chipsDiv=$('sc-chips');
-  chips.forEach(c=>{const b=document.createElement('button');b.className='compose-chip';b.textContent=c;b.onclick=()=>{$('sc-text').value=c+': ';$('sc-post').disabled=false;};chipsDiv.appendChild(b);});
-  $('sc-text').oninput=()=>{$('sc-post').disabled=!$('sc-text').value.trim();};
+  chips.forEach(c=>{const b=document.createElement('button');b.className='compose-chip';b.textContent=c;b.onclick=()=>{$('sc-text').value=c+': ';$('sc-text').focus();$('sc-post').disabled=false;$('sc-ai').style.display='flex';};chipsDiv.appendChild(b);});
+
+  $('sc-text').oninput=()=>{
+    const has=!!$('sc-text').value.trim();
+    $('sc-post').disabled=!has;
+    $('sc-ai').style.display=has?'flex':'none';
+  };
+
   let scRec=false,scTxt='';
   $('sc-mic').onclick=()=>{
-    if(!canSTT()){toast('Voice not available');return;}
+    if(!canSTT()){toast('Voice input not available on this browser');return;}
     if(scRec){stopRec();scRec=false;$('sc-mic').classList.remove('recording');$('sc-mic').innerHTML=IC.mic;return;}
-    scRec=true;scTxt='';$('sc-mic').classList.add('recording');$('sc-mic').innerHTML=IC.micOff;
-    startRec({onInterim:t=>{$('sc-text').value=scTxt+t;},onFinal:t=>{scTxt+=t+' ';$('sc-text').value=scTxt.trim();$('sc-post').disabled=!scTxt.trim();},onError:()=>{scRec=false;$('sc-mic').classList.remove('recording');$('sc-mic').innerHTML=IC.mic;},onEnd:()=>{scRec=false;$('sc-mic').classList.remove('recording');$('sc-mic').innerHTML=IC.mic;}});
+    scRec=true;scTxt=$('sc-text').value;$('sc-mic').classList.add('recording');$('sc-mic').innerHTML=IC.micOff;
+    startRec({
+      onInterim:t=>{$('sc-text').value=scTxt+t;},
+      onFinal:t=>{scTxt+=t+' ';$('sc-text').value=scTxt.trim();$('sc-post').disabled=false;$('sc-ai').style.display='flex';},
+      onError:()=>{scRec=false;$('sc-mic').classList.remove('recording');$('sc-mic').innerHTML=IC.mic;},
+      onEnd:()=>{scRec=false;$('sc-mic').classList.remove('recording');$('sc-mic').innerHTML=IC.mic;}
+    });
   };
+
+  $('sc-ai').onclick=async()=>{
+    const raw=$('sc-text').value.trim();if(!raw)return;
+    $('sc-ai').disabled=true;$('sc-ai').innerHTML='<i data-lucide="loader-2" style="width:18px;height:18px;"></i> Polishing...';
+    lucide.createIcons();
+    const polished=await claude('meenakshiamma',[],`You are a gentle writing assistant for elderly users. Take this rough draft and make it warm, clear and readable — keeping the person's own voice and all the personal details. Keep it under 150 words. Raw text: "${raw}"`);
+    $('sc-text').value=polished;
+    $('sc-ai').disabled=false;$('sc-ai').innerHTML='<i data-lucide="sparkles" style="width:18px;height:18px;"></i> Polish';
+    lucide.createIcons();
+  };
+
   $('sc-post').onclick=()=>{
     const t=$('sc-text').value.trim();if(!t)return;
     const s=mkStory('user','You',t);
     set({stories:[s,...S.stories]});
-    closeSheet(bk);toast('Story shared!');renderStories();
+    closeSheet(bk);toast('Story shared! ✨');renderStories('mystories');
     setTimeout(()=>triggerStoryReactions(s),6000+Math.random()*4000);
   };
 }
