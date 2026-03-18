@@ -652,7 +652,7 @@ function renderChats(){
     const preview=last?(last.type==='voice'?'🎤 Voice message':last.text):'';
     const ai=S.researcherMode?'<span class="ai-badge">AI</span>':'';
     const div=document.createElement('div');div.className='chat-list-item';
-    div.innerHTML=`${avatar(p.name,'md')}<div class="chat-list-item__body"><div class="chat-list-item__top"><div class="chat-list-item__name">${p.name}${ai}</div><div class="chat-list-item__time">${fdate(time)}</div></div><div class="chat-list-item__bottom"><div class="chat-list-item__preview">${preview}</div>${unread?`<div class="chat-list-item__badge">${unread}</div>`:''}</div></div>`;
+    div.innerHTML=`<div class="chat-list-item__avatar">${avatar(p.name,'md')}</div><div class="chat-list-item__body"><div class="chat-list-item__top"><div class="chat-list-item__name">${p.name}${ai}</div><div class="chat-list-item__time">${fdate(time)}</div></div><div class="chat-list-item__bottom"><div class="chat-list-item__preview">${preview}</div>${unread?`<div class="chat-list-item__badge">${unread}</div>`:''}</div></div>`;
     div.onclick=()=>{const u={...S.unreadChats};delete u[id];set({unreadChats:u});navigate('#/chat/'+id);};
     list.appendChild(div);
   });
