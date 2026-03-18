@@ -1105,13 +1105,29 @@ function renderVoiceRooms(){
     ${bottomNav('voicerooms')}
   `);
   const list=$('vr-list');
+  list.insertAdjacentHTML('beforeend',`<div class="section-heading" style="text-transform:uppercase;font-size:12px;color:#667781;padding:12px 16px 4px;font-weight:600;letter-spacing:0.05em;">Live Voice Rooms</div>`);
   Object.values(VOICE_ROOMS).forEach(room=>{
     const div=document.createElement('div');div.className='voice-room-card';
+    const firstPersona=PERSONAS[room.personas[0]];
     const parts=room.personas.slice(0,3).map(id=>avatar(PERSONAS[id]?.name||'?','sm')).join('');
-    div.innerHTML=`<div class="voice-room-card__header"><div class="voice-room-card__name">${room.name}</div><div class="voice-room-card__live"><div class="live-dot"></div>Live</div></div><div class="voice-room-card__theme">${room.themeTag}</div><div class="voice-room-card__participants">${parts}</div>`;
-    div.onclick=()=>navigate('#/voiceroom/'+room.id);
+    div.innerHTML=`
+      <div style="display:flex;align-items:center;gap:14px;padding:12px 16px;cursor:pointer;">
+        <div style="position:relative;">${avatar(room.name,'md')}<div style="position:absolute;bottom:0;right:0;width:14px;height:14px;background:#ea4335;border-radius:50%;border:2px solid #fff;"></div></div>
+        <div style="flex:1;min-width:0;">
+          <div style="display:flex;align-items:center;justify-content:space-between;">
+            <div class="voice-room-card__name">${room.name}</div>
+            <div class="voice-room-card__live"><div class="live-dot"></div>LIVE</div>
+          </div>
+          <div class="voice-room-card__theme">${room.themeTag}</div>
+          <div class="voice-room-card__participants" style="margin-top:4px;">${parts}</div>
+        </div>
+        <button style="background:#25d366;border:none;border-radius:50%;width:40px;height:40px;display:flex;align-items:center;justify-content:center;color:#fff;cursor:pointer;">${IC.phone}</button>
+      </div>`;
+    div.querySelector('div').onclick=()=>navigate('#/voiceroom/'+room.id);
     list.appendChild(div);
   });
+  // FAB
+  list.insertAdjacentHTML('beforeend',`<button class="fab" onclick="toast('New call coming soon')" aria-label="New call">${IC.phone}</button>`);
 }
 
 /* ── VOICE ROOM ── */
