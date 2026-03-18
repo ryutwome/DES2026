@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<!--
+  DES2026 WhatsApp Prototype — IDC School of Design, IIT Bombay
+
+  SETUP:
+  1. Push to GitHub repo, enable GitHub Pages on main branch
+  2. Visit https://ryutwome.github.io/DES2026/ on Android Chrome
+  3. Enter Anthropic API key + Cloudflare Worker URL on first launch
+  4. Install via "Add to Home Screen"
+
+  CLOUDFLARE WORKER (free tier, ~10 lines):
+  ─────────────────────────────────────────
+  export default {
+    async fetch(request) {
+      if (request.method === 'OPTIONS') return new Response(null, {headers:{
+        'Access-Control-Allow-Origin':'*',
+        'Access-Control-Allow-Methods':'POST,OPTIONS',
+        'Access-Control-Allow-Headers':'Content-Type'}});
+      const {apiKey,...body} = await request.json();
+      const r = await fetch('https://api.anthropic.com/v1/messages',{
+        method:'POST',
+        headers:{'Content-Type':'application/json','x-api-key':apiKey,'anthropic-version':'2023-06-01'},
+        body:JSON.stringify(body)});
+      const d = await r.json();
+      return new Response(JSON.stringify(d),{headers:{'Content-Type':'application/json','Access-Control-Allow-Origin':'*'}});
+    }
+  };
+  ─────────────────────────────────────────
+-->
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0,viewport-fit=cover"/>
+  <meta name="theme-color" content="#075E54"/>
+  <meta name="mobile-web-app-capable" content="yes"/>
+  <meta name="apple-mobile-web-app-capable" content="yes"/>
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+  <meta name="apple-mobile-web-app-title" content="DES2026"/>
+  <title>DES2026 Community</title>
+  <link rel="manifest" href="./manifest.json"/>
+  <link rel="apple-touch-icon" href="./icons/icon-192.png"/>
+  <link rel="stylesheet" href="./style.css"/>
+</head>
+<body>
+<div id="app"></div>
+<script src="./app.js"></script>
+</body>
+</html>
