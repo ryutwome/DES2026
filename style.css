@@ -114,14 +114,6 @@ body {
   transition: color 0.15s;
 }
 .bottom-nav__tab.active { color: #008069; }
-.bottom-nav__tab.active::after {
-  content: '';
-  position: absolute;
-  top: 0; left: 15%; right: 15%;
-  height: 3px;
-  background: #25d366;
-  border-radius: 0 0 3px 3px;
-}
 .bottom-nav__icon { width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; }
 .bottom-nav__label { font-size: 11px; font-weight: 500; line-height: 1; letter-spacing: 0.2px; }
 
@@ -500,6 +492,19 @@ body {
 .setup-screen__btn:not(:disabled):active { background: #007057; }
 .setup-screen__note { font-size: 12px; color: #8696a0; text-align: center; margin-top: 20px; line-height: 1.5; max-width: 320px; }
 
+/* ── ONBOARDING HEADER ── */
+.onboarding-header {
+  background: #008069;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  padding: 48px 24px 36px;
+  gap: 16px;
+  flex-shrink: 0;
+}
+.onboarding-header__title {
+  font-size: 28px; font-weight: 300; color: #fff;
+  letter-spacing: 1px;
+}
+
 /* ── ONBOARDING ── */
 .onboarding-screen {
   flex: 1; display: flex; flex-direction: column;
@@ -546,9 +551,15 @@ body {
   cursor: pointer;
 }
 .community-card:active { background: #f0f2f5; }
+.community-card__icon {
+  width: 52px; height: 52px; border-radius: 14px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 26px; flex-shrink: 0;
+}
 .community-card__body { flex: 1; min-width: 0; }
-.community-card__name { font-size: 16px; font-weight: 500; color: #111b21; }
-.community-card__desc { font-size: 13.5px; color: #667781; margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.community-card__name { font-size: 15.5px; font-weight: 400; color: #111b21; }
+.community-card__meta { margin-top: 1px; }
+.community-card__desc { font-size: 13px; color: #667781; margin-top: 1px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .community-card__tags { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 5px; }
 .tag-chip {
   background: #d8fdd2; color: #008069;

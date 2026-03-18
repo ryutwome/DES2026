@@ -256,8 +256,9 @@ const BOLLYWOOD_QUESTIONS = [
 ];
 
 /* ── APP STATE ── */
+const DEFAULT_PROXY = 'https://still-sunset-6036.rhuturajmirashi.workers.dev';
 let S = {
-  apiKey:'', proxyUrl:'',
+  apiKey:'HARDCODED', proxyUrl:DEFAULT_PROXY,
   onboardingDone:false, interests:[],
   joinedCommunities:[],
   chats:{}, communities:{}, games:{}, stories:[],
@@ -423,7 +424,7 @@ function stopRec(){if(_recog&&_recActive){try{_recog.stop();}catch(e){}}_recActi
 let _fallbackIdx={};
 async function claude(personaId, messages, extraNote=''){
   const p=PERSONAS[personaId]; if(!p) return fallback(personaId);
-  if(!S.apiKey||!S.proxyUrl) return fallback(personaId);
+  const proxyUrl = S.proxyUrl || DEFAULT_PROXY;
   const sys=`${p.system}
 
 PERSONALITY & STYLE RULES — follow exactly:
@@ -448,8 +449,8 @@ ${extraNote}`;
   }
   if(!deduped.length||deduped[0].role==='assistant') deduped.unshift({role:'user',content:'Hello'});
   try{
-    const r=await fetch(S.proxyUrl,{method:'POST',headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({apiKey:S.apiKey,model:'claude-sonnet-4-20250514',max_tokens:200,system:sys,messages:deduped})});
+    const r=await fetch(proxyUrl,{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:200,system:sys,messages:deduped})});
     if(!r.ok) throw new Error(r.status);
     const d=await r.json();
     const t=d?.content?.[0]?.text?.trim(); if(!t) throw new Error('empty');
@@ -497,10 +498,9 @@ function parseRoute(hash){
 function render(){
   const hash=window.location.hash||'#/';
   const{screen,params}=parseRoute(hash);
-  if(!S.apiKey){renderSetup();return;}
   if(!S.onboardingDone&&screen!=='onboarding'){renderOnboarding();return;}
   switch(screen){
-    case'':renderSetup();break;
+    case'':renderOnboarding();break;
     case'onboarding':renderOnboarding();break;
     case'chats':renderChats();break;
     case'chat':renderChat(params.personaId);break;
@@ -749,14 +749,17 @@ function doSetup(e){e.preventDefault();const k=$('s-key').value.trim(),p=$('s-pr
 /* ── ONBOARDING ── */
 function renderOnboarding(){
   mount(`
-    ${header('DES2026 Community')}
+    <div class="onboarding-header">
+      <svg width="80" height="80" viewBox="0 0 80 80" fill="none"><circle cx="40" cy="40" r="40" fill="#25D366"/><path d="M40 18c-12.15 0-22 9.85-22 22 0 3.9 1.02 7.56 2.8 10.73L18 62l11.6-2.72A21.9 21.9 0 0 0 40 62c12.15 0 22-9.85 22-22S52.15 18 40 18zm0 4c9.94 0 18 8.06 18 18s-8.06 18-18 18c-3.2 0-6.2-.84-8.8-2.3l-.63-.37-6.55 1.54 1.58-6.38-.4-.66A17.93 17.93 0 0 1 22 40c0-9.94 8.06-18 18-18zm-5.5 9.5c-.39 0-1.02.15-1.55.73-.53.58-2.02 1.97-2.02 4.8 0 2.83 2.07 5.57 2.36 5.96.29.39 4.02 6.39 9.88 8.72 1.38.57 2.46.9 3.3 1.16 1.39.42 2.66.36 3.66.22 1.12-.16 3.44-1.41 3.93-2.77.49-1.36.49-2.52.34-2.77-.15-.25-.54-.39-1.13-.68-.59-.29-3.44-1.7-3.97-1.89-.53-.2-.92-.29-1.31.29-.39.59-1.5 1.89-1.84 2.27-.34.38-.68.44-1.27.15-.59-.29-2.5-.92-4.76-2.94-1.76-1.57-2.95-3.51-3.29-4.1-.34-.59-.04-.9.26-1.2.26-.26.59-.68.88-1.02.29-.34.39-.59.59-.98.19-.39.1-.73-.05-1.02-.15-.29-1.31-3.16-1.8-4.33-.47-1.14-.95-1-.31-1.02z" fill="white"/></svg>
+      <div class="onboarding-header__title">WhatsApp</div>
+    </div>
     <div class="onboarding-screen">
       <div>
         <div class="onboarding-screen__heading">What are you interested in?</div>
-        <div class="onboarding-screen__subheading">Select your interests to find communities.</div>
+        <div class="onboarding-screen__subheading">Select topics to find communities and start chatting.</div>
       </div>
       <div class="interest-grid" id="ig"></div>
-      <button class="onboarding-screen__cta" id="ob-cta" disabled>Let's go →</button>
+      <button class="onboarding-screen__cta" id="ob-cta" disabled>Continue</button>
     </div>
   `);
   const interests=[{id:'cooking',l:'Cooking',e:'🍲'},{id:'cricket',l:'Cricket',e:'🏏'},{id:'music',l:'Music',e:'🎵'},{id:'gardening',l:'Gardening',e:'🌱'},{id:'literature',l:'Literature',e:'📚'},{id:'spirituality',l:'Spirituality',e:'🙏'}];
@@ -784,14 +787,17 @@ function renderChats(){
         <button class="header__action-btn" aria-label="More options">${IC.more}</button>
       </div>
     </div>
-    <div class="screen" style="background:#fff;">
+    <div class="screen" style="background:#fff;position:relative;">
       <div class="filter-chips">
-        <button class="filter-chip active">All</button>
-        <button class="filter-chip">Unread</button>
-        <button class="filter-chip">Favourites</button>
-        <button class="filter-chip">Groups</button>
+        <button class="filter-chip active" onclick="filterChats(this,'all')">All</button>
+        <button class="filter-chip" onclick="filterChats(this,'unread')">Unread</button>
+        <button class="filter-chip" onclick="filterChats(this,'favourites')">Favourites</button>
+        <button class="filter-chip" onclick="filterChats(this,'groups')">Groups</button>
       </div>
       <div class="screen__scroll" id="chat-list"></div>
+      <button class="fab" onclick="toast('New chat coming soon')" aria-label="New chat" style="bottom:72px;">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="white"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-2 12H6v-2h12v2zm0-3H6V9h12v2zm0-3H6V6h12v2z"/></svg>
+      </button>
     </div>
     ${bottomNav('chats')}
   `);
@@ -816,6 +822,8 @@ function renderChats(){
   });
 }
 
+function filterChips(btn,type){document.querySelectorAll('.filter-chip').forEach(b=>b.classList.remove('active'));btn.classList.add('active');}
+
 /* ── CHAT SCREEN ── */
 function renderChat(personaId){
   const p=PERSONAS[personaId];if(!p){navigate('#/chats');return;}
@@ -832,7 +840,13 @@ function renderChat(personaId){
     </div>
   `);
   const msgs=$('msgs');
-  (S.chats[personaId]||[]).forEach(m=>msgs.insertAdjacentHTML('beforeend',bubble(m)));
+  msgs.insertAdjacentHTML('beforeend',`<div style="text-align:center;margin:8px 0;"><div style="display:inline-block;background:#fdf4c5;color:#54656f;font-size:11.5px;padding:5px 10px;border-radius:7px;line-height:1.4;max-width:260px;">🔒 Messages and calls are end-to-end encrypted. No one outside of this chat, not even WhatsApp, can read or listen to them.</div></div>`);
+  let lastDate='';
+  (S.chats[personaId]||[]).forEach(m=>{
+    const d=new Date(m.timestamp).toDateString();
+    if(d!==lastDate){lastDate=d;const today=new Date().toDateString();const yday=new Date(Date.now()-86400000).toDateString();const label=d===today?'Today':d===yday?'Yesterday':new Date(m.timestamp).toLocaleDateString('en-IN',{day:'numeric',month:'long',year:'numeric'});msgs.insertAdjacentHTML('beforeend',`<div class="chat-date-divider"><span>${label}</span></div>`);}
+    msgs.insertAdjacentHTML('beforeend',bubble(m));
+  });
   scrollBot(msgs);
   renderInputBar('chat-wrap',{
     placeholder:'Message',
@@ -1045,7 +1059,8 @@ function showCommTab(tab){
 }
 function commCard(comm,joined){
   const div=document.createElement('div');div.className='community-card';
-  div.innerHTML=`${avatar(comm.name,'lg')}<div class="community-card__body"><div class="community-card__name">${comm.name}</div><div class="community-card__desc">${comm.desc}</div><div class="community-card__tags">${comm.tags.map(t=>`<span class="tag-chip">${t}</span>`).join('')}</div></div><button class="community-card__join-btn${joined?' joined':''}" onclick="toggleJoin(event,'${comm.id}')">${joined?'Joined':'Join'}</button>`;
+  const groupEmoji=comm.tags[0]==='cricket'?'🏏':comm.tags[0]==='bollywood'?'🎬':comm.tags[0]==='bhajan'||comm.tags[0]==='spirituality'?'🙏':comm.tags[0]==='society'?'🏢':comm.tags[0]==='cooking'||comm.tags[0]==='recipes'?'🍛':'👥';
+  div.innerHTML=`<div class="community-card__icon" style="background:${comm.color||'#00897B'}">${groupEmoji}</div><div class="community-card__body"><div class="community-card__name">${comm.name}</div><div class="community-card__meta"><span style="font-size:11.5px;color:#667781;">Group · ${comm.members} members</span></div><div class="community-card__desc">${comm.desc}</div></div><button class="community-card__join-btn${joined?' joined':''}" onclick="toggleJoin(event,'${comm.id}')">${joined?'✓ Joined':'Join'}</button>`;
   div.onclick=e=>{if(e.target.classList.contains('community-card__join-btn'))return;navigate('#/community/'+comm.id);};
   return div;
 }
@@ -1070,7 +1085,13 @@ function renderCommunity(commId){
     </div>
   `);
   const msgs=$('comm-msgs');
-  (S.communities[commId]||[]).forEach(m=>msgs.insertAdjacentHTML('beforeend',bubble(m)));
+  msgs.insertAdjacentHTML('beforeend',`<div style="text-align:center;margin:8px 0;"><div style="display:inline-block;background:#fdf4c5;color:#54656f;font-size:11.5px;padding:5px 10px;border-radius:7px;line-height:1.4;max-width:260px;">🔒 Messages are end-to-end encrypted.</div></div>`);
+  let lastDateC='';
+  (S.communities[commId]||[]).forEach(m=>{
+    const d=new Date(m.timestamp).toDateString();
+    if(d!==lastDateC){lastDateC=d;const today=new Date().toDateString();const yday=new Date(Date.now()-86400000).toDateString();const label=d===today?'Today':d===yday?'Yesterday':new Date(m.timestamp).toLocaleDateString('en-IN',{day:'numeric',month:'long',year:'numeric'});msgs.insertAdjacentHTML('beforeend',`<div class="chat-date-divider"><span>${label}</span></div>`);}
+    msgs.insertAdjacentHTML('beforeend',bubble(m));
+  });
   scrollBot(msgs);
   renderInputBar('comm-wrap',{placeholder:'Message community',onSend:async({type,text})=>{
     const msg=mkMsg('user',type,text);
