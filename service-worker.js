@@ -1,5 +1,5 @@
 /* DES2026 Service Worker — enables PWA install prompt */
-const CACHE_NAME = 'des2026-v16';
+const CACHE_NAME = 'des2026-v17';
 const ASSETS = [
   './',
   './index.html',
