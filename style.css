@@ -597,6 +597,30 @@ body {
   height: 3px; background: #25d366;
 }
 
+/* ── STATUS ROW (Updates tab) ── */
+.status-row-section { background: #fff; border-bottom: 8px solid #f0f2f5; }
+.status-row-header { padding: 14px 16px 6px; font-size: 14px; font-weight: 600; color: #54656f; }
+.status-row {
+  display: flex; gap: 4px;
+  padding: 4px 12px 14px; overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+.status-add-btn, .status-avatar-btn {
+  display: flex; flex-direction: column; align-items: center; gap: 5px;
+  background: none; border: none; cursor: pointer;
+  min-width: 64px; font-family: inherit; padding: 4px;
+}
+.status-add-btn span, .status-avatar-btn span {
+  font-size: 11px; color: #54656f; text-align: center;
+  max-width: 60px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.status-avatar-ring {
+  width: 60px; height: 60px; border-radius: 50%;
+  border: 2.5px solid #25d366; padding: 2px;
+  display: flex; align-items: center; justify-content: center;
+}
+.status-avatar-ring .avatar { width: 52px; height: 52px; font-size: 19px; }
+
 /* ── STORY CARDS ── */
 .story-card {
   background: #fff;

@@ -118,39 +118,65 @@ const COMMUNITIES = {
     id:'cricket', name:'Cricket Addicts', desc:'Live match discussions and debates',
     tags:['#Cricket','#IPL','#Sports'], members:2341,
     voiceRoom:'cricket-discussion',
-    personas:['rameshbhai','krishnaswamy'],
+    personas:['rameshbhai','krishnaswamy','harbhajan'],
     seed:[
-      {from:'rameshbhai', text:'Arre bhai what a match yesterday! Rohit played like a king.'},
-      {from:'krishnaswamy', text:'Technically solid batting. Though the bowling was below par.'},
-      {from:'rameshbhai', text:'Below par? Haha Krishnaswamy bhai you are always so critical!'},
-      {from:'krishnaswamy', text:'Criticism is how we improve. That said, the last over was magnificent.'},
-      {from:'rameshbhai', text:'Agreed! Best finish of the season so far. What does everyone think?'}
+      {from:'rameshbhai', text:'Jai Shree Krishna everyone! 🙏 What a match yesterday... Rohit played like a king...'},
+      {from:'krishnaswamy', text:'Namaskar. Technically solid batting. Though the bowling was below par, channagide.'},
+      {from:'harbhajan', text:'Sat sri akal! Wah wah... that last over was heart attack time! 😄 Army mein bhi aisa pressure nahi hota yarr 🏏'},
+      {from:'rameshbhai', text:'Haha Harbhajan ji! But you have to admit — those last 3 overs were pure cinema, no? 🙏'},
+      {from:'krishnaswamy', text:'Cinema is the right word. Dramatic but effective. What does everyone think about the selection for next match?'}
     ]
   },
   bollywood: {
     id:'bollywood', name:'Retro Bollywood', desc:"Golden era films and songs of the 70s–80s",
     tags:['#Bollywood','#70s80s','#Films'], members:1563,
     voiceRoom:'retro-bollywood-adda',
-    personas:['rameshbhai','meenakshiamma'],
+    personas:['rameshbhai','meenakshiamma','abdulrehman'],
     seed:[
-      {from:'meenakshiamma', text:'I was watching Sholay again last night. Still perfect after all these years!'},
-      {from:'rameshbhai', text:'Sholay is poetry! Gabbar Singh — best villain in Indian cinema history.'},
-      {from:'meenakshiamma', text:'Seri, but Deewar is also masterpiece. Amitabh at his best.'},
-      {from:'rameshbhai', text:'Kishore Kumar songs from those days — I tell you, music today is noise only.'},
-      {from:'meenakshiamma', text:'Haha so true! Which is your all-time favourite song? Mine is Mere Sapno Ki Rani.'}
+      {from:'meenakshiamma', text:'🙏 Good morning everyone... I was watching Sholay again last night... still perfect after all these years! 🌹'},
+      {from:'rameshbhai', text:'Jai Shree Krishna! 🙏 Sholay is poetry bhai... Gabbar Singh — best villain in Indian cinema history, no?'},
+      {from:'abdulrehman', text:'Subhanallah... Sholay is a complete world unto itself 🌸... but Kishore Kumar\'s songs from Amar Akbar Anthony also... wah wah janab...'},
+      {from:'meenakshiamma', text:'Seri seri... but Deewar is also masterpiece... Amitabh at his absolute best... paavam no actor like him today 🙏'},
+      {from:'rameshbhai', text:'Kishore Kumar songs from those days... I tell you music today is just noise... which song brings back most memories for everyone? 🌹'}
     ]
   },
   bhajan: {
     id:'bhajan', name:'Bhajan & Spirituality', desc:'Daily prayers and spiritual conversations',
     tags:['#Devotional','#Bhajans','#Spirituality'], members:1204,
     voiceRoom:'morning-bhajans',
-    personas:['meenakshiamma','krishnaswamy'],
+    personas:['meenakshiamma','sunitadevi','abdulrehman'],
     seed:[
-      {from:'meenakshiamma', text:'Good morning everyone 🙏 Finished my prayers and now having filter coffee.'},
-      {from:'krishnaswamy', text:'Morning. Channagide. Did the Suprabhatam recitation this morning.'},
-      {from:'meenakshiamma', text:'Beautiful! I love MS Subbalakshmi\'s Suprabhatam. Plays every morning in our house.'},
-      {from:'krishnaswamy', text:'Same here for forty years. Some traditions are worth keeping precisely.'},
-      {from:'meenakshiamma', text:'Paavam, today\'s generation doesn\'t know what they\'re missing. What bhajan is everyone\'s favourite?'}
+      {from:'meenakshiamma', text:'🙏🌸 Very Good Morning everyone... finished my prayers and now having filter coffee... so peaceful...'},
+      {from:'sunitadevi', text:'🙏 Namaskar ji... main bhi pooja karke aayi... aaj bahut achha feel ho raha hai... Satyanarayan katha padi...'},
+      {from:'abdulrehman', text:'Subhanallah 🌹... beautiful morning... I recited some Quran after Fajr... there is a peace in morning prayers no one can explain in words...'},
+      {from:'meenakshiamma', text:'So true amma... all our traditions different but the feeling same 🙏... my MS Subbalakshmi Suprabhatam cassette plays every morning for 40 years...'},
+      {from:'sunitadevi', text:'Sahi kaha ji 🌸... aur ek nuskha — subah warm water with lemon peena zaroor... health bhi theek rehta hai... 🌿🙏'}
+    ]
+  },
+  society: {
+    id:'society', name:'Building Society Updates', desc:'Water, lift, parking — our building news',
+    tags:['#Society','#Mumbai','#Neighbours'], members:247,
+    voiceRoom:null,
+    personas:['lalitha','krishnaswamy','harbhajan'],
+    seed:[
+      {from:'lalitha', text:'Arre, important notice everyone 🙏 Society meeting tomorrow 7pm sharp... water tanker issue to be discussed... ho, please attend!'},
+      {from:'krishnaswamy', text:'Namaskar. I will attend beta. The water issue has been pending three weeks now. Someone must take responsibility.'},
+      {from:'harbhajan', text:'Ji, I will be there 🙏 Sat sri akal to all... also lift no. 2 is making noise again... I have informed the technician yarr...'},
+      {from:'lalitha', text:'Chan! 🌹 Ho, also parking — building B residents please do not park in A zone... baryach problem ho rahi hai...'},
+      {from:'krishnaswamy', text:'Agreed. Rules are rules. Society functions only when everyone adjusts, as Harbhajan ji would say. 🙏'}
+    ]
+  },
+  recipes: {
+    id:'recipes', name:'Tamil Cooking Club', desc:'Recipes, tips and food memories from Tamil kitchens',
+    tags:['#TamilCooking','#Recipes','#Food'], members:847,
+    voiceRoom:null,
+    personas:['meenakshiamma','sunitadevi','padmavathi'],
+    seed:[
+      {from:'meenakshiamma', text:'🙏🌸 Good morning all! Made my mother\'s sambar today... grinding masala fresh at 5am... the smell... aiyyo it pulls you out of bed!'},
+      {from:'padmavathi', text:'Baagundi! 🌹 Meenakshiamma ji your sambar description made me hungry now... I made pulihora this morning — Dasara festival memories...'},
+      {from:'sunitadevi', text:'🙏 So beautiful... food is love na... I made dal baati churma for my grandchildren yesterday... they said dadi\'s version is different... they are right only! 😄'},
+      {from:'meenakshiamma', text:'Seri seri... recipes passed down are never quite same... my daughter also says same thing 🌸... the secret is the hands, not just the ingredients!'},
+      {from:'padmavathi', text:'Cheppandi exactly right 🙏... A recipe is a love letter to the future... which recipe from your childhood do you miss most? 🌺'}
     ]
   }
 };
@@ -755,10 +781,13 @@ function renderChats(){
   items.forEach(({id,last,time})=>{
     const p=PERSONAS[id];
     const unread=S.unreadChats[id]||0;
-    const preview=last?(last.type==='voice'?'🎤 Voice message':last.text):'';
+    const isUserMsg=last?.from==='user';
+    const previewText=last?(last.type==='voice'?'🎤 Voice message':(last.text||'')):'' ;
+    const tickHtml=isUserMsg?`<svg width="16" height="11" viewBox="0 0 18 11" fill="#53bdeb" style="flex-shrink:0;margin-right:2px"><path d="M17.394.606a.75.75 0 0 1 0 1.06L8.9 10.16a.75.75 0 0 1-1.06 0L4.606 6.928a.75.75 0 1 1 1.06-1.06l2.704 2.703 7.963-7.965a.75.75 0 0 1 1.06 0zM1 5.868l2.704 2.704a.75.75 0 1 0 1.06-1.06L2.06 4.806A.75.75 0 0 0 1 5.868z"/></svg>`:'';
     const ai=S.researcherMode?'<span class="ai-badge">AI</span>':'';
+    const timeClass=unread?'chat-list-item__time chat-list-item__time--unread':'chat-list-item__time';
     const div=document.createElement('div');div.className='chat-list-item';
-    div.innerHTML=`<div class="chat-list-item__avatar">${avatar(p.name,'md')}</div><div class="chat-list-item__body"><div class="chat-list-item__top"><div class="chat-list-item__name">${p.name}${ai}</div><div class="chat-list-item__time">${fdate(time)}</div></div><div class="chat-list-item__bottom"><div class="chat-list-item__preview">${preview}</div>${unread?`<div class="chat-list-item__badge">${unread}</div>`:''}</div></div>`;
+    div.innerHTML=`<div class="chat-list-item__avatar">${avatar(p.name,'md')}</div><div class="chat-list-item__body"><div class="chat-list-item__top"><div class="chat-list-item__name">${p.name}${ai}</div><div class="${timeClass}">${fdate(time)}</div></div><div class="chat-list-item__bottom"><div class="chat-list-item__preview" style="display:flex;align-items:center;">${tickHtml}<span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${previewText}</span></div>${unread?`<div class="chat-list-item__badge">${unread}</div>`:''}</div></div>`;
     div.onclick=()=>{const u={...S.unreadChats};delete u[id];set({unreadChats:u});navigate('#/chat/'+id);};
     list.appendChild(div);
   });
@@ -803,13 +832,40 @@ function delay(ms){return new Promise(r=>setTimeout(r,ms));}
 function renderStories(){
   mount(`
     ${resBar()}
-    ${header('Stories',{right:[{icon:IC.search,label:'Search',fn:''}]})}
+    <div class="header">
+      <div class="header__title" onclick="headerTap()"><h1>Updates</h1></div>
+      <div class="header__actions">
+        <button class="header__action-btn" aria-label="Search">${IC.search}</button>
+        <button class="header__action-btn" aria-label="More">${IC.more}</button>
+      </div>
+    </div>
     <div class="screen" style="position:relative;">
-      <div class="screen__scroll" style="background:#F0F2F5;" id="stories-list"></div>
+      <div class="screen__scroll" style="background:#fff;" id="stories-list">
+        <div class="status-row-section">
+          <div class="status-row-header">Status</div>
+          <div class="status-row" id="status-row">
+            <button class="status-add-btn" onclick="showStoryCompose()">
+              <div class="status-avatar-wrap"><div style="background:#25d366;width:56px;height:56px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;">${IC.add}</div></div>
+              <span>Add status</span>
+            </button>
+          </div>
+        </div>
+        <div class="section-heading" style="padding:12px 16px 8px;color:#54656f;font-size:14px;font-weight:600;text-transform:none;letter-spacing:0;">Recent updates</div>
+      </div>
       <button class="fab" onclick="showStoryCompose()" aria-label="Share story">${IC.add}</button>
     </div>
     ${bottomNav('stories')}
   `);
+  // Populate status avatars
+  const statusRow=$('status-row');
+  if(statusRow){
+    PERSONA_LIST.slice(0,6).forEach(p=>{
+      const btn=document.createElement('button');btn.className='status-avatar-btn';
+      btn.innerHTML=`<div class="status-avatar-ring">${avatar(p.name,'md')}</div><span>${p.name.split(' ')[0]}</span>`;
+      btn.onclick=()=>navigate('#/chat/'+p.id);
+      statusRow.appendChild(btn);
+    });
+  }
   const list=$('stories-list');
   (S.stories||[]).forEach(s=>list.appendChild(storyCard(s)));
 }
@@ -924,7 +980,13 @@ function closeSheet(bk){if(bk&&bk.parentNode)bk.remove();}
 function renderCommunities(){
   mount(`
     ${resBar()}
-    ${header('Communities',{right:[{icon:IC.search,label:'Search',fn:''}]})}
+    <div class="header">
+      <div class="header__title" onclick="headerTap()"><h1>Communities</h1></div>
+      <div class="header__actions">
+        <button class="header__action-btn" aria-label="Search">${IC.search}</button>
+        <button class="header__action-btn" aria-label="More">${IC.more}</button>
+      </div>
+    </div>
     <div class="sub-tabs"><button class="sub-tab active" id="ct-joined" onclick="showCommTab('joined')">Joined</button><button class="sub-tab" id="ct-discover" onclick="showCommTab('discover')">Discover</button></div>
     <div class="screen"><div class="screen__scroll" id="comm-content"></div></div>
     ${bottomNav('communities')}
@@ -1003,8 +1065,14 @@ function renderCommunity(commId){
 function renderVoiceRooms(){
   mount(`
     ${resBar()}
-    ${header('Voice Rooms')}
-    <div class="screen"><div class="screen__scroll" id="vr-list" style="background:#F0F2F5;"></div></div>
+    <div class="header">
+      <div class="header__title" onclick="headerTap()"><h1>Calls</h1></div>
+      <div class="header__actions">
+        <button class="header__action-btn" aria-label="Search">${IC.search}</button>
+        <button class="header__action-btn" aria-label="More">${IC.more}</button>
+      </div>
+    </div>
+    <div class="screen"><div class="screen__scroll" id="vr-list" style="background:#fff;"></div></div>
     ${bottomNav('voicerooms')}
   `);
   const list=$('vr-list');
@@ -1171,7 +1239,12 @@ function renderGames(){
   const recentGames=Object.values(S.games).filter(g=>g.status==='completed').slice(-5);
   mount(`
     ${resBar()}
-    ${header('Games')}
+    <div class="header">
+      <div class="header__title" onclick="headerTap()"><h1>Games</h1></div>
+      <div class="header__actions">
+        <button class="header__action-btn" aria-label="More">${IC.more}</button>
+      </div>
+    </div>
     <div class="screen game-hub-screen"><div class="screen__scroll" id="games-scroll"></div></div>
     ${bottomNav('games')}
   `);
