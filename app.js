@@ -243,16 +243,16 @@ const VOICE_ROOMS = {
 
 /* ── STORIES ── */
 const SEED_STORIES = [
-  {personaId:'meenakshiamma', text:"🙏 My mother's sambar recipe — she would wake at 5am to grind the masala fresh on the stone... That smell coming from the kitchen, amma, it would pull you out of bed like nothing else! I still make it every Sunday. My grandchildren say the whole apartment smells like childhood. 🌸"},
-  {personaId:'meenakshiamma', text:"Our school in Mylapore had a huge banyan tree in the courtyard... During free periods we would sit under it and tell stories... Sixty years later I can still feel the cool shade and smell of those textbooks... Some things stay with you forever, no? 🙏"},
-  {personaId:'rameshbhai', text:"Jai Shree Krishna! 🙏 1983 World Cup final — I was in my shop in Surat with a small black-and-white TV... When Kapil Dev caught Viv Richards I locked the shop and ran into the street shouting! My neighbours thought something terrible had happened! 😄 Best moment of my life after my children being born. 🌹"},
-  {personaId:'rameshbhai', text:"In my textile business... every Diwali every worker got new clothes made from our own fabric... My father started it, I continued for 30 years... Relationships are the real business bhai... the balance sheet shows numbers but not this 🙏🌸"},
-  {personaId:'krishnaswamy', text:"My father was a maths teacher... Every evening at 7pm sharp we had 'puzzle time' — he gave us a problem to solve before dinner... I thought it was torture then... Now I understand it was the greatest gift he gave me... Logical thinking is not taught, it is practised daily. Gottu. 🙏"},
-  {personaId:'sunitadevi', text:"🙏 Dal baati churma — this is not just food, this is our whole Lucknow childhood in one dish... My dadi would make the baatis in a clay pot over wood fire... I have taught my daughter but she says her version is not the same... It never is... that is the truth of recipes passed down 🌸"},
-  {personaId:'harbhajan', text:"🙏 Baisakhi in my village was the biggest day of the year — harvest celebration, bhangra from morning till night... My roses are in full bloom around that time every year... I like to think it is not coincidence 🌹 Sat sri akal to all!"},
-  {personaId:'lalitha', text:"Puran poli on Gudhi Padwa — my mother-in-law's recipe that I have been making for 35 years 🙏... The secret is cooking the chana dal until completely soft and adding fresh coconut... A recipe is a love letter to the future... chan, no? 🌸"},
-  {personaId:'padmavathi', text:"🌺 I saw my first Kuchipudi performance at age eight in our village temple... The dancer was maybe fourteen but she moved like she was made of water... I cried without knowing why — something opened in me that evening that never closed... Some things you are meant to find 🙏🌸"},
-  {personaId:'abdulrehman', text:"🙏 Hyderabadi dum biryani — my wife's family recipe, three generations old... The secret is the dum itself, cooking sealed with dough on a low flame for exactly 40 minutes... I have tried telling the timing to my son but he gets impatient... True biryani cannot be rushed, like all things worth having in life 🌹 Subhanallah."}
+  {personaId:'meenakshiamma', title:"Amma's Sambar — The Sunday Ritual", imageUrl:'https://images.unsplash.com/photo-1631452180519-c014fe946bc7?w=800&h=400&fit=crop', text:"🙏 My mother's sambar recipe — she would wake at 5am to grind the masala fresh on the stone... That smell coming from the kitchen, amma, it would pull you out of bed like nothing else! I still make it every Sunday. My grandchildren say the whole apartment smells like childhood. 🌸"},
+  {personaId:'meenakshiamma', title:"The Banyan Tree of Mylapore School", imageUrl:'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=800&h=400&fit=crop', text:"Our school in Mylapore had a huge banyan tree in the courtyard... During free periods we would sit under it and tell stories... Sixty years later I can still feel the cool shade and smell of those textbooks... Some things stay with you forever, no? 🙏"},
+  {personaId:'rameshbhai', title:"1983: The Day India Won the World", imageUrl:'https://images.unsplash.com/photo-1540747913346-19e32dc3e97e?w=800&h=400&fit=crop', text:"Jai Shree Krishna! 🙏 1983 World Cup final — I was in my shop in Surat with a small black-and-white TV... When Kapil Dev caught Viv Richards I locked the shop and ran into the street shouting! My neighbours thought something terrible had happened! 😄 Best moment of my life after my children being born. 🌹"},
+  {personaId:'rameshbhai', title:"Every Diwali, New Clothes for Every Worker", imageUrl:'https://images.unsplash.com/photo-1574015974293-817f0ebebb74?w=800&h=400&fit=crop', text:"In my textile business... every Diwali every worker got new clothes made from our own fabric... My father started it, I continued for 30 years... Relationships are the real business bhai... the balance sheet shows numbers but not this 🙏🌸"},
+  {personaId:'krishnaswamy', title:"7pm Puzzle Time — Father's Greatest Gift", imageUrl:'https://images.unsplash.com/photo-1606326608606-aa0b62935f2b?w=800&h=400&fit=crop', text:"My father was a maths teacher... Every evening at 7pm sharp we had 'puzzle time' — he gave us a problem to solve before dinner... I thought it was torture then... Now I understand it was the greatest gift he gave me... Logical thinking is not taught, it is practised daily. Gottu. 🙏"},
+  {personaId:'sunitadevi', title:"Dal Baati Churma: A Childhood in One Dish", imageUrl:'https://images.unsplash.com/photo-1596797038530-2c107229654b?w=800&h=400&fit=crop', text:"🙏 Dal baati churma — this is not just food, this is our whole Lucknow childhood in one dish... My dadi would make the baatis in a clay pot over wood fire... I have taught my daughter but she says her version is not the same... It never is... that is the truth of recipes passed down 🌸"},
+  {personaId:'harbhajan', title:"Baisakhi Roses — Never a Coincidence", imageUrl:'https://images.unsplash.com/photo-1490750967868-88df5691cc14?w=800&h=400&fit=crop', text:"🙏 Baisakhi in my village was the biggest day of the year — harvest celebration, bhangra from morning till night... My roses are in full bloom around that time every year... I like to think it is not coincidence 🌹 Sat sri akal to all!"},
+  {personaId:'lalitha', title:"Puran Poli — A Recipe is a Love Letter", imageUrl:'https://images.unsplash.com/photo-1606491956689-2ea866880c84?w=800&h=400&fit=crop', text:"Puran poli on Gudhi Padwa — my mother-in-law's recipe that I have been making for 35 years 🙏... The secret is cooking the chana dal until completely soft and adding fresh coconut... A recipe is a love letter to the future... chan, no? 🌸"},
+  {personaId:'padmavathi', title:"First Kuchipudi: Something Opened in Me", imageUrl:'https://images.unsplash.com/photo-1547153760-18fc86324498?w=800&h=400&fit=crop', text:"🌺 I saw my first Kuchipudi performance at age eight in our village temple... The dancer was maybe fourteen but she moved like she was made of water... I cried without knowing why — something opened in me that evening that never closed... Some things you are meant to find 🙏🌸"},
+  {personaId:'abdulrehman', title:"Dum Biryani: True Things Cannot Be Rushed", imageUrl:'https://images.unsplash.com/photo-1563379091339-03b21ab4a4f8?w=800&h=400&fit=crop', text:"🙏 Hyderabadi dum biryani — my wife's family recipe, three generations old... The secret is the dum itself, cooking sealed with dough on a low flame for exactly 40 minutes... I have tried telling the timing to my son but he gets impatient... True biryani cannot be rushed, like all things worth having in life 🌹 Subhanallah."}
 ];
 
 /* ── GAME DATA ── */
@@ -291,7 +291,7 @@ function set(patch) { Object.assign(S, patch); saveS(); }
 function mkId() { return Date.now()+'_'+Math.random().toString(36).slice(2,6); }
 function mkGameId() { return 'game_'+mkId(); }
 function mkMsg(from,type,text) { return {id:mkId(),from,type,text,timestamp:Date.now(),isAI:from!=='user'}; }
-function mkStory(authorId,authorName,text) { return {id:mkId(),authorId,authorName,text,timestamp:Date.now(),replies:[]}; }
+function mkStory(authorId,authorName,text,title,imageUrl) { return {id:mkId(),authorId,authorName,text,title:title||'',imageUrl:imageUrl||'',timestamp:Date.now(),replies:[]}; }
 
 function addMsg(ctx,ctxId,msg) {
   if(!S[ctx][ctxId]) S[ctx][ctxId]=[];
@@ -303,7 +303,8 @@ function seedData(interests) {
   S.stories = SEED_STORIES.map(s=>({
     id:mkId(), authorId:s.personaId,
     authorName:PERSONAS[s.personaId].name,
-    text:s.text, timestamp:Date.now()-Math.random()*7*86400000, replies:[]
+    text:s.text, title:s.title||'', imageUrl:s.imageUrl||'',
+    timestamp:Date.now()-Math.random()*7*86400000, replies:[]
   }));
   S.stories.sort((a,b)=>b.timestamp-a.timestamp);
 
@@ -991,7 +992,6 @@ function renderStories(filter){
     {id:'all',label:'All'},
     {id:'communities',label:'Communities'},
     {id:'contacts',label:'Contacts'},
-    {id:'mystories',label:'My Stories'},
   ];
 
   mount(`
@@ -1009,7 +1009,8 @@ function renderStories(filter){
       </div>
       <div class="screen__scroll" style="background:#f0f2f5;" id="stories-feed">
         <div style="height:8px;"></div>
-        ${_storiesFilter==='mystories'?'<div id="my-stories-section"></div>':''}
+        <div id="my-stories-section"></div>
+        <div id="stories-feed-divider" style="display:none;"></div>
         <div id="stories-cards"></div>
         <div style="height:88px;"></div>
       </div>
@@ -1020,25 +1021,19 @@ function renderStories(filter){
     ${bottomNav('stories')}
   `);
 
-  if(_storiesFilter==='mystories'){
-    const sec=$('my-stories-section');
-    if(myStories.length===0){
-      sec.innerHTML=`<div class="stories-empty-mine">
-        <i data-lucide="book-open" style="width:40px;height:40px;color:#00A884;margin-bottom:8px;"></i>
-        <div style="font-size:16px;font-weight:600;color:#111b21;">No stories yet</div>
-        <div style="font-size:14px;color:#667781;margin-top:4px;">Tap the pencil button to share your first story</div>
-      </div>`;
-    } else {
-      sec.innerHTML=`<div style="padding:12px 16px 4px;font-size:13px;font-weight:600;color:#667781;text-transform:uppercase;letter-spacing:0.3px;">My Stories (${myStories.length}/3)</div>`;
-      myStories.forEach(s=>sec.appendChild(buildStoryCard(s,true)));
-    }
-    lucide.createIcons();
-    return;
+  // Always render My Stories at top
+  const mySec=$('my-stories-section');
+  if(myStories.length>0){
+    mySec.innerHTML=`<div class="stories-section-label">My Stories <span class="stories-section-count">${myStories.length}/3</span></div>`;
+    myStories.forEach(s=>mySec.appendChild(buildStoryCard(s,true)));
+    const divider=$('stories-feed-divider');
+    divider.style.display='block';
+    divider.innerHTML=`<div class="stories-section-label" style="margin-top:4px;">From Your Network</div>`;
   }
 
   const cardsEl=$('stories-cards');
   if(!feed.length){
-    cardsEl.innerHTML=`<div class="stories-empty-mine" style="margin-top:32px;">
+    cardsEl.innerHTML=`<div class="stories-empty-mine" style="margin-top:${myStories.length?'0':'32px'}px;">
       <i data-lucide="newspaper" style="width:40px;height:40px;color:#00A884;margin-bottom:8px;"></i>
       <div style="font-size:16px;font-weight:600;color:#111b21;">No stories here yet</div>
       <div style="font-size:14px;color:#667781;margin-top:4px;">Stories from your network will appear here</div>
@@ -1058,6 +1053,10 @@ function buildStoryCard(s, isOwn){
   card.className='story-feed-card';
   card.id='scard-'+s.id;
 
+  const title=s.title||'';
+  const preview=s.text?s.text.replace(/[\u{1F300}-\u{1FFFF}]/gu,'').trim().slice(0,120)+(s.text.length>120?'…':''):'';
+  const hasImage=!!s.imageUrl;
+
   const ttsBtn=canTTS()?`<button class="story-tts-btn" onclick="speakStoryCard(this,'${s.id}')" aria-label="Read aloud">
     <i data-lucide="volume-2" style="width:20px;height:20px;"></i>
   </button>`:'';
@@ -1067,25 +1066,29 @@ function buildStoryCard(s, isOwn){
   </button>`:'';
 
   card.innerHTML=`
-    <div class="story-feed-card__header">
-      <div class="story-feed-card__avatar-wrap">
-        ${isOwn?`<div class="story-feed-card__avatar-mine">${avatar('You','md')}</div>`
-               :`<div class="chat-avatar-story-ring">${avatar(name,'md')}</div>`}
+    ${hasImage?`<div class="story-feed-card__img-wrap"><img class="story-feed-card__img" src="${s.imageUrl}" alt="" loading="lazy"/></div>`:''}
+    <div class="story-feed-card__body">
+      <div class="story-feed-card__header">
+        <div class="story-feed-card__avatar-wrap">
+          ${isOwn?`<div class="story-feed-card__avatar-mine">${avatar('You','sm')}</div>`
+                 :`<div class="chat-avatar-story-ring story-ring--sm">${avatar(name,'sm')}</div>`}
+        </div>
+        <div class="story-feed-card__meta">
+          <div class="story-feed-card__name">${isOwn?'You':name}</div>
+          <div class="story-feed-card__time">${fdate(s.timestamp)}</div>
+        </div>
+        <div style="display:flex;gap:4px;align-items:center;">
+          ${ttsBtn}${deleteBtn}
+        </div>
       </div>
-      <div class="story-feed-card__meta">
-        <div class="story-feed-card__name">${isOwn?'You':name}</div>
-        <div class="story-feed-card__time">${fdate(s.timestamp)}</div>
+      ${title?`<div class="story-feed-card__title">${title}</div>`:''}
+      ${preview?`<div class="story-feed-card__preview">${preview}</div>`:''}
+      <div class="story-feed-card__footer">
+        <button class="story-replies-btn" onclick="toggleStoryComments('${s.id}')">
+          <i data-lucide="message-circle" style="width:18px;height:18px;"></i>
+          <span>${replyCount>0?`${replyCount} repl${replyCount===1?'y':'ies'}`:'Reply'}</span>
+        </button>
       </div>
-      <div style="display:flex;gap:4px;align-items:center;">
-        ${ttsBtn}${deleteBtn}
-      </div>
-    </div>
-    <div class="story-feed-card__text">${s.text}</div>
-    <div class="story-feed-card__footer">
-      <button class="story-replies-btn" onclick="toggleStoryComments('${s.id}')">
-        <i data-lucide="message-circle" style="width:18px;height:18px;"></i>
-        <span>${replyCount>0?`${replyCount} repl${replyCount===1?'y':'ies'}`:'Reply'}</span>
-      </button>
     </div>
     <div class="story-comments" id="comments-${s.id}" style="display:none;"></div>
   `;
@@ -1192,7 +1195,7 @@ function speakStoryCard(btn,storyId){
 
 function deleteMyStory(storyId){
   set({stories:S.stories.filter(s=>s.id!==storyId)});
-  renderStories('mystories');
+  renderStories();
   toast('Story deleted');
 }
 function renderStoryView(storyId){
@@ -1206,13 +1209,16 @@ function showStoryCompose(){
   const bk=sheet(`<div class="bottom-sheet__handle"></div>
     <div class="bottom-sheet__title">Share a Story</div>
     <div class="compose-chips" id="sc-chips"></div>
-    <textarea class="compose-textarea" id="sc-text" placeholder="What would you like to share? Speak or type..." rows="5" style="font-size:16px;line-height:1.6;"></textarea>
+    <textarea class="compose-textarea" id="sc-text" placeholder="What would you like to share? Speak or type..." rows="4" style="font-size:16px;line-height:1.6;"></textarea>
     <div style="display:flex;gap:10px;margin-top:8px;">
       <button class="compose-mic-btn" id="sc-mic" title="Speak your story">${IC.mic}</button>
       <button class="story-ai-btn" id="sc-ai" title="Polish with AI" style="display:none;">
         <i data-lucide="sparkles" style="width:18px;height:18px;"></i> Polish
       </button>
       <button class="compose-post-btn" id="sc-post" disabled style="flex:1;">Post Story</button>
+    </div>
+    <div id="sc-title-row" style="display:none;margin-top:10px;">
+      <input id="sc-title" class="compose-title-input" placeholder="Story title (tap to edit)" style="width:100%;box-sizing:border-box;" />
     </div>
     <div style="font-size:12px;color:#8696a0;margin-top:8px;text-align:center;">Stories visible to community members · Expire after 7 days · ${3-myCount} slot${3-myCount===1?'':'s'} remaining</div>
   `);
@@ -1245,17 +1251,23 @@ function showStoryCompose(){
     const raw=$('sc-text').value.trim();if(!raw)return;
     $('sc-ai').disabled=true;$('sc-ai').innerHTML='<i data-lucide="loader-2" style="width:18px;height:18px;"></i> Polishing...';
     lucide.createIcons();
-    const polished=await claude('meenakshiamma',[],`You are a gentle writing assistant for elderly users. Take this rough draft and make it warm, clear and readable — keeping the person's own voice and all the personal details. Keep it under 150 words. Raw text: "${raw}"`);
+    const [polished,titleResp]=await Promise.all([
+      claude('meenakshiamma',[],`You are a gentle writing assistant for elderly users. Take this rough draft and make it warm, clear and readable — keeping the person's own voice and all the personal details. Keep it under 150 words. Raw text: "${raw}"`),
+      claude('meenakshiamma',[],`Generate a short, compelling story title (max 8 words) for this text. Return ONLY the title, no quotes, no explanation. Text: "${raw.slice(0,200)}"`)
+    ]);
     $('sc-text').value=polished;
+    $('sc-title-row').style.display='block';
+    $('sc-title').value=titleResp.trim().replace(/^["']|["']$/g,'');
     $('sc-ai').disabled=false;$('sc-ai').innerHTML='<i data-lucide="sparkles" style="width:18px;height:18px;"></i> Polish';
     lucide.createIcons();
   };
 
   $('sc-post').onclick=()=>{
     const t=$('sc-text').value.trim();if(!t)return;
-    const s=mkStory('user','You',t);
+    const title=$('sc-title')?.value?.trim()||'';
+    const s=mkStory('user','You',t,title,'');
     set({stories:[s,...S.stories]});
-    closeSheet(bk);toast('Story shared! ✨');renderStories('mystories');
+    closeSheet(bk);toast('Story shared! ✨');renderStories();
     setTimeout(()=>triggerStoryReactions(s),6000+Math.random()*4000);
   };
 }
