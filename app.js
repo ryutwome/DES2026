@@ -3,6 +3,18 @@
 const STT_LANGUAGE = 'en-IN';
 
 /* ── PERSONAS ── */
+/* Unsplash source images per persona — 800x1400 portrait */
+const PERSONA_STATUS_IMAGES = {
+  meenakshiamma: 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=800&h=1400&fit=crop', // south indian food
+  rameshbhai:    'https://images.unsplash.com/photo-1531415074968-036ba1b575da?w=800&h=1400&fit=crop', // cricket
+  krishnaswamy:  'https://images.unsplash.com/photo-1529156069898-49953e39b3ac?w=800&h=1400&fit=crop', // chess/thinking
+  sunitadevi:    'https://images.unsplash.com/photo-1512621776951-a57141f2eefd?w=800&h=1400&fit=crop', // healthy food
+  harbhajan:     'https://images.unsplash.com/photo-1490750967868-88df5691cc14?w=800&h=1400&fit=crop', // roses garden
+  lalitha:       'https://images.unsplash.com/photo-1519834785169-98be25ec3f84?w=800&h=1400&fit=crop', // yoga
+  padmavathi:    'https://images.unsplash.com/photo-1571165551017-0c50acb0b9ee?w=800&h=1400&fit=crop', // classical dance
+  abdulrehman:   'https://images.unsplash.com/photo-1507842217343-583bb7270b66?w=800&h=1400&fit=crop', // books urdu
+};
+
 const PERSONAS = {
   meenakshiamma: {
     id:'meenakshiamma', name:'Meenakshiamma', age:68, city:'Chennai',
@@ -823,9 +835,9 @@ function renderChats(){
     const ai=S.researcherMode?'<span class="ai-badge">AI</span>':'';
     const timeClass=unread?'chat-list-item__time chat-list-item__time--unread':'chat-list-item__time';
     const div=document.createElement('div');div.className='chat-list-item';
-    const hasStory=(S.stories||[]).some(s=>s.authorId===id&&(Date.now()-s.timestamp)<7*86400000);
-    const avatarEl=hasStory
-      ?`<div class="chat-avatar-story-ring" onclick="event.stopPropagation();navigate('#/stories')">${avatar(p.name,'md')}</div>`
+    const hasStatus=PERSONA_STATUS_IMAGES[id]!==undefined;
+    const avatarEl=hasStatus
+      ?`<div class="chat-avatar-story-ring" onclick="event.stopPropagation();openStatus('${id}')">${avatar(p.name,'md')}</div>`
       :`<div>${avatar(p.name,'md')}</div>`;
     div.innerHTML=`<div class="chat-list-item__avatar">${avatarEl}</div><div class="chat-list-item__body"><div class="chat-list-item__top"><div class="chat-list-item__name">${p.name}${ai}</div><div class="${timeClass}">${fdate(time)}</div></div><div class="chat-list-item__bottom"><div class="chat-list-item__preview" style="display:flex;align-items:center;">${tickHtml}<span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${previewText}</span></div>${unread?`<div class="chat-list-item__badge">${unread}</div>`:''}</div></div>`;
     div.onclick=()=>{const u={...S.unreadChats};delete u[id];set({unreadChats:u});navigate('#/chat/'+id);};
@@ -834,6 +846,79 @@ function renderChats(){
 }
 
 function filterChips(btn,type){document.querySelectorAll('.filter-chip').forEach(b=>b.classList.remove('active'));btn.classList.add('active');}
+
+/* ── STATUS VIEWER ── */
+function openStatus(personaId){
+  const p=PERSONAS[personaId];if(!p)return;
+  const img=PERSONA_STATUS_IMAGES[personaId];
+  const caption=SEED_STORIES.find(s=>s.personaId===personaId)?.text||'';
+  const shortCaption=caption.slice(0,120)+(caption.length>120?'...':'');
+
+  const overlay=document.createElement('div');
+  overlay.className='status-viewer';
+  overlay.innerHTML=`
+    <div class="status-viewer__progress">
+      <div class="status-viewer__bar"><div class="status-viewer__bar-fill" id="sv-bar"></div></div>
+    </div>
+    <div class="status-viewer__header">
+      <button class="status-viewer__back" onclick="this.closest('.status-viewer').remove()">
+        <i data-lucide="arrow-left" style="width:24px;height:24px;color:#fff;"></i>
+      </button>
+      <div class="status-viewer__avatar">${avatar(p.name,'sm')}</div>
+      <div class="status-viewer__info">
+        <div class="status-viewer__name">${p.name}</div>
+        <div class="status-viewer__time">Today</div>
+      </div>
+      <button class="status-viewer__more">
+        <i data-lucide="more-vertical" style="width:22px;height:22px;color:#fff;"></i>
+      </button>
+    </div>
+    <img class="status-viewer__image" src="${img}" alt="${p.name}'s status" />
+    ${shortCaption?`<div class="status-viewer__caption">${shortCaption}</div>`:''}
+    <div class="status-viewer__bottom">
+      <div class="status-viewer__reply-wrap">
+        <input class="status-viewer__reply-input" id="sv-reply" placeholder="Reply..." />
+      </div>
+      <button class="status-viewer__heart" onclick="statusReact('${personaId}','${overlay.id}')">
+        <i data-lucide="heart" style="width:24px;height:24px;color:#fff;"></i>
+      </button>
+    </div>
+  `;
+  overlay.id='sv-'+personaId;
+  document.getElementById('app').appendChild(overlay);
+  lucide.createIcons();
+
+  // Auto-progress bar — 5 seconds
+  const bar=overlay.querySelector('#sv-bar');
+  let start=null;
+  function tick(ts){
+    if(!start) start=ts;
+    const pct=Math.min(100,(ts-start)/5000*100);
+    bar.style.width=pct+'%';
+    if(pct<100&&overlay.isConnected) requestAnimationFrame(tick);
+    else if(overlay.isConnected) overlay.remove();
+  }
+  requestAnimationFrame(tick);
+
+  // Reply send
+  overlay.querySelector('#sv-reply').addEventListener('keydown',async e=>{
+    if(e.key!=='Enter') return;
+    const text=e.target.value.trim();if(!text)return;
+    e.target.value='';
+    toast('Replied to '+p.name.split(' ')[0]);
+    overlay.remove();
+    // Add as chat message
+    const msg=mkMsg('user','text',text);
+    addMsg('chats',personaId,msg);
+    navigate('#/chat/'+personaId);
+  });
+}
+
+function statusReact(personaId){
+  const p=PERSONAS[personaId];
+  toast('❤️ Reacted to '+p.name.split(' ')[0]+"'s status");
+  document.getElementById('sv-'+personaId)?.remove();
+}
 
 /* ── CHAT SCREEN ── */
 function renderChat(personaId){
