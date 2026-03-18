@@ -1049,45 +1049,51 @@ function buildStoryCard(s, isOwn){
   const p=PERSONAS[s.authorId];
   const name=s.authorName||(p?p.name:(isOwn?'You':'Unknown'));
   const replyCount=(s.replies||[]).length;
+  const likeCount=(s.likes||0);
+  const liked=!!(s.likedByUser);
   const card=document.createElement('div');
   card.className='story-feed-card';
   card.id='scard-'+s.id;
 
-  const title=s.title||'';
-  const preview=s.text?s.text.replace(/[\u{1F300}-\u{1FFFF}]/gu,'').trim().slice(0,120)+(s.text.length>120?'…':''):'';
+  const title=s.title||s.text.slice(0,60);
+  const preview=s.text?s.text.replace(/[\u{1F000}-\u{1FFFF}]|[\u2600-\u27BF]/gu,'').trim().slice(0,100)+(s.text.length>100?'…':''):'';
   const hasImage=!!s.imageUrl;
 
-  const ttsBtn=canTTS()?`<button class="story-tts-btn" onclick="speakStoryCard(this,'${s.id}')" aria-label="Read aloud">
-    <i data-lucide="volume-2" style="width:20px;height:20px;"></i>
-  </button>`:'';
-
-  const deleteBtn=isOwn?`<button class="story-delete-btn" onclick="deleteMyStory('${s.id}')" aria-label="Delete story">
-    <i data-lucide="trash-2" style="width:18px;height:18px;"></i>
+  const deleteBtn=isOwn?`<button class="story-delete-btn" onclick="deleteMyStory('${s.id}')" aria-label="Delete story" style="margin-left:auto;">
+    <i data-lucide="trash-2" style="width:16px;height:16px;"></i>
   </button>`:'';
 
   card.innerHTML=`
-    ${hasImage?`<div class="story-feed-card__img-wrap"><img class="story-feed-card__img" src="${s.imageUrl}" alt="" loading="lazy"/></div>`:''}
     <div class="story-feed-card__body">
-      <div class="story-feed-card__header">
+      <div class="story-feed-card__byline">
         <div class="story-feed-card__avatar-wrap">
-          ${isOwn?`<div class="story-feed-card__avatar-mine">${avatar('You','sm')}</div>`
-                 :`<div class="chat-avatar-story-ring story-ring--sm">${avatar(name,'sm')}</div>`}
+          ${isOwn?`<div class="story-feed-card__avatar-mine">${avatar('You','xs')}</div>`
+                 :`<div class="chat-avatar-story-ring story-ring--xs">${avatar(name,'xs')}</div>`}
         </div>
-        <div class="story-feed-card__meta">
-          <div class="story-feed-card__name">${isOwn?'You':name}</div>
-          <div class="story-feed-card__time">${fdate(s.timestamp)}</div>
-        </div>
-        <div style="display:flex;gap:4px;align-items:center;">
-          ${ttsBtn}${deleteBtn}
-        </div>
+        <span class="story-feed-card__name">${isOwn?'You':name}</span>
+        <span class="story-feed-card__dot">·</span>
+        <span class="story-feed-card__time">${fdate(s.timestamp)}</span>
+        ${deleteBtn}
       </div>
-      ${title?`<div class="story-feed-card__title">${title}</div>`:''}
-      ${preview?`<div class="story-feed-card__preview">${preview}</div>`:''}
+      <div class="story-feed-card__content-row">
+        <div class="story-feed-card__text-col">
+          <div class="story-feed-card__title">${title}</div>
+          <div class="story-feed-card__preview">${preview}</div>
+        </div>
+        ${hasImage?`<div class="story-feed-card__thumb-wrap"><img class="story-feed-card__thumb" src="${s.imageUrl}" alt="" loading="lazy"/></div>`:''}
+      </div>
       <div class="story-feed-card__footer">
+        <button class="story-like-btn${liked?' liked':''}" id="slike-${s.id}" onclick="likeStory('${s.id}')">
+          <i data-lucide="${liked?'heart':'heart'}" style="width:18px;height:18px;${liked?'fill:#E53935;color:#E53935;':''}"></i>
+          <span id="slike-count-${s.id}">${likeCount>0?likeCount:''}</span>
+        </button>
         <button class="story-replies-btn" onclick="toggleStoryComments('${s.id}')">
           <i data-lucide="message-circle" style="width:18px;height:18px;"></i>
-          <span>${replyCount>0?`${replyCount} repl${replyCount===1?'y':'ies'}`:'Reply'}</span>
+          <span>${replyCount>0?`${replyCount}`:'Reply'}</span>
         </button>
+        ${canTTS()?`<button class="story-tts-btn" onclick="speakStoryCard(this,'${s.id}')" aria-label="Read aloud" style="margin-left:auto;">
+          <i data-lucide="volume-2" style="width:18px;height:18px;"></i>
+        </button>`:''}
       </div>
     </div>
     <div class="story-comments" id="comments-${s.id}" style="display:none;"></div>
@@ -1197,6 +1203,24 @@ function deleteMyStory(storyId){
   set({stories:S.stories.filter(s=>s.id!==storyId)});
   renderStories();
   toast('Story deleted');
+}
+function likeStory(storyId){
+  const updated=S.stories.map(s=>{
+    if(s.id!==storyId) return s;
+    const liked=!s.likedByUser;
+    return {...s,likedByUser:liked,likes:(s.likes||0)+(liked?1:-1)};
+  });
+  set({stories:updated});
+  const s=updated.find(x=>x.id===storyId);
+  if(!s) return;
+  const btn=$('slike-'+storyId);
+  const countEl=$('slike-count-'+storyId);
+  if(btn){
+    const icon=btn.querySelector('i');
+    if(s.likedByUser){btn.classList.add('liked');if(icon){icon.style.fill='#E53935';icon.style.color='#E53935';}}
+    else{btn.classList.remove('liked');if(icon){icon.style.fill='none';icon.style.color='';}}
+  }
+  if(countEl) countEl.textContent=s.likes>0?s.likes:'';
 }
 function renderStoryView(storyId){
   // Stories now have inline comments — redirect to stories tab
