@@ -206,6 +206,17 @@ body {
 .search-bar input::placeholder { color: #8696a0; }
 .search-bar__icon { color: #8696a0; flex-shrink: 0; }
 
+/* Chats screen search bar (non-interactive, pill style) */
+.chats-search-bar {
+  background: #f0f2f5;
+  margin: 8px 12px 4px;
+  border-radius: 10px;
+  display: flex; align-items: center;
+  padding: 0 14px; gap: 10px;
+  height: 40px; flex-shrink: 0;
+  cursor: default;
+}
+
 /* ── CHAT SCREEN ── */
 .chat-screen { background: #efeae2; }
 
@@ -617,9 +628,11 @@ body {
   height: 3px; background: #00A884;
 }
 
-/* ── STORIES / STATUS (Updates tab) ── */
+/* ── WHITE HEADER VARIANT ── */
 .header--white { background: #fff !important; }
 .header--white .header__title h1 { color: #111b21; }
+.header--white .header__action-btn { color: #54656f; }
+.header--white .header__back { color: #111b21; }
 
 .stories-section-label {
   padding: 14px 16px 6px;

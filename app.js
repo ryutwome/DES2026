@@ -381,6 +381,7 @@ const IC = {
   controller:`<svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M15 7.5V2H9v5.5l3 3 3-3zM7.5 9H2v6h5.5l3-3-3-3zM9 16.5V22h6v-5.5l-3-3-3 3zM16.5 9l-3 3 3 3H22V9h-5.5z"/></svg>`,
   phone:`<svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z"/></svg>`,
   video:`<svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M17 10.5V7c0-.55-.45-1-1-1H4c-.55 0-1 .45-1 1v10c0 .55.45 1 1 1h12c.55 0 1-.45 1-1v-3.5l4 4v-11l-4 4z"/></svg>`,
+  qr:`<svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M3 11h8V3H3v8zm2-6h4v4H5V5zM3 21h8v-8H3v8zm2-6h4v4H5v-4zM13 3v8h8V3h-8zm6 6h-4V5h4v4zM13 13h2v2h-2zm2 2h2v2h-2zm2-2h2v2h-2zm-2 2h-2v2h2zm2 2h-2v2h2v-2zm2-4h-2v2h2zm-2 4h2v2h-2zm2 2v-2h2v2h-2z"/></svg>`,
 };
 
 /* ── VOICE ── */
@@ -782,15 +783,18 @@ function renderChats(){
   mount(`
     ${desktopBanner()}
     ${resBar()}
-    <div class="header">
-      <div class="header__title" onclick="headerTap()"><h1>WhatsApp</h1></div>
+    <div class="header header--white">
+      <div class="header__title" onclick="headerTap()"><h1 style="color:#00A884;">WhatsApp</h1></div>
       <div class="header__actions">
-        <button class="header__action-btn" aria-label="Camera">${IC.camera}</button>
-        <button class="header__action-btn" aria-label="Search">${IC.search}</button>
-        <button class="header__action-btn" aria-label="More options">${IC.more}</button>
+        <button class="header__action-btn" style="color:#54656f;" aria-label="QR code" onclick="toast('QR code coming soon')">${IC.qr}</button>
+        <button class="header__action-btn" style="color:#54656f;" aria-label="More options">${IC.more}</button>
       </div>
     </div>
     <div class="screen" style="background:#fff;position:relative;">
+      <div class="chats-search-bar">
+        <i data-lucide="search" style="width:18px;height:18px;color:#8696a0;flex-shrink:0;"></i>
+        <span style="font-size:15px;color:#8696a0;">Ask Meta AI or Search</span>
+      </div>
       <div class="filter-chips">
         <button class="filter-chip active" onclick="filterChats(this,'all')">All</button>
         <button class="filter-chip" onclick="filterChats(this,'unread')">Unread</button>
@@ -798,8 +802,8 @@ function renderChats(){
         <button class="filter-chip" onclick="filterChats(this,'groups')">Groups</button>
       </div>
       <div class="screen__scroll" id="chat-list"></div>
-      <button class="fab" onclick="toast('New chat coming soon')" aria-label="New chat" style="bottom:72px;">
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="white"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-2 12H6v-2h12v2zm0-3H6V9h12v2zm0-3H6V6h12v2z"/></svg>
+      <button class="fab" onclick="toast('New chat coming soon')" aria-label="New chat">
+        <i data-lucide="square-pen" style="width:22px;height:22px;color:#fff;"></i>
       </button>
     </div>
     ${bottomNav('chats')}
