@@ -272,6 +272,7 @@ const DEFAULT_PROXY = 'https://still-sunset-6036.rhuturajmirashi.workers.dev';
 let S = {
   apiKey:'HARDCODED', proxyUrl:DEFAULT_PROXY,
   onboardingDone:false, interests:[],
+  userName:'', fontSize:'normal', lastMorningGreeting:'',
   joinedCommunities:[],
   chats:{}, communities:{}, games:{}, stories:[],
   voiceRooms:{},
@@ -291,7 +292,7 @@ function set(patch) { Object.assign(S, patch); saveS(); }
 function mkId() { return Date.now()+'_'+Math.random().toString(36).slice(2,6); }
 function mkGameId() { return 'game_'+mkId(); }
 function mkMsg(from,type,text) { return {id:mkId(),from,type,text,timestamp:Date.now(),isAI:from!=='user'}; }
-function mkStory(authorId,authorName,text,title,imageUrl) { return {id:mkId(),authorId,authorName,text,title:title||'',imageUrl:imageUrl||'',timestamp:Date.now(),replies:[]}; }
+function mkStory(authorId,authorName,text,title,imageUrl) { const name=authorId==='user'?(S.userName||authorName||'You'):authorName; return {id:mkId(),authorId,authorName:name,text,title:title||'',imageUrl:imageUrl||'',timestamp:Date.now(),replies:[]}; }
 
 function addMsg(ctx,ctxId,msg) {
   if(!S[ctx][ctxId]) S[ctx][ctxId]=[];
@@ -439,8 +440,9 @@ let _fallbackIdx={};
 async function claude(personaId, messages, extraNote=''){
   const p=PERSONAS[personaId]; if(!p) return fallback(personaId);
   const proxyUrl = S.proxyUrl || DEFAULT_PROXY;
+  const userRef=S.userName?`The person you are chatting with is named ${S.userName}. Address them by name naturally sometimes.`:'';
   const sys=`${p.system}
-
+${userRef}
 PERSONALITY & STYLE RULES — follow exactly:
 - You are a real retired Indian elder chatting on WhatsApp. Never break character. Never reveal you are AI.
 - Type in SHORT BURSTS separated by "..." like real WhatsApp elders (e.g. "Reached home... very tired... will talk later...").
@@ -513,6 +515,7 @@ function render(){
   const hash=window.location.hash||'#/';
   const{screen,params}=parseRoute(hash);
   if(!S.onboardingDone){set({onboardingDone:true,interests:['cooking','cricket','music','gardening','literature','spirituality']});seedData(S.interests);}
+  if(!S.userName){renderNamePrompt();return;}
   switch(screen){
     case'':renderChats();break;
     case'onboarding':renderChats();break;
@@ -791,6 +794,35 @@ function renderOnboarding(){
   $('ob-cta').onclick=()=>{if(!sel.size)return;set({interests:[...sel],onboardingDone:true});seedData([...sel]);navigate('#/chats');};
 }
 
+/* ── NAME PROMPT ── */
+function renderNamePrompt(){
+  mount(`
+    <div class="name-prompt-screen">
+      <div class="name-prompt-screen__logo">
+        <svg width="72" height="72" viewBox="0 0 72 72"><circle cx="36" cy="36" r="36" fill="#00A884"/><path d="M36 16c-11 0-20 9-20 20 0 3.5.93 6.85 2.55 9.74L16 56l10.52-2.47A19.9 19.9 0 0 0 36 56c11 0 20-9 20-20S47 16 36 16zm0 3.6c9 0 16.4 7.3 16.4 16.4S45 52.4 36 52.4c-2.9 0-5.63-.76-7.98-2.1l-.57-.33-5.93 1.4 1.43-5.78-.36-.6A16.3 16.3 0 0 1 19.6 36C19.6 27 27 19.6 36 19.6zm-5 8.6c-.35 0-.92.14-1.4.66-.48.53-1.83 1.79-1.83 4.36s1.88 5.06 2.14 5.41c.26.35 3.65 5.8 8.97 7.92 1.25.52 2.23.82 2.99 1.05 1.26.38 2.41.33 3.32.2 1.02-.15 3.12-1.28 3.57-2.52.44-1.23.44-2.29.31-2.51-.14-.23-.49-.36-1.03-.62-.53-.26-3.12-1.54-3.6-1.72-.48-.18-.83-.26-1.19.26-.35.54-1.36 1.72-1.67 2.07-.31.34-.62.4-1.15.14-.54-.27-2.27-.84-4.32-2.67-1.6-1.43-2.68-3.19-2.99-3.73-.31-.54-.03-.82.23-1.09.24-.24.54-.62.8-.93.26-.31.35-.54.54-.89.17-.35.09-.66-.04-.93-.14-.26-1.19-2.87-1.63-3.93-.43-1.04-.87-.9-1.19-.93z" fill="white"/></svg>
+      </div>
+      <div class="name-prompt-screen__title">Welcome to DES2026</div>
+      <div class="name-prompt-screen__subtitle">What should we call you?</div>
+      <div class="name-prompt-screen__field-wrap">
+        <input class="name-prompt-screen__input" id="np-name" type="text" placeholder="Your name" autocomplete="name" autocapitalize="words" maxlength="40" />
+      </div>
+      <button class="name-prompt-screen__btn" id="np-go" disabled>Let's go →</button>
+      <div class="name-prompt-screen__note">Your name is only stored on this device.</div>
+    </div>
+  `);
+  const inp=$('np-name'), btn=$('np-go');
+  inp.oninput=()=>{btn.disabled=!inp.value.trim();};
+  inp.addEventListener('keydown',e=>{if(e.key==='Enter'&&inp.value.trim())saveUserName();});
+  btn.onclick=saveUserName;
+  setTimeout(()=>inp.focus(),300);
+}
+function saveUserName(){
+  const name=$('np-name')?.value?.trim();
+  if(!name)return;
+  set({userName:name});
+  navigate('#/chats');
+}
+
 /* ── CHATS LIST ── */
 function renderChats(){
   mount(`
@@ -800,7 +832,7 @@ function renderChats(){
       <div class="header__title" onclick="headerTap()"><h1 style="color:#00A884;">WhatsApp</h1></div>
       <div class="header__actions">
         <button class="header__action-btn" style="color:#54656f;" aria-label="QR code" onclick="toast('QR code coming soon')">${IC.qr}</button>
-        <button class="header__action-btn" style="color:#54656f;" aria-label="More options">${IC.more}</button>
+        <button class="header__action-btn" style="color:#54656f;" aria-label="Settings" onclick="showSettings()">${IC.more}</button>
       </div>
     </div>
     <div class="screen" style="background:#fff;position:relative;">
@@ -809,10 +841,10 @@ function renderChats(){
         <span style="font-size:15px;color:#8696a0;">Ask Meta AI or Search</span>
       </div>
       <div class="filter-chips">
-        <button class="filter-chip active" onclick="filterChats(this,'all')">All</button>
-        <button class="filter-chip" onclick="filterChats(this,'unread')">Unread</button>
-        <button class="filter-chip" onclick="filterChats(this,'favourites')">Favourites</button>
-        <button class="filter-chip" onclick="filterChats(this,'groups')">Groups</button>
+        <button class="filter-chip active" onclick="filterChips(this,'all')">All</button>
+        <button class="filter-chip" onclick="filterChips(this,'unread')">Unread</button>
+        <button class="filter-chip" onclick="filterChips(this,'favourites')">Favourites</button>
+        <button class="filter-chip" onclick="filterChips(this,'groups')">Groups</button>
       </div>
       <div class="screen__scroll" id="chat-list"></div>
       <button class="fab" onclick="toast('New chat coming soon')" aria-label="New chat">
@@ -962,6 +994,8 @@ function renderChat(personaId){
       addMsg('chats',personaId,aiMsg);
       msgs.insertAdjacentHTML('beforeend',bubble(aiMsg));
       scrollBot(msgs);
+      // If user has navigated away, mark as unread
+      if(!document.getElementById('msgs')){const u={...S.unreadChats};u[personaId]=(u[personaId]||0)+1;set({unreadChats:u});}
     }
   });
 }
@@ -1063,14 +1097,15 @@ function buildStoryCard(s, isOwn){
     <i data-lucide="trash-2" style="width:16px;height:16px;"></i>
   </button>`:'';
 
+  const displayName=isOwn?(S.userName||'You'):name;
   card.innerHTML=`
     <div class="story-feed-card__body" onclick="navigate('#/story?storyId=${s.id}')" style="cursor:pointer;">
       <div class="story-feed-card__byline">
         <div class="story-feed-card__avatar-wrap">
-          ${isOwn?`<div class="story-feed-card__avatar-mine">${avatar('You','xs')}</div>`
+          ${isOwn?`<div class="story-feed-card__avatar-mine">${avatar(displayName,'xs')}</div>`
                  :`<div class="chat-avatar-story-ring story-ring--xs">${avatar(name,'xs')}</div>`}
         </div>
-        <span class="story-feed-card__name">${isOwn?'You':name}</span>
+        <span class="story-feed-card__name">${displayName}</span>
         <span class="story-feed-card__dot">·</span>
         <span class="story-feed-card__time">${fdate(s.timestamp)}</span>
         ${deleteBtn}
@@ -1154,11 +1189,12 @@ async function sendStoryReply(storyId, mode){
     // Remove "be first to reply" if present
     const empty=repliesEl.querySelector('.story-comments__empty');
     if(empty) empty.remove();
+    const myName=S.userName||'You';
     repliesEl.insertAdjacentHTML('beforeend',`
       <div class="story-comment" style="padding:12px 16px;">
-        <div class="story-comment__avatar">${avatar('You','sm')}</div>
+        <div class="story-comment__avatar">${avatar(myName,'sm')}</div>
         <div class="story-comment__body">
-          <div class="story-comment__name">You</div>
+          <div class="story-comment__name">${myName}</div>
           <div class="story-comment__text">${text}</div>
         </div>
       </div>`);
@@ -1253,7 +1289,7 @@ function renderStoryView(storyId){
                      :`<div class="chat-avatar-story-ring">${avatar(name,'sm')}</div>`}
             </div>
             <div>
-              <div style="font-size:15px;font-weight:700;color:#111b21;">${isOwn?'You':name}</div>
+              <div style="font-size:15px;font-weight:700;color:#111b21;">${isOwn?(S.userName||'You'):name}</div>
               <div style="font-size:12px;color:#8696a0;">${fdate(s.timestamp)}</div>
             </div>
           </div>
@@ -1379,7 +1415,14 @@ function showStoryCompose(){
 
   $('sc-post').onclick=()=>{
     const t=$('sc-text').value.trim();if(!t)return;
-    const title=$('sc-title')?.value?.trim()||'';
+    // Use typed title, or derive one from the text
+    let title=$('sc-title')?.value?.trim()||'';
+    if(!title){
+      // Extract first sentence or first 60 chars, strip emoji
+      const clean=t.replace(/[\u{1F000}-\u{1FFFF}]|[\u2600-\u27BF]|\uD83C[\uDC00-\uDFFF]|\uD83D[\uDC00-\uDFFF]/gu,'').trim();
+      const firstSentence=clean.split(/[.!?]/)[0].trim();
+      title=(firstSentence.length>8?firstSentence:clean).slice(0,72);
+    }
     const s=mkStory('user','You',t,title,'');
     set({stories:[s,...S.stories]});
     closeSheet(bk);toast('Story shared! ✨');renderStories();
@@ -1395,6 +1438,75 @@ async function triggerStoryReactions(story){
     const upd=S.stories.map(s=>s.id===story.id?{...s,replies:[...(s.replies||[]),m]}:s);
     set({stories:upd});
   }
+}
+
+/* ── SETTINGS ── */
+function applyFontSize(){
+  const app=document.getElementById('app');
+  if(!app)return;
+  app.classList.remove('fs-large','fs-xlarge');
+  if(S.fontSize==='large') app.classList.add('fs-large');
+  else if(S.fontSize==='xlarge') app.classList.add('fs-xlarge');
+}
+
+function showSettings(){
+  const sizes=[
+    {id:'normal',label:'A',desc:'Normal'},
+    {id:'large',label:'A',desc:'Large',big:true},
+    {id:'xlarge',label:'A',desc:'Extra Large',bigger:true},
+  ];
+  const bk=sheet(`
+    <div class="bottom-sheet__handle"></div>
+    <div class="bottom-sheet__title">Settings</div>
+    <div class="settings-section-label">Text Size</div>
+    <div class="settings-font-row" id="fs-row">
+      ${sizes.map(s=>`
+        <button class="settings-font-btn${S.fontSize===s.id?' active':''}" onclick="setFontSize('${s.id}')" id="fs-${s.id}">
+          <span style="font-size:${s.bigger?'22px':s.big?'18px':'15px'};font-weight:700;line-height:1;">${s.label}</span>
+          <span style="font-size:11px;color:#667781;margin-top:3px;">${s.desc}</span>
+        </button>`).join('')}
+    </div>
+    <div class="settings-section-label" style="margin-top:16px;">Account</div>
+    <div class="settings-row" onclick="showChangeNameSheet()">
+      <i data-lucide="user" style="width:20px;height:20px;color:#54656f;flex-shrink:0;"></i>
+      <div class="settings-row__body">
+        <div class="settings-row__label">Your name</div>
+        <div class="settings-row__value">${S.userName||'Not set'}</div>
+      </div>
+      <i data-lucide="chevron-right" style="width:18px;height:18px;color:#b0bec5;"></i>
+    </div>
+    <div class="settings-row" onclick="showResearcherDialog();this.closest('.bottom-sheet-backdrop').remove()">
+      <i data-lucide="eye" style="width:20px;height:20px;color:#54656f;flex-shrink:0;"></i>
+      <div class="settings-row__body">
+        <div class="settings-row__label">Researcher Mode</div>
+        <div class="settings-row__value">${S.researcherMode?'On':'Off'}</div>
+      </div>
+      <i data-lucide="chevron-right" style="width:18px;height:18px;color:#b0bec5;"></i>
+    </div>
+    <div style="height:16px;"></div>
+  `);
+  lucide.createIcons();
+}
+
+function setFontSize(size){
+  set({fontSize:size});
+  applyFontSize();
+  document.querySelectorAll('.settings-font-btn').forEach(b=>b.classList.remove('active'));
+  const btn=document.getElementById('fs-'+size);
+  if(btn)btn.classList.add('active');
+}
+
+function showChangeNameSheet(){
+  const bk=sheet(`
+    <div class="bottom-sheet__handle"></div>
+    <div class="bottom-sheet__title">Change Your Name</div>
+    <input class="name-prompt-screen__input" id="cn-input" type="text" value="${S.userName||''}" placeholder="Your name" autocapitalize="words" maxlength="40" style="margin:8px 0 16px;font-size:16px;text-align:left;border-radius:10px;" />
+    <button class="onboarding-screen__cta" id="cn-save" style="margin-top:0;">Save</button>
+  `);
+  const inp=$('cn-input');
+  $('cn-save').onclick=()=>{const v=inp.value.trim();if(!v)return;set({userName:v});closeSheet(bk);toast('Name updated');render();};
+  inp.addEventListener('keydown',e=>{if(e.key==='Enter'){const v=inp.value.trim();if(v){set({userName:v});closeSheet(bk);toast('Name updated');render();}}});
+  setTimeout(()=>inp.focus(),200);
 }
 
 /* ── SHEET HELPERS ── */
@@ -1723,8 +1835,8 @@ function gameCard(g){
   return div;
 }
 const gameTypes={
-  antakshari:{emoji:'🎵',name:'Antakshari',desc:'Song chain — last letter starts next song'},
-  'trivia-bollywood':{emoji:'🎬',name:'Bollywood Trivia',desc:'Questions about Hindi films'},
+  antakshari:{id:'antakshari',emoji:'🎵',name:'Antakshari',desc:'Song chain — last letter starts next song'},
+  'trivia-bollywood':{id:'trivia-bollywood',emoji:'🎬',name:'Bollywood Trivia',desc:'Questions about Hindi films'},
 };
 function showGameSheet(fromPersonaId){
   let selType=null,selPersona=fromPersonaId;
@@ -1868,8 +1980,84 @@ function generateIcons(){
   });
 }
 
+/* ── MORNING CHECK-IN ── */
+const MORNING_GREETINGS = {
+  meenakshiamma: [
+    "Good morning {name} amma! 🙏 Filter coffee ready... Society lift is working today, Bhagawan ki krupa! Have you had your tiffin? 🌸",
+    "Subha vanakkam {name}! 🌹 Made sambar this morning... whole building can smell it I think! Aiyyo, hope you slept well, no? 🙏",
+    "Good morning {name}! 🌸 Today is such a nice cool morning... reminded me of Mylapore. Have your warm lemon water before anything else, seri? 🙏",
+  ],
+  rameshbhai: [
+    "Jai Shree Krishna {name} bhai! 🙏 Good morning! Done your morning walk? I went 5 rounds of the garden already... mast feeling! 🌹",
+    "Good morning {name}! 🌸 Kem cho? Markets opening in one hour... let us see what Sensex does today! Jai Shree Krishna 🙏",
+    "Sat Shri Akal {name} bhai! 🙏 Morning is the best time no... birds singing, fresh air... God is great! Have a blessed day 🌺",
+  ],
+  krishnaswamy: [
+    "Namaskar {name}. 🙏 Good morning. Had your breakfast? Beta, morning routine is very important — I have walked 3km already. Channagide? 🌸",
+    "Good morning {name}. A new day, new puzzle to solve! 🙏 As my father used to say — the early morning hour has gold in its mouth. Hope all is well.",
+    "Namaskar {name}! 🙏 Cool morning today... good for the health. I read the newspaper already — interesting times, gottu? Stay informed. 🌹",
+  ],
+  sunitadevi: [
+    "Good morning {name} ji! 🙏 Aaj subah bahut achhi hai... Bhagawan ka shukriya! Kya aapne warm water piya? Sab theek hai na ghar mein? 🌸",
+    "Jai Mata Di {name} ji! 🌹 Good morning! Maine aaj subah kheer banayi... mandir prasad ke liye. Aap bhi kuch meetha khao aaj, acha lagega 🙏",
+    "Good morning {name}! 🙏 Aaj Tulsi ka paani piya? Immunity ke liye bahut acha hai... nurse hoon main, mera yakeen karo! 🌿🌸",
+  ],
+  harbhajan: [
+    "Sat Sri Akal {name} ji! 🙏 Good morning! My roses are looking beautiful today... God's gift. Morning walk done, energy is first class! 🌹",
+    "Good morning {name} yarr! 🌸 Army mein seekha tha — early rising is the first discipline. You also up early? Wah, very good! Adjust karo, sab theek 🙏",
+    "Waheguru Waheguru {name} ji! 🙏 Such a peaceful morning... birds singing in the garden. Thank God for another beautiful day! 🌺",
+  ],
+  lalitha: [
+    "Good morning {name}! 🙏 Ho, Society meeting at 4pm today — water tanker issue again! Baryach problem. But first — had your tea? Chan na? 🌸",
+    "Arre good morning {name}! 🌹 Yoga done, feeling fresh! Society garden looks so nice in the morning light... cha pili ka? 🙏",
+    "Good morning {name}! Ho, aaj building mein power cut 10-11... generator chalega. Just FYI! How are you keeping? All well? 🙏🌸",
+  ],
+  padmavathi: [
+    "Good morning {name} garu! 🌺 Vanakam! Had my Carnatic practice at 6am... such a peaceful feeling. Bhagawan bless you today 🙏🌸",
+    "Good morning {name}! 🙏 Woke up with this thought — 'Every morning is a second chance.' So beautiful, no? Have a wonderful day 🌺",
+    "Subhaprabhatam {name}! 🌸 Cool breeze today... reminded me of Hyderabad mornings. Hope you have a lovely peaceful day 🙏🌹",
+  ],
+  abdulrehman: [
+    "Assalamu Alaikum {name} sahab! 🙏 Good morning! Subhanallah, what a beautiful morning God has given us. Chai piya? 🌹",
+    "Good morning {name} janab! 🌸 Read a beautiful Urdu couplet this morning — 'Subha ka ujala har raat ke baad aata hai...' Very true in life also, no? 🙏",
+    "Wah {name} sahab! 🌹 Good morning! Wrote a letter to my son in Dubai today — old habit! Nothing beats a handwritten note. Bahut achha din ho aapka 🙏🌸",
+  ],
+};
+
+function checkMorningGreeting(){
+  // Only trigger after the user has a name and chats are seeded
+  if(!S.userName||!S.onboardingDone)return;
+  const today=new Date().toDateString();
+  if(S.lastMorningGreeting===today)return; // already sent today
+  const hour=new Date().getHours();
+  if(hour<6||hour>11)return; // only 6am–11am window
+  // Pick a random persona that the user has chatted with, or any persona
+  const chatted=Object.keys(S.chats).filter(id=>PERSONAS[id]&&(S.chats[id]||[]).length>0);
+  const pool=chatted.length?chatted:Object.keys(PERSONAS);
+  const personaId=pool[Math.floor(Math.random()*pool.length)];
+  const p=PERSONAS[personaId];if(!p)return;
+  const greetings=MORNING_GREETINGS[personaId];if(!greetings)return;
+  const text=greetings[Math.floor(Math.random()*greetings.length)].replace(/\{name\}/g,S.userName.split(' ')[0]);
+  // Deliver after a short random delay (5–20 seconds after open)
+  const delayMs=5000+Math.random()*15000;
+  setTimeout(()=>{
+    // Don't deliver if user is already in that chat
+    if(window.location.hash.includes(personaId))return;
+    const msg=mkMsg(personaId,'text',text);
+    addMsg('chats',personaId,msg);
+    const u={...S.unreadChats};
+    u[personaId]=(u[personaId]||0)+1;
+    set({unreadChats:u,lastMorningGreeting:today});
+    // Show a gentle notification toast
+    toast(`🌅 ${p.name.split(' ')[0]} sent you a good morning!`);
+    // Re-render chat list if visible
+    if(window.location.hash.replace('#/','')===''||window.location.hash.includes('/chats'))render();
+  },delayMs);
+}
+
 /* ── INIT ── */
 loadS();
+applyFontSize();
 if('serviceWorker' in navigator) navigator.serviceWorker.register('./service-worker.js').catch(()=>{});
 window.speechSynthesis?.getVoices(); // pre-load voices
 
@@ -1880,3 +2068,6 @@ window.addEventListener('load',generateIcons);
 const initHash=window.location.hash||'#/';
 _stack=[initHash];_cur=initHash;
 render();
+
+// Morning greeting — check after app is ready
+setTimeout(checkMorningGreeting, 1000);
