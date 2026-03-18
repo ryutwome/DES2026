@@ -876,44 +876,104 @@ function delay(ms){return new Promise(r=>setTimeout(r,ms));}
 
 /* ── STORIES ── */
 function renderStories(){
+  // Split stories into recent (< 6h) and older (viewed)
+  const now=Date.now();
+  const recent=(S.stories||[]).filter(s=>(now-s.timestamp)<6*3600000);
+  const viewed=(S.stories||[]).filter(s=>(now-s.timestamp)>=6*3600000);
+
   mount(`
     ${resBar()}
-    <div class="header">
-      <div class="header__title" onclick="headerTap()"><h1>Stories</h1></div>
+    <div class="header header--white">
+      <div class="header__title"><h1 style="color:#111b21;">Stories</h1></div>
       <div class="header__actions">
-        <button class="header__action-btn" aria-label="Search">${IC.search}</button>
-        <button class="header__action-btn" aria-label="More">${IC.more}</button>
+        <button class="header__action-btn" style="color:#54656f;" aria-label="Search">${IC.search}</button>
+        <button class="header__action-btn" style="color:#54656f;" aria-label="More">${IC.more}</button>
       </div>
     </div>
     <div class="screen" style="position:relative;">
       <div class="screen__scroll" style="background:#fff;" id="stories-list">
-        <div class="status-row-section">
-          <div class="status-row-header">Status</div>
-          <div class="status-row" id="status-row">
-            <button class="status-add-btn" onclick="showStoryCompose()">
-              <div class="status-avatar-wrap"><div style="background:#25d366;width:56px;height:56px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;">${IC.add}</div></div>
-              <span>Add status</span>
-            </button>
+
+        <!-- Status section label -->
+        <div class="stories-section-label">Status</div>
+
+        <!-- My Status row -->
+        <button class="status-contact-row" onclick="showStoryCompose()">
+          <div class="status-my-avatar-wrap">
+            ${avatar('Me','md')}
+            <div class="status-add-badge"><i data-lucide="plus" style="width:12px;height:12px;color:#fff;"></i></div>
           </div>
+          <div class="status-contact-info">
+            <div class="status-contact-name">My Status</div>
+            <div class="status-contact-sub">Tap to add status update</div>
+          </div>
+        </button>
+
+        ${recent.length?`<div class="stories-sub-label">Recent updates</div>`:''}
+        <div id="stories-recent"></div>
+
+        ${viewed.length?`<div class="stories-sub-label stories-sub-label--collapsible" onclick="toggleViewedStories()">Viewed updates <i data-lucide="chevron-up" style="width:16px;height:16px;" id="viewed-chevron"></i></div>`:''}
+        <div id="stories-viewed"></div>
+
+        <!-- Channels section -->
+        <div class="stories-channels-section">
+          <div class="stories-section-label" style="padding-top:16px;">Channels</div>
+          <div class="stories-channels-sub">Stay updated on topics that matter to you. Find channels to follow below.</div>
+          <button class="stories-channels-btn" onclick="toast('Explore channels coming soon')">
+            <i data-lucide="grid-2x2" style="width:18px;height:18px;color:#00A884;"></i>
+            <span>Explore more</span>
+          </button>
+          <button class="stories-channels-btn" onclick="toast('Create channel coming soon')">
+            <i data-lucide="plus" style="width:18px;height:18px;color:#00A884;"></i>
+            <span>Create channel</span>
+          </button>
         </div>
-        <div class="section-heading" style="padding:12px 16px 8px;color:#54656f;font-size:14px;font-weight:600;text-transform:none;letter-spacing:0;">Recent updates</div>
+
+        <div style="height:80px;"></div>
       </div>
-      <button class="fab" onclick="showStoryCompose()" aria-label="Share story">${IC.add}</button>
+
+      <!-- Dual FAB like real WA: pencil above, camera below -->
+      <button class="fab fab--secondary" onclick="showStoryCompose()" aria-label="Edit status" style="bottom:calc(144px + env(safe-area-inset-bottom,0px));">
+        <i data-lucide="pencil" style="width:22px;height:22px;color:#54656f;"></i>
+      </button>
+      <button class="fab" onclick="showStoryCompose()" aria-label="Add status" style="bottom:calc(80px + env(safe-area-inset-bottom,0px));">
+        <i data-lucide="camera" style="width:22px;height:22px;color:#fff;"></i>
+      </button>
     </div>
     ${bottomNav('stories')}
   `);
-  // Populate status avatars
-  const statusRow=$('status-row');
-  if(statusRow){
-    PERSONA_LIST.slice(0,6).forEach(p=>{
-      const btn=document.createElement('button');btn.className='status-avatar-btn';
-      btn.innerHTML=`<div class="status-avatar-ring">${avatar(p.name,'md')}</div><span>${p.name.split(' ')[0]}</span>`;
-      btn.onclick=()=>navigate('#/chat/'+p.id);
-      statusRow.appendChild(btn);
-    });
-  }
-  const list=$('stories-list');
-  (S.stories||[]).forEach(s=>list.appendChild(storyCard(s)));
+
+  lucide.createIcons();
+
+  const recentEl=$('stories-recent');
+  recent.forEach(s=>recentEl.appendChild(statusContactRow(s,false)));
+
+  const viewedEl=$('stories-viewed');
+  viewed.forEach(s=>viewedEl.appendChild(statusContactRow(s,true)));
+}
+
+function toggleViewedStories(){
+  const el=$('stories-viewed');
+  const ch=$('viewed-chevron');
+  if(el.style.display==='none'){el.style.display='';if(ch)ch.setAttribute('data-lucide','chevron-up');}
+  else{el.style.display='none';if(ch)ch.setAttribute('data-lucide','chevron-down');}
+  lucide.createIcons();
+}
+
+function statusContactRow(s, viewed){
+  const p=PERSONAS[s.authorId];
+  const name=s.authorName||(p?p.name:'Unknown');
+  const div=document.createElement('button');
+  div.className='status-contact-row';
+  div.onclick=()=>navigate('#/story/'+s.id);
+  div.innerHTML=`
+    <div class="${viewed?'status-avatar-viewed':'status-avatar-ring-wrap'}">
+      ${avatar(name,'md')}
+    </div>
+    <div class="status-contact-info">
+      <div class="status-contact-name">${name}</div>
+      <div class="status-contact-sub">${fdate(s.timestamp)}</div>
+    </div>`;
+  return div;
 }
 function storyCard(s){
   const isUser=s.authorId==='user';
