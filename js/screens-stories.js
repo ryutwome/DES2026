@@ -290,7 +290,9 @@ function showStoryComposeSheet() {
     const text = textarea.value.trim();
     if (!text) return;
 
-    const story = makeStory('user', 'You', text);
+    const words = text.split(' ');
+    const autoTitle = words.slice(0, 8).join(' ') + (words.length > 8 ? '...' : '');
+    const story = { ...makeStory('user', 'You', text), title: autoTitle, imageUrl: '' };
     const stories = [story, ...AppState.stories];
     setState({ stories });
     backdrop.remove();
