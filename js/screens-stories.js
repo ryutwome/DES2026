@@ -206,6 +206,16 @@ function showStoryComposeSheet() {
   const sheet = document.createElement('div');
   sheet.className = 'bottom-sheet';
 
+  let selectedImageUrl = '';
+  const STORY_IMAGES = {
+    '🍲 Food':    'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=800&h=400&fit=crop',
+    '🌿 Nature':  'https://images.unsplash.com/photo-1447752875215-b2761acb3c5d?w=800&h=400&fit=crop',
+    '🙏 Faith':   'https://images.unsplash.com/photo-1507692049790-de6a72a1a862?w=800&h=400&fit=crop',
+    '🏏 Cricket': 'https://images.unsplash.com/photo-1531415074968-036ba1b575da?w=800&h=400&fit=crop',
+    '🎵 Music':   'https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=800&h=400&fit=crop',
+    '📸 Memory':  'https://images.unsplash.com/photo-1516450360452-9312f5e86fc7?w=800&h=400&fit=crop',
+  };
+
   const chips = [
     'Share a recipe memory',
     'Your neighbourhood growing up',
@@ -218,6 +228,11 @@ function showStoryComposeSheet() {
     <div class="bottom-sheet__title">Share Your Story</div>
     <div class="compose-chips" id="story-chips"></div>
     <textarea class="compose-textarea" id="story-text" placeholder="What would you like to share?" rows="4"></textarea>
+    <div style="font-size:13px;color:#667781;margin:8px 0 6px;font-weight:500;">Add a photo (optional)</div>
+    <div class="compose-chips" id="image-chips"></div>
+    <div id="image-preview" style="display:none;margin-bottom:10px;border-radius:8px;overflow:hidden;height:90px;">
+      <img id="image-preview-img" src="" style="width:100%;height:100%;object-fit:cover;" alt="Preview"/>
+    </div>
     <div class="compose-actions">
       <button class="compose-mic-btn" id="story-mic" aria-label="Record voice story">${Icons.mic}</button>
       <button class="compose-post-btn" id="story-post" disabled>Post Story</button>
@@ -235,6 +250,28 @@ function showStoryComposeSheet() {
       sheet.querySelector('#story-post').disabled = false;
     });
     chipsDiv.appendChild(btn);
+  });
+
+  const imageChipsDiv = sheet.querySelector('#image-chips');
+  Object.entries(STORY_IMAGES).forEach(([label, url]) => {
+    const btn = document.createElement('button');
+    btn.className = 'compose-chip';
+    btn.style.cssText = 'font-size:13px;padding:6px 12px;';
+    btn.textContent = label;
+    btn.addEventListener('click', () => {
+      if (selectedImageUrl === url) {
+        selectedImageUrl = '';
+        btn.classList.remove('active');
+        sheet.querySelector('#image-preview').style.display = 'none';
+      } else {
+        selectedImageUrl = url;
+        imageChipsDiv.querySelectorAll('.compose-chip').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        sheet.querySelector('#image-preview-img').src = url;
+        sheet.querySelector('#image-preview').style.display = 'block';
+      }
+    });
+    imageChipsDiv.appendChild(btn);
   });
 
   const textarea = sheet.querySelector('#story-text');
@@ -292,7 +329,7 @@ function showStoryComposeSheet() {
 
     const words = text.split(' ');
     const autoTitle = words.slice(0, 8).join(' ') + (words.length > 8 ? '...' : '');
-    const story = { ...makeStory('user', 'You', text), title: autoTitle, imageUrl: '' };
+    const story = { ...makeStory('user', 'You', text), title: autoTitle, imageUrl: selectedImageUrl };
     const stories = [story, ...AppState.stories];
     setState({ stories });
     backdrop.remove();
