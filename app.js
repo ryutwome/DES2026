@@ -1480,8 +1480,8 @@ function closeSheet(bk){if(bk&&bk.parentNode)bk.remove();}
 function renderCommunities(){
   mount(`
     ${resBar()}
-    <div class="header">
-      <div class="header__title" onclick="headerTap()"><h1>Communities</h1></div>
+    <div class="header header--white">
+      <div class="header__title" onclick="headerTap()"><h1 style="color:#111b21;">Communities</h1></div>
       <div class="header__actions">
         <button class="header__action-btn" aria-label="Search">${IC.search}</button>
         <button class="header__action-btn" aria-label="More">${IC.more}</button>
@@ -1572,8 +1572,8 @@ function renderCommunity(commId){
 function renderVoiceRooms(){
   mount(`
     ${resBar()}
-    <div class="header">
-      <div class="header__title" onclick="headerTap()"><h1>Calls</h1></div>
+    <div class="header header--white">
+      <div class="header__title" onclick="headerTap()"><h1 style="color:#111b21;">Voice Rooms</h1></div>
       <div class="header__actions">
         <button class="header__action-btn" aria-label="Search">${IC.search}</button>
         <button class="header__action-btn" aria-label="More">${IC.more}</button>
