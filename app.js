@@ -576,8 +576,8 @@ function showResearcherDialog(){
   $('rm-yes').onclick=()=>{set({researcherMode:!cur});bk.remove();toast(cur?'Researcher Mode off':'Researcher Mode on');render();};
 }
 
-function header(title,{back=false,avatarName=null,right=[],subtitle=null}={}){
-  let h=`<div class="header">`;
+function header(title,{back=false,avatarName=null,right=[],subtitle=null,white=false}={}){
+  let h=`<div class="${white?'header header--white':'header'}">`;
   if(back) h+=`<button class="header__back" onclick="goBack()" aria-label="Back">${IC.back}</button>`;
   if(avatarName) h+=`<div class="header__avatar">${avatar(avatarName,'sm')}</div>`;
   const subClass=subtitle==='online'?'header__subtitle header__subtitle--online':'header__subtitle';
@@ -1536,7 +1536,7 @@ function renderCommunity(commId){
   const right=[];
   if(comm.voiceRoom) right.push({icon:IC.voiceRoom,label:'Voice Room',fn:`navigate('#/voiceroom/${comm.voiceRoom}')`});
   mount(`
-    ${header(comm.name,{back:true,subtitle:`${comm.members} members`,right})}
+    ${header(comm.name,{back:true,subtitle:`${comm.members} members`,right,white:true})}
     <div class="screen chat-screen" id="comm-wrap">
       <div class="chat-messages" id="comm-msgs"></div>
     </div>
@@ -1618,7 +1618,7 @@ function renderVoiceRoom(roomId){
 
   mount(`
     <div class="voice-room-screen">
-      ${header(room.name,{back:true,subtitle:room.themeTag})}
+      ${header(room.name,{back:true,subtitle:room.themeTag,white:true})}
       <div class="participant-grid" id="vr-grid"></div>
       <div class="voice-transcript" id="vr-transcript"></div>
       <div class="voice-room-input" id="vr-input-wrap">

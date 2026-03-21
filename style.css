@@ -1129,7 +1129,6 @@ body {
 
 /* ── VOICE ROOM ── */
 .voice-room-screen { background: #0c1317; flex: 1; display: flex; flex-direction: column; overflow: hidden; }
-.voice-room-screen .header { background: #1f2c34; }
 .participant-grid {
   display: flex; flex-wrap: wrap; gap: 16px;
   padding: 20px 16px; justify-content: center; flex-shrink: 0;
