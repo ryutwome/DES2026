@@ -1130,44 +1130,6 @@ function buildStoryCard(s, isOwn){
   return card;
 }
 
-function toggleStoryComments(storyId){
-  const el=$('comments-'+storyId);
-  if(!el) return;
-  if(el.style.display==='none'){
-    el.style.display='block';
-    renderStoryComments(storyId);
-  } else {
-    el.style.display='none';
-  }
-}
-
-function renderStoryComments(storyId){
-  const s=(S.stories||[]).find(x=>x.id===storyId);
-  if(!s) return;
-  const el=$('comments-'+storyId);
-  const replies=s.replies||[];
-
-  el.innerHTML=`
-    <div class="story-comments__list" id="clist-${storyId}">
-      ${replies.length===0?`<div class="story-comments__empty">Be the first to reply!</div>`
-        :replies.map(r=>`
-          <div class="story-comment">
-            <div class="story-comment__avatar">${avatar(r.from==='user'?'You':(PERSONAS[r.from]?.name||r.from),'sm')}</div>
-            <div class="story-comment__body">
-              <div class="story-comment__name">${r.from==='user'?'You':(PERSONAS[r.from]?.name||r.from)}</div>
-              <div class="story-comment__text">${r.text}</div>
-            </div>
-          </div>`).join('')}
-    </div>
-    <div class="story-comments__input">
-      <input class="story-comments__field" id="creply-${storyId}" placeholder="Write a reply..." />
-      <button class="story-comments__send" onclick="sendStoryReply('${storyId}')">
-        <i data-lucide="send" style="width:18px;height:18px;color:#fff;"></i>
-      </button>
-    </div>
-  `;
-  lucide.createIcons();
-}
 
 async function sendStoryReply(storyId, mode){
   const inputId=mode==='thread'?'thread-reply-input':'creply-'+storyId;
