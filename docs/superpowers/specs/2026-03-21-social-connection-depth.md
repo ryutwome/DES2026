@@ -14,9 +14,11 @@ Tapping "Reply" to a story requires composing a full message — too high a barr
 Add a one-tap 🙏 reaction button on every story card (feed) and in the story thread. Reactions are stored on the story object. The card and thread show a reaction summary: "Meenakshiamma and 2 others reacted 🙏".
 
 ### Data changes
-- Add `reactions: {}` to story objects. Key = personaId or `'user'`, value = `true`.
-- `hasReacted(storyId)` helper — returns whether current user has reacted.
-- `toggleReaction(storyId)` — adds or removes user reaction, persists via `setState`.
+- Add `reactions: {}` to `makeStory` return value in `js/state.js` (4th key alongside id/authorId/etc.).
+- In `seedInitialData` in `state.js`, when building the seeded AI story objects, also add `reactions: {}` (the seed map currently builds objects manually, not via `makeStory`).
+- Seed 1–2 reactions per AI story during `seedInitialData`: for each story, pick 1–2 random personas from `PERSONA_LIST` (excluding the author), set `reactions[personaId] = true`.
+- `toggleReaction(storyId)` — function in `app.js`. Reads `S.stories`, finds the story, toggles `reactions['user']`, persists via `setState({ stories: updated })`.
+- `hasReacted(storyId)` — pure helper, returns `!!(S.stories.find(s=>s.id===storyId)?.reactions?.user)`.
 
 ### UI changes
 - Story card: small 🙏 button (min 44×44px) in bottom-right of card, beside the existing Reply button. Shows reaction count if > 0.
@@ -26,7 +28,7 @@ Add a one-tap 🙏 reaction button on every story card (feed) and in the story t
 - AI personas auto-react to some stories on seed: 1–2 personas react to each AI-authored story on first load (seeded in `seedInitialData`).
 
 ### AI reaction timing fix
-Current: AI reactions arrive 5–10 seconds after post — suspiciously fast. Fix: first AI reaction after 45–120s (random), second after 3–8 minutes (random). Change `triggerStoryReactions` delay in `screens-stories.js`.
+Current: AI reactions arrive 6–10 seconds after post — suspiciously fast. Fix: first AI reaction after 45–120s (random), second after 3–8 minutes (random). Change `triggerStoryReactions` in `app.js` (line ~1387–1400) — this is the live version. The copy in `screens-stories.js` is unused.
 
 ### Suggestion chip fix
 Current chips fill in the chip label text literally ("Share a recipe memory: "). Replace each chip's fill-in text with a real example sentence the user can edit:
@@ -46,12 +48,25 @@ User posts in a community → one AI responds → silence. Feels like a support 
 When user posts in any community, trigger 2–3 AI personas to respond in sequence. Personas sometimes reply to each other, not just to the user. Timing: first response 8–15s, second 25–45s, third (optional, 60% chance) 55–90s.
 
 ### Data flow
-`triggerCommunityReplies(commId, userMessage)` — new function in `app.js`. Picks 2–3 personas from `community.personas` (or all if fewer than 3). Calls `callClaudeForCommunity` for each in sequence with a delay. For the second and third responder, include the previous AI reply as context so they can reference it.
+The community reply logic lives inline inside `renderCommunity` in `app.js` (lines 1558–1567). Currently it fires once, picking one random persona. The fix replaces that single-response block with a `triggerCommunityReplies(commId, text, msgs)` async function that fires 2–3 sequential responses.
+
+`triggerCommunityReplies(commId, text, msgs)`:
+- Picks 2–3 unique personas from `community.personas` (shuffle, take first 2–3)
+- First response: delay 1500–2500ms, pick persona[0], call `claude(responderId, S.communities[commId]||[], note)`. Append and render.
+- Second response: delay 20–35s after first, pick persona[1], include first AI reply in note: `...A member posted: "${text}". ${persona0Name} just replied: "${firstReply}". Add your own thought.`
+- Third response (60% chance): delay 45–70s after second, pick persona[2] if available
+- Each response appends to state and DOM the same way the current single-response does.
 
 ### Daily prompt
-Once per day, the first persona in each joined community posts a prompt. Stored as `S.lastDailyPrompt[commId]` (date string). On community open, if last prompt was not today, inject a prompt message at the top of the feed. Prompt generated via AI with context: community topic + "ask a warm, open question to get the group talking."
+Once per day, the first persona in each joined community posts a prompt. On community open, if no prompt exists for today, generate one.
 
-No API call on every open — generate prompt once, cache in `S.dailyPrompts[commId]` alongside the date. Only regenerate next day.
+Add to the `S` initialiser in `app.js` (the app uses `S`/`set()`, not `DEFAULT_STATE` from `state.js`):
+```js
+lastDailyPrompt: {},  // commId → new Date().toDateString()
+dailyPrompts: {},     // commId → message text
+```
+
+On `renderCommunity(commId)` open, check `S.lastDailyPrompt[commId] !== new Date().toDateString()`. If so: call AI to generate a warm open question for this community topic. Cache result in `S.dailyPrompts[commId]`, set `S.lastDailyPrompt[commId] = new Date().toDateString()`, persist. Prepend the message to the community feed as an AI message from the first persona in `community.personas`. Only one API call per community per day.
 
 ---
 
@@ -95,12 +110,13 @@ Games are always user-initiated. The AI never reaches out. Real social connectio
 Once per day, one persona sends the user a game challenge message in their 1-on-1 chat. The message is conversational and includes an inline "Accept" button that navigates directly to the game.
 
 ### Implementation
-- Store `S.lastGameChallenge` as a date string (YYYY-MM-DD).
-- On app load (after `renderChats`), if `lastGameChallenge !== today`, pick a random persona the user has chatted with (fallback: Rameshbhai). Pick a random game type. Generate a challenge message via AI: casual, persona-voiced, ends with a question about playing.
-- Append the message to that persona's chat as an AI message, with `type: 'game-invite'` and `gameType` field.
-- In `renderChat`, render `game-invite` type messages as a special bubble: the message text + a teal "Play [Game Name] →" button that calls `showGameSheet(personaId)` with the game type pre-selected.
-- Set `S.lastGameChallenge = today` and persist.
-- Only trigger if `AppState.apiKey` exists (app is active, not demo mode).
+- Add `lastGameChallenge: ''` to the `S` initialiser in `app.js` (not `state.js`).
+- Trigger from inside `renderChats` (guard: `AppState.apiKey && S.lastGameChallenge !== today()`). Fires on every navigation to Chats tab, not just app load.
+- Pick a random persona the user has chatted with (fallback: `rameshbhai`). Pick a random game type from `['antakshari','trivia-bollywood']`.
+- Set `S.lastGameChallenge = today` immediately before the API call, so a slow/failing call doesn't trigger a second challenge on next navigation.
+- Generate challenge message via AI with extra note: casual, persona-voiced, ends with a game invite question.
+- Append to that persona's chat as an AI message with `type: 'game-invite'`, `gameType`, and `gamePersonaId` fields.
+- In `renderChat` bubble renderer, for `type === 'game-invite'`: render message text + teal "Play [Game Name] →" button. Button bypasses `showGameSheet` entirely — on click: create game object (`const gameId = mkId(); const gs = {id:gameId, type:msg.gameType, opponentId:msg.gamePersonaId, status:'active', currentLetter:'', score:{user:0,ai:0}, questionNumber:1, lastQuestion:'', messages:[], createdAt:Date.now(), completedAt:null}`), add to `S.games` via `setState`, then `navigate('#/game/'+gameId+'/'+msg.gameType)`.
 
 ---
 
