@@ -48,12 +48,12 @@ function renderOnboarding(){
       <button class="onboarding-screen__cta" id="ob-cta" disabled>Continue</button>
     </div>
   `);
-  const interests=[{id:'cooking',l:'Cooking',e:'🍲'},{id:'cricket',l:'Cricket',e:'🏏'},{id:'music',l:'Music',e:'🎵'},{id:'gardening',l:'Gardening',e:'🌱'},{id:'literature',l:'Literature',e:'📚'},{id:'spirituality',l:'Spirituality',e:'🙏'}];
+  const interests=[{id:'cooking',l:'Cooking',e:'pot'},{id:'cricket',l:'Cricket',e:'cricket'},{id:'music',l:'Music',e:'music'},{id:'gardening',l:'Gardening',e:'seedling'},{id:'literature',l:'Literature',e:'books'},{id:'spirituality',l:'Spirituality',e:'prayer'}];
   const sel=new Set();
   const grid=$('ig');
   interests.forEach(({id,l,e})=>{
     const t=document.createElement('button');t.className='interest-tile';
-    t.innerHTML=`<span class="interest-tile__emoji">${e}</span><span class="interest-tile__label">${l}</span>`;
+    t.innerHTML=`<span class="interest-tile__emoji">${ej(e,'32px')}</span><span class="interest-tile__label">${l}</span>`;
     t.onclick=()=>{sel.has(id)?(sel.delete(id),t.classList.remove('selected')):(sel.add(id),t.classList.add('selected'));$('ob-cta').disabled=!sel.size;};
     grid.appendChild(t);
   });
@@ -72,12 +72,16 @@ function renderNamePrompt(){
       <div class="name-prompt-screen__field-wrap">
         <input class="name-prompt-screen__input" id="np-name" type="text" placeholder="Your name" autocomplete="name" autocapitalize="words" maxlength="40" />
       </div>
+      <div class="name-prompt-screen__field-wrap" style="margin-top:12px;">
+        <input class="name-prompt-screen__input" id="np-age" type="number" placeholder="Your age" min="1" max="120" style="width:100%;" />
+      </div>
       <button class="name-prompt-screen__btn" id="np-go" disabled>Let's go →</button>
-      <div class="name-prompt-screen__note">Your name is only stored on this device.</div>
+      <div class="name-prompt-screen__note">Your name and age are only stored on this device.</div>
     </div>
   `);
-  const inp=$('np-name'), btn=$('np-go');
-  inp.oninput=()=>{btn.disabled=!inp.value.trim();};
+  const inp=$('np-name'), age=$('np-age'), btn=$('np-go');
+  const validate=()=>{btn.disabled=!inp.value.trim();};
+  inp.oninput=validate;
   inp.addEventListener('keydown',e=>{if(e.key==='Enter'&&inp.value.trim())saveUserName();});
   btn.onclick=saveUserName;
   setTimeout(()=>inp.focus(),300);
@@ -85,6 +89,7 @@ function renderNamePrompt(){
 function saveUserName(){
   const name=$('np-name')?.value?.trim();
   if(!name)return;
-  set({userName:name});
+  const age=parseInt($('np-age')?.value)||null;
+  set({userName:name,userAge:age});
   navigate('#/chats');
 }

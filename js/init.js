@@ -48,7 +48,7 @@ function checkMorningGreeting(){
     u[personaId]=(u[personaId]||0)+1;
     set({unreadChats:u,lastMorningGreeting:today});
     // Show a gentle notification toast
-    toast(`🌅 ${p.name.split(' ')[0]} sent you a good morning!`);
+    toast(`${ej('sunrise')} ${p.name.split(' ')[0]} sent you a good morning!`);
     // Re-render chat list if visible
     if(window.location.hash.replace('#/','')===''||window.location.hash.includes('/chats'))render();
   },delayMs);

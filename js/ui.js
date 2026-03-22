@@ -30,7 +30,7 @@ function mount(html){
 
 function toast(msg){
   const old=document.querySelector('.toast');if(old)old.remove();
-  const t=document.createElement('div');t.className='toast';t.textContent=msg;
+  const t=document.createElement('div');t.className='toast';t.innerHTML=renderEmoji(msg);
   app().appendChild(t);setTimeout(()=>t.remove(),3200);
 }
 
@@ -80,8 +80,8 @@ function header(title,{back=false,avatarName=null,avatarPersonaId=null,right=[],
 function bottomNav(active){
   const tabs=[
     {id:'chats',label:'Chats',icon:IC.chats,hash:'#/chats',badge:()=>{const t=Object.values(S.unreadChats||{}).reduce((a,b)=>a+b,0);return t>0?t:0;}},
-    {id:'stories',label:'Stories',icon:IC.updates,hash:'#/stories',badge:()=>0},
-    {id:'communities',label:'Comm.',icon:IC.communities,hash:'#/communities',badge:()=>0},
+    {id:'stories',label:'Stories',icon:IC.updates,hash:'#/stories',badge:()=>{const t=Object.values(S.unreadStoryReplies||{}).reduce((a,b)=>a+b,0);return t>0?t:0;}},
+    {id:'communities',label:'Comm.',icon:IC.communities,hash:'#/communities',badge:()=>{const vals=Object.values(S.unreadCommunities||{});const hasMention=vals.some(v=>v==='@');const total=vals.reduce((a,v)=>a+(typeof v==='number'?v:0),0);return hasMention?'@':total>0?total:0;}},
     {id:'voicerooms',label:'Voice',icon:IC.voiceRoom,hash:'#/voicerooms',badge:()=>0},
     {id:'games',label:'Games',icon:IC.games,hash:'#/games',badge:()=>0},
   ];
@@ -103,9 +103,9 @@ function desktopBanner(){
 }
 function dismissDesktop(){set({desktopBannerDismissed:true});render();}
 
-function resBar(){return S.researcherMode?'<div class="researcher-mode-bar">👁 RESEARCHER MODE — AI personas are labeled</div>':'';}
+function resBar(){return S.researcherMode?`<div class="researcher-mode-bar">${ej('eye')} RESEARCHER MODE — AI personas are labeled</div>`:'';}
 
-function bubble(msg){
+function bubble(msg, opts={}){
   const sent=msg.from==='user';
   const p=!sent&&PERSONAS[msg.from];
   const aiBadge=(p&&S.researcherMode)?'<span class="ai-badge">AI</span>':'';
@@ -117,16 +117,18 @@ function bubble(msg){
         <button class="voice-bubble__play" onclick="togglePlay(this,'${msg.id}')" aria-label="Play">${IC.play}</button>
         <div class="voice-bubble__waveform">${bars}</div>
       </div>
-      ${msg.text?`<div class="voice-bubble__text">${msg.text}</div>`:''}
+      ${msg.text?`<div class="voice-bubble__text">${renderEmoji(msg.text)}</div>`:''}
     </div>`;
   } else {
-    content=`${aiBadge}<div>${msg.text}</div>`;
+    content=`${aiBadge}<div>${renderEmoji(msg.text)}</div>`;
   }
   const spk=canTTS()?`<button class="bubble__speaker" onclick="speakMsg(this,'${msg.id.replace(/'/g,"\\'")}','${(msg.text||'').replace(/'/g,"\\'").replace(/\n/g,' ').slice(0,200)}')" aria-label="Read aloud">${IC.speaker}</button>`:'';
+  // read=true → blue ticks; read=false → grey (delivered, not yet read)
+  const read=opts.read!==false;
   return`<div class="bubble-wrap bubble-wrap--${sent?'sent':'recv'}">
     <div class="bubble bubble--${sent?'sent':'recv'}">
       ${content}
-      <div class="bubble__meta"><span class="bubble__time">${ftime(msg.timestamp)}</span>${sent?`<span class="bubble__ticks bubble__ticks--read">${doubleTick()}</span>`:''}</div>
+      <div class="bubble__meta"><span class="bubble__time">${ftime(msg.timestamp)}</span>${sent?`<span class="bubble__ticks${read?' bubble__ticks--read':''}">${doubleTick()}</span>`:''}</div>
     </div>
     ${spk}
   </div>`;

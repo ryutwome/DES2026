@@ -1,10 +1,11 @@
 /* DES2026 Service Worker — enables PWA install prompt */
-const CACHE_NAME = 'des2026-v19';
+const CACHE_NAME = 'des2026-v21';
 const ASSETS = [
   './',
   './index.html',
   './style.css',
   './manifest.json',
+  './js/emoji.js',
   './js/data.js',
   './js/state.js',
   './js/api.js',
@@ -20,6 +21,16 @@ const ASSETS = [
   './js/screens-games.js',
   './js/screens-settings.js',
   './js/init.js',
+  './emojis/apple.svg','./emojis/blossom.svg','./emojis/books.svg','./emojis/chat.svg',
+  './emojis/circle-o.svg','./emojis/cricket.svg','./emojis/eye.svg','./emojis/film.svg',
+  './emojis/game.svg','./emojis/grapes.svg','./emojis/herb.svg','./emojis/joker.svg',
+  './emojis/kiwi.svg','./emojis/lemon.svg','./emojis/lock.svg','./emojis/mic.svg',
+  './emojis/music.svg','./emojis/orange.svg','./emojis/party.svg','./emojis/peach.svg',
+  './emojis/phone.svg','./emojis/pineapple.svg','./emojis/pot.svg','./emojis/prayer.svg',
+  './emojis/red-circle.svg','./emojis/rose.svg','./emojis/seedling.svg','./emojis/smile.svg',
+  './emojis/sparkles.svg','./emojis/strawberry.svg','./emojis/sunrise.svg',
+  './emojis/sweat-smile.svg','./emojis/text-abc.svg','./emojis/video.svg',
+  './emojis/wave.svg','./emojis/yellow-circle.svg',
 ];
 
 self.addEventListener('install', (event) => {

@@ -1,6 +1,7 @@
 /* DES2026 — WhatsApp Android UI — Authentic styles */
 
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+.emoji-img { display: inline-block; vertical-align: -0.2em; pointer-events: none; }
 
 html { font-size: 16px; }
 
@@ -857,6 +858,7 @@ body {
   color: #54656f; cursor: pointer; font-family: inherit; min-height: 36px;
 }
 .story-replies-btn:active { background: #e9edef; }
+.story-replies-btn.has-replies { background: #d9fdd3; color: #008f72; font-weight: 600; }
 .story-tts-btn {
   background: none; border: none; cursor: pointer;
   color: #54656f; padding: 8px; border-radius: 50%;
@@ -1379,10 +1381,6 @@ body {
   gap: 5px; font-size: 12px; color: #667781; min-width: 72px;
 }
 .board-player.active { color: #00A884; font-weight: 600; }
-.board-score-pill {
-  font-size: 20px; font-weight: 700; color: #111b21;
-  background: #f0f2f5; border-radius: 20px; padding: 4px 16px;
-}
 .board-status {
   text-align: center; padding: 12px 16px;
   font-size: 14px; color: #667781;
@@ -1400,10 +1398,89 @@ body {
 }
 .board-rematch-btn:active { background: #1da851; }
 
+/* ── TURN PILL ── */
+.turn-pill {
+  text-align: center; font-size: 13px; font-weight: 700;
+  padding: 8px 14px; border-radius: 24px; flex-shrink: 0;
+  min-width: 96px; transition: background 0.3s, color 0.3s;
+}
+.turn-pill--your {
+  background: #d9fdd3; color: #00A884;
+  animation: turn-glow 1.4s ease-in-out infinite alternate;
+}
+@keyframes turn-glow {
+  from { box-shadow: 0 0 0 2px rgba(0,168,132,0.15); }
+  to   { box-shadow: 0 0 0 7px rgba(0,168,132,0.32); }
+}
+.turn-pill--wait { background: #f0f2f5; color: #667781; }
+.turn-pill--win  { background: #d9fdd3; color: #00A884; }
+.turn-pill--lose { background: #fde2e2; color: #E53935; }
+.turn-pill--draw { background: #f0f2f5; color: #667781; }
+
+/* Player bar score and speaking ring */
+.board-player__score { font-size: 15px; font-weight: 700; color: #111b21; }
+.bpav-ring { border-radius: 50%; transition: box-shadow 0.3s; display: inline-block; }
+.bpav-ring.bpav-speaking {
+  box-shadow: 0 0 0 3px #00A884, 0 0 0 6px rgba(0,168,132,0.25);
+}
+
+/* ── VOICE BAR ── */
+.game-voice-bar {
+  display: flex; align-items: center; gap: 8px;
+  padding: 5px 14px; background: #f0f2f5;
+  border-bottom: 1px solid #e9edef; flex-shrink: 0;
+  font-size: 12px; color: #667781;
+}
+.gvb-count {
+  display: flex; align-items: center; gap: 5px; font-weight: 500;
+}
+.gvb-count::before {
+  content: ''; display: inline-block; width: 6px; height: 6px;
+  border-radius: 50%; background: #00A884; flex-shrink: 0;
+  box-shadow: 0 0 5px rgba(0,168,132,0.7);
+}
+.gvb-avatars { display: flex; gap: 4px; margin-left: 4px; }
+.gvb-av { border-radius: 50%; transition: box-shadow 0.3s; }
+.gvb-av.gvb-speaking .avatar {
+  box-shadow: 0 0 0 2px #00A884, 0 0 0 5px rgba(0,168,132,0.3);
+}
+
+/* ── GAME CHAT ── */
+.game-chat-wrap {
+  width: 100%; border-top: 1px solid #e9edef; background: #fff; margin-top: 8px;
+}
+.game-chat-msgs {
+  max-height: 140px; overflow-y: auto;
+  padding: 8px 12px; display: flex; flex-direction: column; gap: 4px;
+}
+.gchat-msg {
+  font-size: 13px; color: #111b21; line-height: 1.4;
+  background: #f0f2f5; padding: 5px 10px;
+  border-radius: 12px; align-self: flex-start; max-width: 85%;
+}
+.gchat-msg--user { background: #d9fdd3; align-self: flex-end; }
+.gchat-name { font-weight: 600; font-size: 11px; color: #667781; }
+.game-chat-input-row {
+  display: flex; align-items: center; gap: 8px;
+  padding: 6px 12px; border-top: 1px solid #f0f2f5;
+}
+.game-chat-input {
+  flex: 1; background: #f0f2f5; border: none; border-radius: 24px;
+  padding: 8px 14px; font-size: 13px; font-family: inherit;
+  color: #111b21; outline: none;
+}
+.game-chat-send {
+  background: none; border: none; cursor: pointer; color: #00A884;
+  display: flex; align-items: center; justify-content: center;
+  min-width: 36px; min-height: 36px; padding: 4px;
+}
+
 /* ── TIC TAC TOE ── */
 .ttt-board {
   display: grid; grid-template-columns: repeat(3, 1fr);
-  gap: 10px; padding: 20px 32px; max-width: 320px; margin: 8px auto 0;
+  /* Explicit width needed: 1fr has no reference in align-items:center flex container */
+  width: min(calc(100% - 48px), 276px);
+  gap: 10px; padding: 16px; margin: 8px 0 0;
 }
 .ttt-cell {
   aspect-ratio: 1; background: #fff; border: 2px solid #e9edef;
