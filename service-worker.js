@@ -1,11 +1,25 @@
 /* DES2026 Service Worker — enables PWA install prompt */
-const CACHE_NAME = 'des2026-v17';
+const CACHE_NAME = 'des2026-v18';
 const ASSETS = [
   './',
   './index.html',
-  './app.js',
   './style.css',
-  './manifest.json'
+  './manifest.json',
+  './js/data.js',
+  './js/state.js',
+  './js/api.js',
+  './js/voice.js',
+  './js/icons.js',
+  './js/router.js',
+  './js/ui.js',
+  './js/screens-setup.js',
+  './js/screens-chats.js',
+  './js/screens-stories.js',
+  './js/screens-communities.js',
+  './js/screens-voicerooms.js',
+  './js/screens-games.js',
+  './js/screens-settings.js',
+  './js/init.js',
 ];
 
 self.addEventListener('install', (event) => {
