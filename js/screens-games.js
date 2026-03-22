@@ -62,7 +62,7 @@ function showGameSheet(fromPersonaId){
     const pp=$('gs-persona');
     PERSONA_LIST.forEach(p=>{
       const b=document.createElement('button');b.className='persona-pick-item';
-      b.innerHTML=`${avatar(p.name,'sm')}<div><div class="persona-pick-item__name">${p.name}</div><div class="persona-pick-item__city">${p.city}</div></div>`;
+      b.innerHTML=`${avatar(p.name,'sm',p.id)}<div><div class="persona-pick-item__name">${p.name}</div><div class="persona-pick-item__city">${p.city}</div></div>`;
       b.onclick=()=>{pp.querySelectorAll('.persona-pick-item').forEach(x=>x.classList.remove('selected'));b.classList.add('selected');selPersona=p.id;checkReady();};
       pp.appendChild(b);
     });

@@ -36,11 +36,11 @@ function addMsg(ctx,ctxId,msg) {
 
 /* ── SEED DATA ── */
 function seedData(interests) {
-  S.stories = SEED_STORIES.map(s=>({
+  S.stories = SEED_STORIES.map((s,i)=>({
     id:mkId(), authorId:s.personaId,
     authorName:PERSONAS[s.personaId].name,
     text:s.text, title:s.title||'', imageUrl:s.imageUrl||'',
-    timestamp:Date.now()-Math.random()*7*86400000, replies:[]
+    timestamp:Date.now()-(i*18*3600000+Math.random()*3*3600000), replies:[] // staggered over ~7.5 days
   }));
   S.stories.sort((a,b)=>b.timestamp-a.timestamp);
 
@@ -64,18 +64,18 @@ function seedData(interests) {
     S.communities[cId]=c.seed.map((m,i)=>({...mkMsg(m.from,'text',m.text),timestamp:Date.now()-((c.seed.length-i)*3*60000)}));
   });
 
-  // Seed one chat per persona with staggered timestamps for realistic chat list
+  // Seed 4 chats — one per the first four personas, staggered timestamps
   const now=Date.now();
-  PERSONA_LIST.forEach((p,i)=>{
+  PERSONA_LIST.slice(0,4).forEach((p,i)=>{
     if(!S.chats[p.id]){
       const msg=mkMsg(p.id,'text',p.fallbacks[0]);
-      msg.timestamp=now-(i*7*60000)-(Math.random()*3*60000); // stagger by minutes
+      msg.timestamp=now-(i*7*60000)-(Math.random()*3*60000);
       S.chats[p.id]=[msg];
     }
   });
-  // Give some personas unread counts
+  // All four start with an unread badge
   S.unreadChats={};
-  PERSONA_LIST.slice(0,4).forEach((p,i)=>{S.unreadChats[p.id]=Math.floor(Math.random()*4)+1;});
+  PERSONA_LIST.slice(0,4).forEach(p=>{S.unreadChats[p.id]=1;});
 
   // Seed voice rooms
   Object.values(VOICE_ROOMS).forEach(r=>{

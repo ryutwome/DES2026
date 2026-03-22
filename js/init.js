@@ -56,6 +56,24 @@ function checkMorningGreeting(){
 
 /* ── INIT ── */
 loadS();
+
+// Migration: fix expired or missing stories for users who already onboarded
+if(S.onboardingDone){
+  const THIRTY=30*86400000;
+  const noStories=!S.stories||S.stories.length===0;
+  const allExpired=S.stories&&S.stories.length>0&&S.stories.every(s=>Date.now()-s.timestamp>=THIRTY);
+  if(noStories||allExpired){
+    // Re-seed stories fresh
+    const fresh=SEED_STORIES.map((s,i)=>({
+      id:(Date.now()+'_s'+i),authorId:s.personaId,
+      authorName:PERSONAS[s.personaId].name,
+      text:s.text,title:s.title||'',imageUrl:s.imageUrl||'',
+      timestamp:Date.now()-(i*18*3600000),replies:[]
+    }));
+    set({stories:fresh});
+  }
+}
+
 applyFontSize();
 if('serviceWorker' in navigator) navigator.serviceWorker.register('./service-worker.js').catch(()=>{});
 window.speechSynthesis?.getVoices(); // pre-load voices

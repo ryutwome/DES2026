@@ -49,8 +49,8 @@ function renderChats(){
     const div=document.createElement('div');div.className='chat-list-item';
     const hasStatus=PERSONA_STATUS_IMAGES[id]!==undefined;
     const avatarEl=hasStatus
-      ?`<div class="chat-avatar-story-ring" onclick="event.stopPropagation();openStatus('${id}')">${avatar(p.name,'md')}</div>`
-      :`<div>${avatar(p.name,'md')}</div>`;
+      ?`<div class="chat-avatar-story-ring" onclick="event.stopPropagation();openStatus('${id}')">${avatar(p.name,'md',id)}</div>`
+      :`<div>${avatar(p.name,'md',id)}</div>`;
     div.innerHTML=`<div class="chat-list-item__avatar">${avatarEl}</div><div class="chat-list-item__body"><div class="chat-list-item__top"><div class="chat-list-item__name">${p.name}${ai}</div><div class="${timeClass}">${fdate(time)}</div></div><div class="chat-list-item__bottom"><div class="chat-list-item__preview" style="display:flex;align-items:center;">${tickHtml}<span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${previewText}</span></div>${unread?`<div class="chat-list-item__badge">${unread}</div>`:''}</div></div>`;
     div.onclick=()=>{const u={...S.unreadChats};delete u[id];set({unreadChats:u});navigate('#/chat/'+id);};
     list.appendChild(div);
@@ -76,7 +76,7 @@ function openStatus(personaId){
       <button class="status-viewer__back" onclick="this.closest('.status-viewer').remove()">
         <i data-lucide="arrow-left" style="width:24px;height:24px;color:#fff;"></i>
       </button>
-      <div class="status-viewer__avatar">${avatar(p.name,'sm')}</div>
+      <div class="status-viewer__avatar">${avatar(p.name,'sm',personaId)}</div>
       <div class="status-viewer__info">
         <div class="status-viewer__name">${p.name}</div>
         <div class="status-viewer__time">Today</div>
@@ -138,7 +138,7 @@ function renderChat(personaId){
   const onlineStatuses=['online','online','last seen today at 10:32 AM','last seen yesterday at 8:14 PM','online'];
   const status=onlineStatuses[Math.abs(personaId.split('').reduce((a,c)=>a+c.charCodeAt(0),0))%onlineStatuses.length];
   mount(`
-    ${header(p.name,{back:true,avatarName:p.name,subtitle:status,right:[
+    ${header(p.name,{back:true,avatarName:p.name,avatarPersonaId:personaId,subtitle:status,right:[
       {icon:IC.phone,label:'Voice call',fn:`toast('Calling ${p.name.split(' ')[0]}... 📞')`},
       {icon:IC.video,label:'Video call',fn:`toast('Video calling ${p.name.split(' ')[0]}... 📹')`},
       {icon:IC.more,label:'More',fn:''}

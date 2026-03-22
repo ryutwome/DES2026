@@ -42,8 +42,11 @@ function showCommTab(tab){
 }
 function commCard(comm,joined){
   const div=document.createElement('div');div.className='community-card';
-  const groupEmoji=comm.tags[0]==='cricket'?'🏏':comm.tags[0]==='bollywood'?'🎬':comm.tags[0]==='bhajan'||comm.tags[0]==='spirituality'?'🙏':comm.tags[0]==='society'?'🏢':comm.tags[0]==='cooking'||comm.tags[0]==='recipes'?'🍛':'👥';
-  div.innerHTML=`<div class="community-card__icon" style="background:${comm.color||'#00897B'}">${groupEmoji}</div><div class="community-card__body"><div class="community-card__name">${comm.name}</div><div class="community-card__meta"><span style="font-size:11.5px;color:#667781;">Group · ${comm.members} members</span></div><div class="community-card__desc">${comm.desc}</div></div><button class="community-card__join-btn${joined?' joined':''}" onclick="toggleJoin(event,'${comm.id}')">${joined?'✓ Joined':'Join'}</button>`;
+  const emojiMap={cricket:'🏏',bollywood:'🎬',bhajan:'🙏',society:'🏢',recipes:'🍛'};
+  const colorMap={cricket:'#E53935',bollywood:'#FB8C00',bhajan:'#8E24AA',society:'#546E7A',recipes:'#00897B'};
+  const groupEmoji=emojiMap[comm.id]||'👥';
+  const groupColor=colorMap[comm.id]||'#00897B';
+  div.innerHTML=`<div class="community-card__icon" style="background:${groupColor}">${groupEmoji}</div><div class="community-card__body"><div class="community-card__name">${comm.name}</div><div class="community-card__meta"><span style="font-size:11.5px;color:#667781;">Group · ${comm.members} members</span></div><div class="community-card__desc">${comm.desc}</div></div><button class="community-card__join-btn${joined?' joined':''}" onclick="toggleJoin(event,'${comm.id}')">${joined?'✓ Joined':'Join'}</button>`;
   div.onclick=e=>{if(e.target.classList.contains('community-card__join-btn'))return;navigate('#/community/'+comm.id);};
   return div;
 }

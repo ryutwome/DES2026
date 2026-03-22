@@ -8,9 +8,9 @@ let _storiesFilter='all';
 function renderStories(filter){
   if(filter) _storiesFilter=filter;
   const now=Date.now();
-  const SEVEN_DAYS=7*86400000;
-  const myStories=(S.stories||[]).filter(s=>s.authorId==='user'&&(now-s.timestamp)<SEVEN_DAYS);
-  const allActive=(S.stories||[]).filter(s=>s.authorId!=='user'&&(now-s.timestamp)<SEVEN_DAYS);
+  const THIRTY_DAYS=30*86400000;
+  const myStories=(S.stories||[]).filter(s=>s.authorId==='user'&&(now-s.timestamp)<THIRTY_DAYS);
+  const allActive=(S.stories||[]).filter(s=>s.authorId!=='user'&&(now-s.timestamp)<THIRTY_DAYS);
 
   let feed=allActive;
   if(_storiesFilter==='communities'){
@@ -103,7 +103,7 @@ function buildStoryCard(s, isOwn){
       <div class="story-feed-card__byline">
         <div class="story-feed-card__avatar-wrap">
           ${isOwn?`<div class="story-feed-card__avatar-mine">${avatar(displayName,'xs')}</div>`
-                 :`<div class="chat-avatar-story-ring story-ring--xs">${avatar(name,'xs')}</div>`}
+                 :`<div class="chat-avatar-story-ring story-ring--xs">${avatar(name,'xs',s.authorId)}</div>`}
         </div>
         <span class="story-feed-card__name">${displayName}</span>
         <span class="story-feed-card__dot">·</span>
@@ -180,7 +180,7 @@ async function sendStoryReply(storyId, mode){
     const p=PERSONAS[story.authorId];
     repliesEl2.insertAdjacentHTML('beforeend',`
       <div class="story-comment" style="padding:12px 16px;">
-        <div class="story-comment__avatar">${avatar(p?.name||story.authorName,'sm')}</div>
+        <div class="story-comment__avatar">${avatar(p?.name||story.authorName,'sm',story.authorId)}</div>
         <div class="story-comment__body">
           <div class="story-comment__name">${p?.name||story.authorName}</div>
           <div class="story-comment__text">${aiText}</div>
@@ -248,7 +248,7 @@ function renderStoryView(storyId){
           <div class="story-thread-byline">
             <div class="story-thread-avatar">
               ${isOwn?`<div style="padding:3px;border-radius:50%;background:conic-gradient(#00A884 0deg 360deg);display:inline-flex;">${avatar('You','sm')}</div>`
-                     :`<div class="chat-avatar-story-ring">${avatar(name,'sm')}</div>`}
+                     :`<div class="chat-avatar-story-ring">${avatar(name,'sm',s.authorId)}</div>`}
             </div>
             <div>
               <div style="font-size:15px;font-weight:700;color:#111b21;">${isOwn?(S.userName||'You'):name}</div>

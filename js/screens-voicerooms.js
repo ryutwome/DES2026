@@ -21,7 +21,7 @@ function renderVoiceRooms(){
   Object.values(VOICE_ROOMS).forEach(room=>{
     const div=document.createElement('div');div.className='voice-room-card';
     const firstPersona=PERSONAS[room.personas[0]];
-    const parts=room.personas.slice(0,3).map(id=>avatar(PERSONAS[id]?.name||'?','sm')).join('');
+    const parts=room.personas.slice(0,3).map(id=>avatar(PERSONAS[id]?.name||'?','sm',id)).join('');
     div.innerHTML=`
       <div style="display:flex;align-items:center;gap:14px;padding:12px 16px;cursor:pointer;">
         <div style="position:relative;">${avatar(room.name,'md')}<div style="position:absolute;bottom:0;right:0;width:14px;height:14px;background:#ea4335;border-radius:50%;border:2px solid #fff;"></div></div>
@@ -68,7 +68,7 @@ function renderVoiceRoom(roomId){
   room.personas.forEach((pid,i)=>{
     const p=PERSONAS[pid];if(!p)return;
     const tile=document.createElement('div');tile.className='participant-tile';tile.id='vr-p-'+pid;
-    tile.innerHTML=`<div class="participant-tile__ring${i===0?' speaking':''}">${avatar(p.name,'lg')}</div><div class="participant-tile__name">${p.name.split(' ')[0]}</div>`;
+    tile.innerHTML=`<div class="participant-tile__ring${i===0?' speaking':''}">${avatar(p.name,'lg',pid)}</div><div class="participant-tile__name">${p.name.split(' ')[0]}</div>`;
     grid.appendChild(tile);
   });
 

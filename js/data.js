@@ -5,6 +5,18 @@
 
 /* ── PERSONAS ── */
 /* Unsplash source images per persona — 800x1400 portrait */
+/* Portrait photos for chat list / header avatars */
+const PERSONA_PHOTOS = {
+  meenakshiamma: 'https://randomuser.me/api/portraits/women/58.jpg',
+  rameshbhai:    'https://randomuser.me/api/portraits/men/75.jpg',
+  krishnaswamy:  'https://randomuser.me/api/portraits/men/68.jpg',
+  sunitadevi:    'https://randomuser.me/api/portraits/women/72.jpg',
+  harbhajan:     'https://randomuser.me/api/portraits/men/71.jpg',
+  lalitha:       'https://randomuser.me/api/portraits/women/45.jpg',
+  padmavathi:    'https://randomuser.me/api/portraits/women/62.jpg',
+  abdulrehman:   'https://randomuser.me/api/portraits/men/64.jpg',
+};
+
 const PERSONA_STATUS_IMAGES = {
   meenakshiamma: 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=800&h=1400&fit=crop', // south indian food
   rameshbhai:    'https://images.unsplash.com/photo-1531415074968-036ba1b575da?w=800&h=1400&fit=crop', // cricket

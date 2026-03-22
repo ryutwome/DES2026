@@ -13,7 +13,9 @@ function avInitials(name) {
   const p=name.trim().split(/\s+/);
   return p.length===1?p[0].slice(0,2).toUpperCase():(p[0][0]+p[p.length-1][0]).toUpperCase();
 }
-function avatar(name,size='md') {
+function avatar(name,size='md',personaId=null) {
+  const photo=personaId?PERSONA_PHOTOS[personaId]:null;
+  if(photo) return `<div class="avatar avatar--${size}" style="background:${avColor(name)};overflow:hidden;padding:0;"><img src="${photo}" alt="${name}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;"></div>`;
   return `<div class="avatar avatar--${size}" style="background:${avColor(name)}">${avInitials(name)}</div>`;
 }
 
@@ -64,10 +66,10 @@ function showResearcherDialog(){
   $('rm-yes').onclick=()=>{set({researcherMode:!cur});bk.remove();toast(cur?'Researcher Mode off':'Researcher Mode on');render();};
 }
 
-function header(title,{back=false,avatarName=null,right=[],subtitle=null,white=false}={}){
+function header(title,{back=false,avatarName=null,avatarPersonaId=null,right=[],subtitle=null,white=false}={}){
   let h=`<div class="${white?'header header--white':'header'}">`;
   if(back) h+=`<button class="header__back" onclick="goBack()" aria-label="Back">${IC.back}</button>`;
-  if(avatarName) h+=`<div class="header__avatar">${avatar(avatarName,'sm')}</div>`;
+  if(avatarName) h+=`<div class="header__avatar">${avatar(avatarName,'sm',avatarPersonaId)}</div>`;
   const subClass=subtitle==='online'?'header__subtitle header__subtitle--online':'header__subtitle';
   h+=`<div class="header__title" onclick="headerTap()"><h1>${title}</h1>${subtitle?`<div class="${subClass}">${subtitle}</div>`:''}</div>`;
   if(right.length) h+=`<div class="header__actions">${right.map(b=>`<button class="header__action-btn" aria-label="${b.label}" onclick="${b.fn}">${b.icon}</button>`).join('')}</div>`;
