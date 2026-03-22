@@ -255,8 +255,10 @@ function renderTicTacToe(gameId){
           <span>${persona.name} (◯)</span>
         </div>
       </div>
-      <div class="ttt-board" id="ttt-board"></div>
-      <div class="board-status" id="board-status"></div>
+      <div class="screen__scroll board-game-scroll">
+        <div class="ttt-board" id="ttt-board"></div>
+        <div class="board-status" id="board-status"></div>
+      </div>
     </div>
   `);
   _tttRefresh(gameId);
@@ -339,9 +341,13 @@ function renderConnectFour(gameId){
           <span>${persona.name} 🟡</span>
         </div>
       </div>
-      <div class="c4-drop-row" id="c4-cols"></div>
-      <div class="c4-board" id="c4-board"></div>
-      <div class="board-status" id="board-status"></div>
+      <div class="screen__scroll board-game-scroll">
+        <div class="c4-wrap">
+          <div class="c4-drop-row" id="c4-cols"></div>
+          <div class="c4-board" id="c4-board"></div>
+        </div>
+        <div class="board-status" id="board-status"></div>
+      </div>
     </div>
   `);
   _c4Refresh(gameId);
@@ -439,8 +445,10 @@ function renderMemoryMatch(gameId){
           <span>${persona.name}: <b id="score-ai">${gs.score?.ai||0}</b></span>
         </div>
       </div>
-      <div class="memory-board" id="memory-board"></div>
-      <div class="board-status" id="board-status"></div>
+      <div class="screen__scroll board-game-scroll">
+        <div class="memory-board" id="memory-board"></div>
+        <div class="board-status" id="board-status"></div>
+      </div>
     </div>
   `);
   _memRefresh(gameId);
@@ -453,7 +461,7 @@ function _memRefresh(gameId){
     const btn=document.createElement('button');
     const show=card.flipped||card.matched;
     btn.className='memory-card'+(show?' flipped':'')+(card.matched?' matched':'');
-    btn.textContent=show?card.emoji:'';
+    btn.textContent=show?card.emoji:'?';
     btn.disabled=card.flipped||card.matched||gs.currentTurn!=='user'||gs.flippedIndices.length>=2;
     btn.onclick=()=>memFlip(gameId,i);
     boardEl.appendChild(btn);
@@ -537,7 +545,9 @@ function renderHangman(gameId){
   mount(`
     ${header('🔤 Hangman',{back:true,subtitle:`${persona.name} chose the word`})}
     <div class="screen board-game-screen">
-      <div class="hangman-wrap" id="hangman-wrap"></div>
+      <div class="screen__scroll board-game-scroll">
+        <div class="hangman-wrap" id="hangman-wrap"></div>
+      </div>
     </div>
   `);
   _hangRefresh(gameId);
