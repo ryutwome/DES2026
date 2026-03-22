@@ -5,16 +5,16 @@
 
 /* ── PERSONAS ── */
 /* Unsplash source images per persona — 800x1400 portrait */
-/* Portrait photos — local files in /avatars/ */
+/* Illustrated avatars — DiceBear notionists, downloaded locally */
 const PERSONA_PHOTOS = {
-  meenakshiamma: './avatars/meenakshiamma.jpg',
-  rameshbhai:    './avatars/rameshbhai.jpg',
-  krishnaswamy:  './avatars/krishnaswamy.jpg',
-  sunitadevi:    './avatars/sunitadevi.jpg',
-  harbhajan:     './avatars/harbhajan.jpg',
-  lalitha:       './avatars/lalitha.jpg',
-  padmavathi:    './avatars/padmavathi.jpg',
-  abdulrehman:   './avatars/abdulrehman.jpg',
+  meenakshiamma: './avatars/meenakshiamma.svg',
+  rameshbhai:    './avatars/rameshbhai.svg',
+  krishnaswamy:  './avatars/krishnaswamy.svg',
+  sunitadevi:    './avatars/sunitadevi.svg',
+  harbhajan:     './avatars/harbhajan.svg',
+  lalitha:       './avatars/lalitha.svg',
+  padmavathi:    './avatars/padmavathi.svg',
+  abdulrehman:   './avatars/abdulrehman.svg',
 };
 
 const PERSONA_STATUS_IMAGES = {
