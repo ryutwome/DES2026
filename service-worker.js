@@ -43,7 +43,12 @@ self.addEventListener('fetch', (event) => {
   if (event.request.url.includes('workers.dev') || event.request.url.includes('anthropic')) {
     return; /* Let API calls pass through without caching */
   }
+  /* Network-first: always try fresh, fall back to cache if offline */
   event.respondWith(
-    caches.match(event.request).then((cached) => cached || fetch(event.request))
+    fetch(event.request).then((res) => {
+      const clone = res.clone();
+      caches.open(CACHE_NAME).then((c) => c.put(event.request, clone));
+      return res;
+    }).catch(() => caches.match(event.request))
   );
 });
