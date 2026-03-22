@@ -10,7 +10,7 @@ const HANGMAN_WORDS = [
   'SILVER','PLANET','CLOUDS','GUITAR','BASKET','WINDOW'
 ];
 
-const MEMORY_EMOJIS = ['🍎','🍊','🍋','🍇','🍓','🍑','🥝','🍍'];
+const MEMORY_EMOJIS = ['apple','orange','lemon','grapes','strawberry','peach','kiwi','pineapple'];
 
 // Static lobby rooms — AI personas waiting to play
 const SEED_LOBBIES = [
@@ -21,12 +21,12 @@ const SEED_LOBBIES = [
 ];
 
 const gameTypes = {
-  antakshari:        {id:'antakshari',        emoji:'🎵', name:'Antakshari',       desc:'Song chain — last letter starts next song',       category:'chat'},
-  'trivia-bollywood':{id:'trivia-bollywood',  emoji:'🎬', name:'Bollywood Trivia', desc:'Questions about Hindi films',                     category:'chat'},
-  tictactoe:         {id:'tictactoe',         emoji:'⭕', name:'Tic Tac Toe',      desc:'Classic 3-in-a-row — can you beat the AI?',       category:'board'},
-  connectfour:       {id:'connectfour',       emoji:'🔴', name:'Connect Four',     desc:'Drop pieces, four in a row wins',                 category:'board'},
-  memory:            {id:'memory',            emoji:'🃏', name:'Memory Match',     desc:'Flip cards and find matching pairs',              category:'board'},
-  hangman:           {id:'hangman',           emoji:'🔤', name:'Hangman',          desc:'Guess the word before the figure is complete',    category:'word'},
+  antakshari:        {id:'antakshari',        emoji:'music',   name:'Antakshari',       desc:'Song chain — last letter starts next song',       category:'chat'},
+  'trivia-bollywood':{id:'trivia-bollywood',  emoji:'film',    name:'Bollywood Trivia', desc:'Questions about Hindi films',                     category:'chat'},
+  tictactoe:         {id:'tictactoe',         emoji:'circle-o',name:'Tic Tac Toe',      desc:'Classic 3-in-a-row — can you beat the AI?',       category:'board'},
+  connectfour:       {id:'connectfour',       emoji:'red-circle',name:'Connect Four',   desc:'Drop pieces, four in a row wins',                 category:'board'},
+  memory:            {id:'memory',            emoji:'joker',   name:'Memory Match',     desc:'Flip cards and find matching pairs',              category:'board'},
+  hangman:           {id:'hangman',           emoji:'text-abc',name:'Hangman',          desc:'Guess the word before the figure is complete',    category:'word'},
 };
 
 /* ── CREATE GAME STATE ── */
@@ -48,7 +48,12 @@ function createGameState(gameId, type, personaId) {
 
 /* ── GAMES HUB ── */
 function renderGames(){
-  const activeGames=Object.values(S.games).filter(g=>g.status==='active');
+  // In-progress = active + no winner yet (board games) or no completedAt (chat games)
+  const inProgress=g=>g.status==='active'&&!g.winner;
+  const lastGame=S.lastGameId?S.games[S.lastGameId]:null;
+  const showRejoin=lastGame&&inProgress(lastGame);
+  // Hide lobby cards for game types already in progress
+  const takenTypes=new Set(Object.values(S.games).filter(inProgress).map(g=>g.type));
   const recentGames=Object.values(S.games).filter(g=>g.status==='completed').slice(-5);
   mount(`
     ${resBar()}
@@ -63,26 +68,44 @@ function renderGames(){
   `);
   const sc=$('games-scroll');
   sc.insertAdjacentHTML('beforeend',`<button class="start-game-btn" onclick="showGameSheet(null)">${IC.add} Start New Game</button>`);
-  if(activeGames.length){
-    sc.insertAdjacentHTML('beforeend','<div class="section-heading">Active Games</div>');
-    activeGames.forEach(g=>sc.appendChild(gameCard(g)));
+  if(showRejoin){
+    sc.insertAdjacentHTML('beforeend','<div class="section-heading">Continue Playing</div>');
+    sc.appendChild(rejoinCard(lastGame));
   }
-  sc.insertAdjacentHTML('beforeend','<div class="section-heading">Open Games</div>');
-  SEED_LOBBIES.forEach(lobby=>sc.appendChild(lobbyCard(lobby)));
+  const availableLobbies=SEED_LOBBIES.filter(l=>!takenTypes.has(l.type));
+  if(availableLobbies.length){
+    sc.insertAdjacentHTML('beforeend','<div class="section-heading">Open Games</div>');
+    availableLobbies.forEach(lobby=>sc.appendChild(lobbyCard(lobby)));
+  }
   if(recentGames.length){
     sc.insertAdjacentHTML('beforeend','<div class="section-heading">Recent</div>');
     recentGames.reverse().forEach(g=>sc.appendChild(gameCard(g)));
   }
 }
 
-function gameCard(g){
+function rejoinCard(g){
   const p=PERSONAS[g.opponentId]; const gt=gameTypes[g.type]||{emoji:'🎮',name:g.type};
+  const div=document.createElement('div'); div.className='game-lobby-card';
+  div.innerHTML=`
+    <div class="game-lobby-card__icon">${ej(gt.emoji,'30px')}</div>
+    <div class="game-lobby-card__body">
+      <div class="game-lobby-card__title">${gt.name}</div>
+      <div class="game-lobby-card__players">
+        ${avatar(p.name,'sm',p.id)}
+        <span>vs ${p?.name||'?'}</span>
+      </div>
+    </div>
+    <button class="game-lobby-join-btn" onclick="navigate('#/game/${g.id}/${g.type}')">Rejoin</button>
+  `;
+  return div;
+}
+
+function gameCard(g){
+  const p=PERSONAS[g.opponentId]; const gt=gameTypes[g.type]||{emoji:'game',name:g.type};
   const div=document.createElement('div'); div.className='game-card';
-  const gtIconMap={antakshari:'1f3b5','trivia-bollywood':'1f3ac'};
-  const gtIcon=gtIconMap[g.type]?`<img src="./icons/groups/${gtIconMap[g.type]}.svg" style="width:30px;height:30px;" alt="">`:(gt.emoji||'🎮');
   const isBoardGame=['tictactoe','connectfour','memory','hangman'].includes(g.type);
   const meta=g.status==='completed'?'Completed':isBoardGame?'In progress':'Your turn';
-  div.innerHTML=`<div class="game-card__icon">${gtIcon}</div><div class="game-card__body"><div class="game-card__title">${gt.name}</div><div class="game-card__subtitle">vs ${p?.name||'?'}</div><div class="game-card__meta">${meta}</div></div>`;
+  div.innerHTML=`<div class="game-card__icon">${ej(gt.emoji,'30px')}</div><div class="game-card__body"><div class="game-card__title">${gt.name}</div><div class="game-card__subtitle">vs ${p?.name||'?'}</div><div class="game-card__meta">${meta}</div></div>`;
   if(g.status==='active') div.onclick=()=>navigate(`#/game/${g.id}/${g.type}`);
   return div;
 }
@@ -91,7 +114,7 @@ function lobbyCard(lobby){
   const gt=gameTypes[lobby.type]; const p=PERSONAS[lobby.personaId];
   const div=document.createElement('div'); div.className='game-lobby-card';
   div.innerHTML=`
-    <div class="game-lobby-card__icon">${gt.emoji}</div>
+    <div class="game-lobby-card__icon">${ej(gt.emoji,'30px')}</div>
     <div class="game-lobby-card__body">
       <div class="game-lobby-card__title">${gt.name}</div>
       <div class="game-lobby-card__players">
@@ -123,7 +146,7 @@ function showGameSheet(fromPersonaId){
   const typePicker=$('gs-type');
   Object.values(gameTypes).forEach(gt=>{
     const b=document.createElement('button'); b.className='game-type-option';
-    b.innerHTML=`<span class="game-type-option__emoji">${gt.emoji}</span><div class="game-type-option__body"><div class="game-type-option__name">${gt.name}</div><div class="game-type-option__desc">${gt.desc}</div></div>`;
+    b.innerHTML=`<span class="game-type-option__emoji">${ej(gt.emoji,'28px')}</span><div class="game-type-option__body"><div class="game-type-option__name">${gt.name}</div><div class="game-type-option__desc">${gt.desc}</div></div>`;
     b.onclick=()=>{typePicker.querySelectorAll('.game-type-option').forEach(x=>x.classList.remove('selected'));b.classList.add('selected');selType=gt.id;checkReady();};
     typePicker.appendChild(b);
   });
@@ -149,6 +172,7 @@ function showGameSheet(fromPersonaId){
 
 /* ── GAME SCREEN DISPATCHER ── */
 function renderGame(gameId, gameType){
+  set({lastGameId:gameId}); // track for rejoin button
   if(gameType==='tictactoe')   return renderTicTacToe(gameId);
   if(gameType==='connectfour') return renderConnectFour(gameId);
   if(gameType==='memory')      return renderMemoryMatch(gameId);
@@ -161,10 +185,10 @@ function renderChatGame(gameId, gameType){
   const gs=S.games[gameId];
   const persona=gs?PERSONAS[gs.opponentId]:null;
   if(!gs||!persona){navigate('#/games');return;}
-  const gt=gameTypes[gameType]||{emoji:'🎮',name:gameType};
+  const gt=gameTypes[gameType]||{emoji:'game',name:gameType};
 
   mount(`
-    ${header(`${gt.emoji} ${gt.name}`,{back:true,subtitle:`vs ${persona.name}`})}
+    ${header(`${ej(gt.emoji)} ${gt.name}`,{back:true,subtitle:`vs ${persona.name}`})}
     <div class="game-status-bar" id="game-status">${renderGameStatus(gs)}</div>
     <div class="screen game-screen" id="game-wrap">
       <div class="chat-messages" id="game-msgs" style="background:#ECE5DD;"></div>
@@ -280,7 +304,7 @@ function _tttRefresh(gameId){
   if(aiEl)   aiEl.classList.toggle('active',gs.currentTurn==='ai'&&!gs.winner);
   if(scoreEl) scoreEl.textContent=`${gs.score?.user||0} – ${gs.score?.ai||0}`;
   const statusEl=$('board-status'); if(!statusEl)return;
-  if(gs.winner==='user')       statusEl.innerHTML=`<div class="board-result win">You win! 🎉</div><button class="board-rematch-btn" onclick="tttRematch('${gameId}')">Play Again</button>`;
+  if(gs.winner==='user')       statusEl.innerHTML=`<div class="board-result win">You win! ${ej('party')}</div><button class="board-rematch-btn" onclick="tttRematch('${gameId}')">Play Again</button>`;
   else if(gs.winner==='ai')    statusEl.innerHTML=`<div class="board-result lose">${PERSONAS[gs.opponentId].name} wins!</div><button class="board-rematch-btn" onclick="tttRematch('${gameId}')">Play Again</button>`;
   else if(gs.winner==='draw')  statusEl.innerHTML=`<div class="board-result draw">It's a draw!</div><button class="board-rematch-btn" onclick="tttRematch('${gameId}')">Play Again</button>`;
   else if(gs.currentTurn==='ai') statusEl.textContent=`${PERSONAS[gs.opponentId].name} is thinking…`;
@@ -328,17 +352,17 @@ function renderConnectFour(gameId){
   const gs=S.games[gameId]; const persona=gs?PERSONAS[gs.opponentId]:null;
   if(!gs||!persona){navigate('#/games');return;}
   mount(`
-    ${header('🔴 Connect Four',{back:true,subtitle:`vs ${persona.name}`})}
+    ${header(`${ej('red-circle')} Connect Four`,{back:true,subtitle:`vs ${persona.name}`})}
     <div class="screen board-game-screen">
       <div class="board-player-bar">
         <div class="board-player" id="bp-user">
           ${avatar(S.userName||'You','sm','user')}
-          <span>You 🔴</span>
+          <span>You ${ej('red-circle')}</span>
         </div>
         <div class="board-score-pill" id="bp-score">${gs.score?.user||0} – ${gs.score?.ai||0}</div>
         <div class="board-player" id="bp-ai">
           ${avatar(persona.name,'sm',persona.id)}
-          <span>${persona.name} 🟡</span>
+          <span>${persona.name} ${ej('yellow-circle')}</span>
         </div>
       </div>
       <div class="screen__scroll board-game-scroll">
@@ -378,7 +402,7 @@ function _c4Refresh(gameId){
   if(aiEl)   aiEl.classList.toggle('active',gs.currentTurn==='ai'&&!gs.winner);
   if(scoreEl) scoreEl.textContent=`${gs.score?.user||0} – ${gs.score?.ai||0}`;
   const statusEl=$('board-status'); if(!statusEl)return;
-  if(gs.winner==='user')       statusEl.innerHTML=`<div class="board-result win">You win! 🎉</div><button class="board-rematch-btn" onclick="c4Rematch('${gameId}')">Play Again</button>`;
+  if(gs.winner==='user')       statusEl.innerHTML=`<div class="board-result win">You win! ${ej('party')}</div><button class="board-rematch-btn" onclick="c4Rematch('${gameId}')">Play Again</button>`;
   else if(gs.winner==='ai')    statusEl.innerHTML=`<div class="board-result lose">${PERSONAS[gs.opponentId].name} wins!</div><button class="board-rematch-btn" onclick="c4Rematch('${gameId}')">Play Again</button>`;
   else if(gs.winner==='draw')  statusEl.innerHTML=`<div class="board-result draw">Board full — draw!</div><button class="board-rematch-btn" onclick="c4Rematch('${gameId}')">Play Again</button>`;
   else if(gs.currentTurn==='ai') statusEl.textContent=`${PERSONAS[gs.opponentId].name} is thinking…`;
@@ -432,7 +456,7 @@ function renderMemoryMatch(gameId){
   const gs=S.games[gameId]; const persona=gs?PERSONAS[gs.opponentId]:null;
   if(!gs||!persona){navigate('#/games');return;}
   mount(`
-    ${header('🃏 Memory Match',{back:true,subtitle:`vs ${persona.name}`})}
+    ${header(`${ej('joker')} Memory Match`,{back:true,subtitle:`vs ${persona.name}`})}
     <div class="screen board-game-screen">
       <div class="board-player-bar">
         <div class="board-player" id="bp-user">
@@ -461,7 +485,7 @@ function _memRefresh(gameId){
     const btn=document.createElement('button');
     const show=card.flipped||card.matched;
     btn.className='memory-card'+(show?' flipped':'')+(card.matched?' matched':'');
-    btn.textContent=show?card.emoji:'?';
+    btn.innerHTML=show?ej(card.emoji,'32px'):'';
     btn.disabled=card.flipped||card.matched||gs.currentTurn!=='user'||gs.flippedIndices.length>=2;
     btn.onclick=()=>memFlip(gameId,i);
     boardEl.appendChild(btn);
@@ -474,7 +498,7 @@ function _memRefresh(gameId){
   const statusEl=$('board-status'); if(!statusEl)return;
   const total=gs.cards.length/2, matched=gs.cards.filter(c=>c.matched).length/2;
   if(matched===total){
-    const w=gs.score.user>gs.score.ai?'You win! 🎉':gs.score.ai>gs.score.user?`${PERSONAS[gs.opponentId].name} wins!`:"It's a tie!";
+    const w=gs.score.user>gs.score.ai?`You win! ${ej('party')}`:gs.score.ai>gs.score.user?`${PERSONAS[gs.opponentId].name} wins!`:"It's a tie!";
     statusEl.innerHTML=`<div class="board-result win">${w}</div><button class="board-rematch-btn" onclick="memRematch('${gameId}')">Play Again</button>`;
   } else if(gs.currentTurn==='ai'){
     statusEl.textContent=`${PERSONAS[gs.opponentId].name} is looking…`;
@@ -543,7 +567,7 @@ function renderHangman(gameId){
   const gs=S.games[gameId]; const persona=gs?PERSONAS[gs.opponentId]:null;
   if(!gs||!persona){navigate('#/games');return;}
   mount(`
-    ${header('🔤 Hangman',{back:true,subtitle:`${persona.name} chose the word`})}
+    ${header(`${ej('text-abc')} Hangman`,{back:true,subtitle:`${persona.name} chose the word`})}
     <div class="screen board-game-screen">
       <div class="screen__scroll board-game-scroll">
         <div class="hangman-wrap" id="hangman-wrap"></div>
@@ -581,7 +605,7 @@ function _hangRefresh(gameId){
     </svg>
     <div class="hangman-word">${wordHtml}</div>
     <div class="hangman-hint">${attempts} / ${max} wrong guesses</div>
-    ${won?`<div class="board-result win">You got it! 🎉</div><button class="board-rematch-btn" onclick="hangRematch('${gameId}')">New Word</button>`:''}
+    ${won?`<div class="board-result win">You got it! ${ej('party')}</div><button class="board-rematch-btn" onclick="hangRematch('${gameId}')">New Word</button>`:''}
     ${lost&&!won?`<div class="board-result lose">The word was <strong>${word}</strong></div><button class="board-rematch-btn" onclick="hangRematch('${gameId}')">Try Again</button>`:''}
     ${!won&&!lost?`<div class="hangman-keys">${keys}</div>`:''}
   `;
