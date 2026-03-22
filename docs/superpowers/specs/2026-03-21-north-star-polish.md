@@ -12,74 +12,77 @@ Two independent work streams tackled in one pass. No new features — only fixin
 
 ## Stream A — Broken Things (Goal 4)
 
-### A1. Games completely broken
-`gameTypes` array objects have no `id` field. When user picks a game type, `selType = gt.id` is always `undefined`. Games can never start.
+### A1. Unread badge never increments
+`AppState.unreadChats` is only cleared (on chat open), never set. The Chats tab badge always shows 0.
 
-**Fix:** Add `id` field to each `gameType` object in `app.js` (or wherever `gameTypes` is defined).
+**Fix:** In the AI message handler inside `renderChat` (app.js), when an incoming persona message is appended and `window.location.hash !== '#/chat?id=' + personaId`, increment `AppState.unreadChats[personaId] = (AppState.unreadChats[personaId] || 0) + 1`. Persist via `setState`. The existing clear-on-open logic is correct and stays.
 
-### A2. Unread badge never increments
-`S.unreadChats` is only cleared (on chat open), never set. The Chats tab badge always shows 0.
+### A2. Story title blank on direct post
+`makeStory` in `js/state.js` returns `{ id, authorId, authorName, text, timestamp, replies }` — no `title` or `imageUrl` fields. `app.js` has a separate `mkStory` (line 295) that does have both fields, but the compose sheet in `screens-stories.js` (line 293) calls `makeStory` from state.js, not `mkStory`.
 
-**Fix:** In the AI message handler (where an incoming persona message is appended to `AppState.chats`), if the current screen is not `#/chat/:personaId`, increment `AppState.unreadChats[personaId]`. Persist. The existing clear-on-open logic is correct and stays.
+Result: user-posted stories have `undefined` for both `title` and `imageUrl`. The story card falls back to `s.text.slice(0,60)` for display, but the story thread shows no title at all (line 1292: `${s.title ? ...}` is falsy).
 
-### A3. Story title blank on direct post
-If user types in the compose sheet and posts without tapping "Polish", `story.title` is empty string. `buildStoryCard` uses `s.title || s.text.slice(0,60)` — so the card shows truncated text as title. But the thread screen also shows no title.
+**Fix:** In the compose post handler (`screens-stories.js` line 293), generate a title from the first 8 words, and add `imageUrl` defaulting to empty. Replace:
+```js
+const story = makeStory('user', 'You', text);
+```
+With:
+```js
+const words = text.split(' ');
+const autoTitle = words.slice(0, 8).join(' ') + (words.length > 8 ? '...' : '');
+const story = { ...makeStory('user', 'You', text), title: autoTitle, imageUrl: '' };
+```
 
-**Fix:** In the post handler, before creating the story object, if `title` is empty, auto-generate: `title = text.split(' ').slice(0, 8).join(' ') + (text.split(' ').length > 8 ? '...' : '')`. Simple, client-side, no API call.
+### A3. Dead code — toggleStoryComments / renderStoryComments
+These two functions are vestigial from an old inline comments design. No UI triggers them. Safe to delete.
 
-### A4. Dead code — filterChats/filterChips naming mismatch
-`filterChats` is referenced in markup but the actual function is `filterChips`. This causes a JS error on keystroke in the Communities Discover search.
-
-**Fix:** Rename the function call in the HTML string to match the actual function name `filterChips`. Or rename the function to `filterChats` — whichever is the single reference point.
-
-### A5. Dead code — toggleStoryComments / renderStoryComments
-These functions are never triggered from any UI but `renderStoryComments` is called from `toggleStoryComments`. They are vestigial from an old inline comments design. Safe to delete.
-
-**Fix:** Remove both functions from `app.js`.
+**Fix:** Remove both `toggleStoryComments` and `renderStoryComments` from `app.js`.
 
 ---
 
 ## Stream B — WhatsApp UI Fidelity (Goal 2)
 
 ### B1. Header colour inconsistency
-Real WhatsApp (2024+): white headers everywhere except the main Chats list (which uses `#075E54` green). Current prototype: Communities and Voice Rooms screens still render green headers.
+Real WhatsApp (2024+): white headers everywhere except the main Chats list (which shows `#00A884`-coloured "WhatsApp" text on white). Current prototype: Communities and Voice Rooms screens still render green (`#075E54`) headers with white text.
 
-**Fix:** Switch Communities list, Community detail, Voice Rooms list, Voice Room detail headers to white (`#FFFFFF`) with dark text and icons (`#111B21`). Match the `header--white` pattern already used on Stories.
+**Fix:** Switch Communities list, Community detail, Voice Rooms list, Voice Room detail headers to white (`#FFFFFF`) with dark text/icons (`#111B21`). The CSS pattern `.header--white` is already used on Stories screens — extend it to these screens. Override any screen-specific `background` declarations (e.g. `.voice-room-screen .header { background: #1f2c34 }` needs to be removed or adjusted).
 
-### B2. Chat list header — make it match WhatsApp exactly
-Real WhatsApp chat list header: "WhatsApp" title left-aligned (or the app name), camera icon + search icon + three-dot menu right side. Current header is centered title.
+### B2. Chat list header — left-align title
+Real WhatsApp chat list header: "WhatsApp" title is left-aligned (not centred), with camera + search + three-dot icons on the right.
 
-**Fix:** Left-align the title text on the Chats screen header. Ensure the three action icons (camera, search, more) are on the right.
+**Fix:** In the Chats screen header HTML (app.js around line 828), the title div `<h1 style="color:#00A884;">WhatsApp</h1>` needs `flex: 1` on its container and `text-align: left`. Check `.header__title` CSS — if it's `text-align: center`, add a modifier class `.header__title--left` or apply inline style only for the Chats screen.
 
-### B3. Bottom nav — active tab indicator
-Real WhatsApp: active tab has icon + label in white (on green background) or teal underline depending on version. Check the current implementation matches — if the active state only highlights the label but not the icon, fix both.
+### B3. Story compose — category image picker
+User-posted stories have `imageUrl: ''` so cards look sparse. Add 6 category buttons in the compose sheet. Tapping one sets a preview image.
 
-### B4. Story compose — image picker
-User-posted stories currently have no image. Cards look sparse. Add a one-tap category image picker in the compose sheet: 6 category buttons (Food, Nature, Faith, Cricket, Music, Memory) mapping to curated Unsplash URLs. Selecting a category sets `story.image`. No API cost.
+**Location:** Inside `showStoryComposeSheet()` in `screens-stories.js`, after the `<textarea>` and before the `<div class="compose-actions">`.
 
-Category → Unsplash URL map:
-- Food: `photo-1546069901-ba9599a7e63c`
-- Nature: `photo-1447752875215-b2761acb3c5d`
-- Faith: `photo-1507692049790-de6a72a1a862`
-- Cricket: `photo-1531415074968-036ba1b575da`
-- Music: `photo-1493225457124-a3eb161ffa5f`
-- Memory: `photo-1516450360452-9312f5e86fc7`
+**Categories and full Unsplash URLs:**
+```
+Food     → https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=800&h=400&fit=crop
+Nature   → https://images.unsplash.com/photo-1447752875215-b2761acb3c5d?w=800&h=400&fit=crop
+Faith    → https://images.unsplash.com/photo-1507692049790-de6a72a1a862?w=800&h=400&fit=crop
+Cricket  → https://images.unsplash.com/photo-1531415074968-036ba1b575da?w=800&h=400&fit=crop
+Music    → https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=800&h=400&fit=crop
+Memory   → https://images.unsplash.com/photo-1516450360452-9312f5e86fc7?w=800&h=400&fit=crop
+```
 
-All at `?w=800&h=600&fit=crop` — landscape, matches AI story cards.
+**Implementation:**
+1. Add a `let selectedImageUrl = ''` variable in the sheet closure.
+2. Render 6 small chips with category label. On click: set `selectedImageUrl`, highlight active chip, show a small preview `<img>` in the sheet.
+3. In the post handler, use `selectedImageUrl` in the story object: `imageUrl: selectedImageUrl`.
+4. CSS: chips in a 2×3 grid, each ~44px tall, with `.active` highlighted in teal.
 
 ---
 
 ## Implementation Order
 
-1. A1 — Fix gameTypes id (5 min, trivial)
-2. A2 — Fix unread badge (10 min)
-3. A3 — Fix story title (5 min)
-4. A4 — Fix filterChats naming (5 min)
-5. A5 — Remove dead comment code (5 min)
-6. B1 — Fix header colours (20 min)
-7. B2 — Left-align chat list title (5 min)
-8. B3 — Verify bottom nav active state (10 min)
-9. B4 — Story compose image picker (20 min)
+1. A1 — Fix unread badge (10 min)
+2. A2 — Fix story title on post (10 min)
+3. A3 — Remove dead comment functions (5 min)
+4. B1 — Fix header colours on Communities + Voice Rooms (20 min)
+5. B2 — Left-align chat list title (5 min)
+6. B3 — Story compose image picker (25 min)
 
 ---
 
@@ -87,5 +90,6 @@ All at `?w=800&h=600&fit=crop` — landscape, matches AI story cards.
 
 - Loading/skeleton states (significant effort, future session)
 - Story scroll position fix (low impact)
-- Status viewer overlay.id timing bug (works by accident, low risk)
 - Back-stack scroll restoration (navigation concern, future session)
+- gameTypes id — already correct in codebase
+- filterChats/filterChips naming — already consistent in codebase

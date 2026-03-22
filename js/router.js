@@ -35,6 +35,7 @@ function parseRoute(hash){
 }
 
 function render(){
+  if(window._vrCleanup){window._vrCleanup();window._vrCleanup=null;}
   const hash=window.location.hash||'#/';
   const{screen,params}=parseRoute(hash);
   if(!S.onboardingDone){set({onboardingDone:true,interests:['cooking','cricket','music','gardening','literature','spirituality']});seedData(S.interests);}

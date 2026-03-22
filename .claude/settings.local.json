@@ -13,7 +13,9 @@
       "Bash(*)",
       "Glob",
       "Grep",
-      "Read"
+      "Read",
+      "WebSearch",
+      "WebFetch"
     ]
   }
 }
