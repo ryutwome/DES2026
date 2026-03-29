@@ -1635,10 +1635,14 @@ body {
   line-height: 1.7;
 }
 
-/* Chess AI strength note */
+/* Chess move instruction and AI note */
 .chess-ai-note {
-  font-size: 0.75rem; color: #667781; text-align: center;
-  padding: 4px 0 8px; font-style: italic;
+  font-size: 0.85rem; color: #111b21; text-align: center;
+  padding: 4px 0 4px; font-weight: 500;
+}
+.chess-ai-note--sub {
+  font-size: 0.75rem; color: #667781; font-weight: normal;
+  padding: 0 0 8px; font-style: italic;
 }
 
 /* ── GAME CHAT ── */
@@ -1910,6 +1914,15 @@ body {
 .tambola-empty { background: #f0f0f0; cursor: default; }
 .tambola-marked { background: #00A884; color: #fff; }
 .tambola-win { margin-top: 12px; font-size: 1.2rem; font-weight: 700; color: #00A884; }
+.tambola-cell--row-win {
+  background: #d9fdd3 !important;
+  box-shadow: 0 0 0 3px #00A884;
+  animation: tambola-row-flash 1.5s ease;
+}
+@keyframes tambola-row-flash {
+  0%, 100% { box-shadow: 0 0 0 3px #00A884; }
+  50% { box-shadow: 0 0 0 6px #00A884, 0 0 12px #00A884; }
+}
 .game-over-msg { margin-top: 12px; font-size: 1rem; color: #666; }
 
 /* ── TEEN PATTI ── */

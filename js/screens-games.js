@@ -805,6 +805,17 @@ function markTambola(gameId, n){
   if(!gs.gameState.marked.includes(n) && gs.gameState.called.includes(n)){
     gs.gameState.marked.push(n);
     S.games[gameId]=gs; saveS(); renderGame(gameId,'tambola');
+    // Check each row for a newly-completed line (all 5 non-blank cells marked)
+    const ts = gs.gameState;
+    for(let r=0;r<3;r++){
+      const rowNums = ts.ticket[r].filter(v=>v>0);
+      if(rowNums.length===5 && rowNums.every(v=>ts.marked.includes(v)) && !checkTambolaWin(ts)){
+        // Highlight every cell in the completed row briefly
+        const rows = document.querySelectorAll('.tambola-ticket tr');
+        if(rows[r]) rows[r].querySelectorAll('.tambola-cell:not(.tambola-empty)').forEach(td=>td.classList.add('tambola-cell--row-win'));
+        toast(ej('sparkles')+' Line complete! Jaldi Five!');
+      }
+    }
   }
 }
 
@@ -867,6 +878,11 @@ function showTeenPattiRules(){
     <div class="rules-overlay__box">
       <div class="rules-overlay__title">${ej('joker','20px')} Teen Patti Hands</div>
       <div class="rules-overlay__body">
+        <p style="margin:0 0 10px;line-height:1.7"><strong>How to play:</strong><br>
+        • Look at your 3 cards<br>
+        • <strong>Call</strong> &mdash; you think your hand beats the dealer. Cards are revealed and the better hand wins chips.<br>
+        • <strong>Fold</strong> &mdash; give up this round. You lose nothing extra.<br>
+        • Best hand wins!</p>
         <ol style="margin:0;padding-left:18px;line-height:1.8">
           <li><strong>Trail</strong> &mdash; Three of a kind (best)</li>
           <li><strong>Pure Sequence</strong> &mdash; Straight flush</li>
@@ -956,7 +972,8 @@ function renderChess(gameId){
     <div class="screen board-game-screen">
       <div class="screen__scroll board-game-scroll">
         <div class="chess-wrap">
-          <div class="chess-ai-note">Beginner AI &mdash; plays random legal moves</div>
+          <div class="chess-ai-note">Tap a piece to select it, then tap the square to move.</div>
+          <div class="chess-ai-note chess-ai-note--sub">Playing against a beginner AI.</div>
           <div id="${id}" style="width:min(340px,90vw)"></div>
           <button class="btn-secondary chess-reset" onclick="resetChess('${gameId}')">New Game</button>
         </div>
