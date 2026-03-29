@@ -243,8 +243,7 @@ const COMMUNITIES = {
       {from:'rameshbhai', text:{hi:'हाहा हरभजन जी! पर मानना पड़ेगा — वो लास्ट 3 ओवर्स प्योर सिनेमा थे, है ना? 🙏', mr:'हाहा हरभजन जी! पण मानावं लागेल — ते शेवटचे 3 ओव्हर्स प्योर सिनेमा होते, नाही? 🙏'}},
       {from:'krishnaswamy', text:{hi:'सिनेमा बिल्कुल सही शब्द है। ड्रामैटिक पर इफेक्टिव। अगले मैच के सिलेक्शन पर सबकी क्या राय है?', mr:'सिनेमा अगदी बरोबर शब्द आहे. ड्रामॅटिक पण इफेक्टिव्ह. पुढच्या मॅचच्या सिलेक्शनबद्दल सगळ्यांचं काय मत आहे?'}},
       {from:'harbhajan', text:{hi:'आज का मैच देखा? अरे यार बिल्कुल बोरिंग था... कोई इंटेंसिटी ही नहीं थी। टीम को नींद से जगाओ कोई।', mr:'आजचा मॅच बघितला? अरे यार अगदी बोरिंग होता... काही इंटेन्सिटीच नव्हती. टीमला कोणीतरी झोपेतून उठवा.'}},
-      {from:'rameshbhai', text:{hi:'हरभजन जी से पूरी तरह सहमत नहीं हूँ — बैटिंग ठीक थी, बॉलिंग में ज़रूर दिक्कत थी। पर बोरिंग? नहीं भाई, 8वें ओवर तक तो मज़ा आया।', mr:'हरभजन जींशी पूर्णपणे सहमत नाही — बॅटिंग ठीक होती, बॉलिंगमध्ये नक्कीच अडचण होती. पण बोरिंग? नाही भाई, 8व्या ओव्हरपर्यंत तर मज्जा आली.'}},
-      {from:'harbhajan', text:{hi:'अरे यार, क्रिकेट ट्रिविया खेलते हैं? मैं चैलेंज करता हूँ सबको — कौन हार्डेस्ट क्वेश्चन का जवाब दे सकता है! 🏏', mr:'अरे यार, क्रिकेट ट्रिव्हिया खेळूया? मी सगळ्यांना चॅलेंज करतो — कोण सर्वात कठीण प्रश्नाचं उत्तर देऊ शकतो! 🏏'}}
+      {from:'rameshbhai', text:{hi:'हरभजन जी से पूरी तरह सहमत नहीं हूँ — बैटिंग ठीक थी, बॉलिंग में ज़रूर दिक्कत थी। पर बोरिंग? नहीं भाई, 8वें ओवर तक तो मज़ा आया।', mr:'हरभजन जींशी पूर्णपणे सहमत नाही — बॅटिंग ठीक होती, बॉलिंगमध्ये नक्कीच अडचण होती. पण बोरिंग? नाही भाई, 8व्या ओव्हरपर्यंत तर मज्जा आली.'}}
     ]
   },
   bollywood: {
@@ -259,8 +258,7 @@ const COMMUNITIES = {
       {from:'meenakshiamma', text:{hi:'सेरी सेरी... पर दीवार भी मास्टरपीस है... अमिताभ अपने बेस्ट पे... पावम आज कोई ऐक्टर उनके जैसा नहीं 🙏', mr:'सेरी सेरी... पण दीवार पण मास्टरपीस आहे... अमिताभ त्यांच्या बेस्टवर... पावम आज कोणी ऍक्टर त्यांच्यासारखा नाही 🙏'}},
       {from:'rameshbhai', text:{hi:'किशोर कुमार के उन दिनों के गाने... I tell you आज का म्यूज़िक तो बस शोर है... सबको कौन सा गाना सबसे ज़्यादा याद दिलाता है? 🌹', mr:'किशोर कुमारची त्या दिवसांची गाणी... I tell you आजचं म्युझिक म्हणजे फक्त गोंगाट... सगळ्यांना कोणतं गाणं सगळ्यात जास्त आठवण करून देतं? 🌹'}},
       {from:'abdulrehman', text:{hi:'जनाब एक बात कहूँ — वो नई फिल्म देखी जो सब लोग बोल रहे थे? मुझे ज़्यादा पसंद नहीं आई... शोर बहुत था, भावना कम।', mr:'जनाब एक गोष्ट सांगू — ती नवीन फिल्म बघितली जी सगळे बोलत होते? मला फारशी आवडली नाही... आवाज खूप होता, भावना कमी.'}},
-      {from:'meenakshiamma', text:{hi:'अब्दुल भाई से थोड़ा असहमत हूँ... मुझे कुछ सीन्स बहुत अच्छे लगे। पर हाँ, पुरानी फिल्मों जैसा दिल नहीं छूती। वो बात ही अलग थी।', mr:'अब्दुल भाईंशी थोडं असहमत आहे... मला काही सीन्स खूप आवडले. पण हो, जुन्या फिल्मांसारखं मन स्पर्श करत नाही. ती गोष्टच वेगळी होती.'}},
-      {from:'rameshbhai', text:{hi:'अरे कोई अंताक्षरी खेलेगा? मैं शुरू करता हूँ — "मेरे सपनों की रानी..." 😄 अब किसकी बारी है?', mr:'अरे कोणी अंताक्षरी खेळणार? मी सुरुवात करतो — "मेरे सपनों की रानी..." 😄 आता कोणाची पाळी?'}}
+      {from:'meenakshiamma', text:{hi:'अब्दुल भाई से थोड़ा असहमत हूँ... मुझे कुछ सीन्स बहुत अच्छे लगे। पर हाँ, पुरानी फिल्मों जैसा दिल नहीं छूती। वो बात ही अलग थी।', mr:'अब्दुल भाईंशी थोडं असहमत आहे... मला काही सीन्स खूप आवडले. पण हो, जुन्या फिल्मांसारखं मन स्पर्श करत नाही. ती गोष्टच वेगळी होती.'}}
     ]
   },
   bhajan: {
@@ -434,7 +432,7 @@ const SEED_STORIES = [
       {from:'rameshbhai', text:"Wah wah! Sunday sambar is sacred in every South Indian home 🌹 My wife's mother also had the same ritual. God bless such memories!"},
     ]},
   {personaId:'meenakshiamma', likes:9, title:"The Banyan Tree of Mylapore School", imageUrl:'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=800&h=400&fit=crop', text:"Our school in Mylapore had a huge banyan tree in the courtyard... During free periods we would sit under it and tell stories... Sixty years later I can still feel the cool shade and smell of those textbooks... Some things stay with you forever, no? 🙏"},
-  {personaId:'rameshbhai', likes:18, title:"Every Diwali, New Clothes for Every Worker", imageUrl:'https://images.unsplash.com/photo-1574015974293-817f0ebebb74?w=800&h=400&fit=crop', text:"In my textile business... every Diwali every worker got new clothes made from our own fabric... My father started it, I continued for 30 years... Relationships are the real business bhai... the balance sheet shows numbers but not this 🙏🌸",
+  {personaId:'rameshbhai', likes:18, title:"Every Diwali, New Clothes for Every Worker", imageUrl:'https://images.unsplash.com/photo-1574015974293-817f0ebebb74?w=800&h=400&fit=crop', text:"In my textile business... every Diwali every worker got new clothes made from our own fabric... My father started it, I continued for thirty years... 🙏🌸",
     seedReplies:[
       {from:'krishnaswamy', text:"This is true values, Rameshbhai. Your workers were fortunate. My father had the same philosophy — treat people well and the business takes care of itself. 🙏"},
       {from:'harbhajan', text:"Sat sri akal Ramesh bhai! In the Army we also said — a unit is only as strong as how you treat the lowest-ranked soldier. Same principle 🌹"},
@@ -449,7 +447,7 @@ const SEED_STORIES = [
       {from:'lalitha', text:"Ho Harbhajan ji so beautiful! 🌸 I must come see your garden this Baisakhi. Please save one rose for me!"},
     ]},
   {personaId:'padmavathi', likes:6, title:"First Kuchipudi: Something Opened in Me", imageUrl:'https://images.unsplash.com/photo-1547153760-18fc86324498?w=800&h=400&fit=crop', text:"🌸 I saw my first Kuchipudi performance at age eight in our village temple... The dancer was maybe fourteen but she moved like she was made of water... I cried without knowing why — something opened in me that evening that never closed... Some things you are meant to find 🙏🌸"},
-  {personaId:'abdulrehman', likes:16, title:"Dum Biryani: True Things Cannot Be Rushed", imageUrl:'https://images.unsplash.com/photo-1563379091339-03b21ab4a4f8?w=800&h=400&fit=crop', text:"🙏 Hyderabadi dum biryani — my wife's family recipe, three generations old... The secret is the dum itself, cooking sealed with dough on a low flame for exactly 40 minutes... I have tried telling the timing to my son but he gets impatient... True biryani cannot be rushed, like all things worth having in life 🌹 Subhanallah.",
+  {personaId:'abdulrehman', likes:16, title:"Dum Biryani: True Things Cannot Be Rushed", imageUrl:'https://images.unsplash.com/photo-1563379091339-03b21ab4a4f8?w=800&h=400&fit=crop', text:"🙏 Hyderabadi dum biryani — my wife's family recipe, three generations old... The secret is the dum itself, cooking sealed with dough on a low flame for exactly 40 minutes... I have tried telling the timing to my son but he gets impatient... True biryani cannot be rushed. 🌹 Subhanallah.",
     seedReplies:[
       {from:'meenakshiamma', text:"Subhanallah Abdul bhai 🙏 The dum method is an art... my neighbour in Chennai had a Muslim friend who made it the same way. The patience required is itself a kind of prayer 🌸"},
     ]},
@@ -475,7 +473,7 @@ const SEED_STORIES = [
       {from:'meenakshiamma', text:"Sunita ji aiyyo you have made me want to see it! Last time I went to the cinema was three years back... maybe I will ask my son to take me. 🌸"},
     ]},
 
-  {personaId:'harbhajan', likes:9, title:"5am Walk — The World Before Anyone Wakes", imageUrl:'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=800&h=400&fit=crop', text:"Every morning I am out by 5am. Pune is still quiet — just the birds, a few dogs, maybe one other walker who also understands what they have found. Four kilometres every day without fail. In the Army we ran ten. But these four kilometres in the cool morning air, after sixty-five, feel more valuable than anything. Garden check at 6am, tea at 6:30. This is what a good morning looks like. 🌹 Sat Sri Akal."},
+  {personaId:'harbhajan', likes:9, title:"5am Walk — The World Before Anyone Wakes", imageUrl:'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=800&h=400&fit=crop', text:"Every morning I am out by 5am. Pune is still quiet — just the birds, a few dogs, maybe one other walker who also understands what they have found. Four kilometres every day without fail. In the Army we ran ten. Four kilometres in the cool morning air, after sixty-five, feels more valuable than anything. Garden check at 6am, tea at 6:30. 🌹 Sat Sri Akal."},
 
   {personaId:'meenakshiamma', likes:13, title:"Temple Visit — The Same Priest After Thirty Years", imageUrl:'https://images.unsplash.com/photo-1518509562904-e7ef99cdcc86?w=800&h=400&fit=crop', text:"Went to the Siddhivinayak temple this morning... the same priest has been there thirty years, same chant, same jasmine flowers... Aiyyo when everything in the city has changed, this one place stays the same. I stood in the queue for forty minutes but paavam it was worth it. The peace in that hall... some things are beyond words. 🙏",
     seedReplies:[
@@ -508,7 +506,7 @@ const SEED_STORIES = [
 
   {personaId:'meenakshiamma', source:'community', authorName:'Radha S.', likes:6, title:"Carnatic Music Isn't Background Noise — It's Architecture", imageUrl:'https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=800&h=400&fit=crop', text:"My son puts Carnatic music on in the background while doing his office work... Aiyyo! I told him — it is not background music! MS Subbalakshmi's Suprabhatam, you sit with it, you listen... it is like architecture, every note has a place. He looked at me like I said something strange. Paavam these children... they have everything playing at once, nothing heard properly. 🙏"},
 
-  {personaId:'krishnaswamy', source:'community', authorName:'Rajan A.', likes:19, title:"Crossing India by Train in 1978 — Three Days, No Complaints", imageUrl:'https://images.unsplash.com/photo-1474487548417-781cb71495f3?w=800&h=400&fit=crop', text:"1978 — Bangalore to Kolkata by train. Three days, second class, no AC, windows open, chai wala at every station... I was twenty-six, going for a conference. The whole country passed by that window — rice fields in Andhra, coal country in Odisha, the river near Howrah... Now people complain about a one-hour flight delay. Gottu? We have lost something. 🙏",
+  {personaId:'krishnaswamy', source:'community', authorName:'Rajan A.', likes:19, title:"Crossing India by Train in 1978 — Three Days, No Complaints", imageUrl:'https://images.unsplash.com/photo-1474487548417-781cb71495f3?w=800&h=400&fit=crop', text:"1978 — Bangalore to Kolkata by train. Three days, second class, no AC, windows open, chai wala at every station... I was twenty-six, going for a conference. The whole country passed by that window — rice fields in Andhra, coal country in Odisha, the river near Howrah... Now people complain about a one-hour flight delay. Gottu? 🙏",
     seedReplies:[
       {from:'rameshbhai', text:"Krishnaswamy ji wah! I did Surat to Delhi by train in 1981 — 22 hours, I still remember every stop! The chai at Nagpur station I tell you... nothing has matched it since. 🙏"},
     ]},
