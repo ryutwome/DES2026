@@ -94,11 +94,14 @@ function buildStoryCard(s, isOwn){
   card.id='scard-'+s.id;
 
   const title=s.title||s.text.slice(0,60);
-  const preview=s.text?s.text.replace(/[\u{1F000}-\u{1FFFF}]|[\u2600-\u27BF]/gu,'').trim().slice(0,100)+(s.text.length>100?'…':''):'';
+  // Keep emoji in previews — they are semantic and part of the story text
+  const preview=s.text?s.text.trim().slice(0,100)+(s.text.length>100?'…':''):'';
   const hasImage=!!s.imageUrl;
   // Days remaining until story expires (7-day TTL from timestamp)
   const daysLeft=Math.ceil((s.timestamp+7*86400000-Date.now())/86400000);
   const expiryLabel=daysLeft<=1?'Expires today':`Expires in ${daysLeft} days`;
+  // Urgent red for ≤2 days remaining, muted gray otherwise
+  const expiryColor=daysLeft<=2?'#E53935':'#667781';
   const unreadReplies=isOwn?((S.unreadStoryReplies||{})[s.id]||0):0;
 
   const deleteBtn=isOwn?`<button class="story-delete-btn" onclick="deleteMyStory('${s.id}')" aria-label="Delete story" style="margin-left:auto;">
@@ -128,7 +131,7 @@ function buildStoryCard(s, isOwn){
       <div class="story-feed-card__footer" onclick="event.stopPropagation()">
         <button class="story-replies-btn${replyCount>0?' has-replies':''}" id="sreplybtn-${s.id}" onclick="navigate('#/story/${s.id}')">
           <i data-lucide="message-circle" style="width:18px;height:18px;"></i>
-          <span id="sreplycount-${s.id}">${replyCount>0?replyCount:'Reply'}</span>
+          Reply${replyCount>0?` <span id="sreplycount-${s.id}" class="story-reply-count">${replyCount}</span>`:`<span id="sreplycount-${s.id}" style="display:none;"></span>`}
           ${unreadReplies>0?`<span class="story-reply-badge">${unreadReplies} ${unreadReplies===1?'reply':'replies'}</span>`:''}
         </button>
         <button class="story-like-btn${liked?' liked':''}" id="slike-${s.id}" onclick="likeStory('${s.id}')">
@@ -136,10 +139,12 @@ function buildStoryCard(s, isOwn){
           <span id="slike-count-${s.id}">${likeCount>0?likeCount:''}</span>
         </button>
         <span style="flex:1;"></span>
-        ${canTTS()?`<button class="story-tts-btn" onclick="speakStoryCard(this,'${s.id}')" aria-label="Read aloud">
-          <i data-lucide="volume-2" style="width:18px;height:18px;"></i>
+        ${canTTS()?`<button class="story-tts-btn" onclick="speakStoryCard(this,'${s.id}')" title="Read aloud" aria-label="Read aloud">
+          <i data-lucide="volume-2" style="width:16px;height:16px;"></i><span>Read aloud</span>
         </button>`:''}
-        <span class="story-expiry-label" style="font-size:11px;color:#8696a0;">${expiryLabel}</span>
+        <span class="story-expiry-label" style="font-size:0.78rem;color:${expiryColor};">
+          <i data-lucide="clock" style="width:12px;height:12px;vertical-align:-2px;margin-right:2px;"></i>${expiryLabel}
+        </span>
       </div>
     </div>
   `;
@@ -442,7 +447,8 @@ function _refreshStoryCardCounts(storyId){
     if(replyCount>0) btn.classList.add('has-replies');
     else btn.classList.remove('has-replies');
   }
-  if(countEl) countEl.textContent=replyCount>0?replyCount:'Reply';
+  // Show count badge when replies exist; hide span when 0 (button always shows "Reply" text)
+  if(countEl){ countEl.textContent=replyCount>0?replyCount:''; countEl.style.display=replyCount>0?'':'none'; }
 }
 
 function _appendReplyToThread(m){

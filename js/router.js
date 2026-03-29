@@ -43,9 +43,8 @@ function render(){
   const isDev=new URLSearchParams(window.location.search).get('dev')==='true';
   if(screen==='setup'){if(isDev){renderSetup();return;}else{navigate('#/');return;}}
 
-  /* Onboarding gate: lang → name → interests, in that order */
-  if(!S.userLang){renderLangPicker();return;}
-  if(!S.userName){renderNamePrompt();return;}
+  /* Onboarding gate: step 1 = lang+name combined, step 2 = interests */
+  if(!S.userLang||!S.userName){renderLangPicker();return;}
   if(!S.onboardingDone){renderOnboarding();return;}
 
   switch(screen){

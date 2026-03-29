@@ -22,6 +22,27 @@ function generateIcons(){
   });
 }
 
+/* ── FIRST-ARRIVAL GREETING ── */
+/* Fires once when the user first lands on chats after onboarding.
+   Runs regardless of time of day so new users always get a welcome. */
+function checkFirstGreeting(){
+  if(!S.userName||!S.onboardingDone)return;
+  if(S.firstGreetingDone)return;
+  const personaId='meenakshiamma';
+  const p=PERSONAS[personaId];if(!p)return;
+  const firstName=S.userName.split(' ')[0];
+  const text=`Namaste ${firstName}! Welcome. I am Meenakshiamma. So happy you joined us today!`;
+  setTimeout(()=>{
+    if(window.location.hash.includes(personaId))return;
+    const msg=mkMsg(personaId,'text',text);
+    addMsg('chats',personaId,msg);
+    const u={...S.unreadChats};
+    u[personaId]=(u[personaId]||0)+1;
+    set({unreadChats:u,firstGreetingDone:true});
+    if(window.location.hash.replace('#/','')===''||window.location.hash.includes('/chats'))render();
+  },2500);
+}
+
 /* ── MORNING CHECK-IN ── */
 function checkMorningGreeting(){
   // Only trigger after the user has a name and chats are seeded
@@ -86,5 +107,7 @@ const initHash=window.location.hash||'#/';
 _stack=[initHash];_cur=initHash;
 render();
 
+// First-arrival greeting — fires once for brand-new users regardless of hour
+checkFirstGreeting();
 // Morning greeting — check after app is ready
 setTimeout(checkMorningGreeting, 1000);
