@@ -22,7 +22,7 @@ const gameTypes = {
   memory:            {id:'memory',            emoji:'joker',     name:'Memory Match',     desc:'Flip cards and find matching pairs',           category:'board'},
   tambola:           {id:'tambola',           emoji:'game',      name:'Tambola',          desc:'Indian bingo — mark numbers on your ticket',   category:'board'},
   teenpatti:         {id:'teenpatti',         emoji:'joker',     name:'Teen Patti',       desc:'3-card Indian poker against the dealer',       category:'board'},
-  chess:             {id:'chess',             emoji:'game',      name:'Chess',            desc:'Classic chess — drag pieces to move',           category:'board'},
+  chess:             {id:'chess',             emoji:'game',      name:'Chess',            desc:'Classic chess — tap a piece, then tap where to move',           category:'board'},
   solitaire:         {id:'solitaire',         emoji:'joker',     name:'Solitaire',        desc:'Klondike card game — tap to move cards',       category:'board'},
 };
 
@@ -1098,7 +1098,7 @@ function renderChess(gameId){
             S.games[gameId]=gs; saveS();
           }
         }
-        if(chess.game_over()) alert('Game over! '+(chess.in_checkmate()?'Checkmate':'Draw'));
+        if(chess.game_over()) toast(chess.in_checkmate()?'Checkmate! Game over.':'Draw! Well played.');
       }
     });
   }, 100);
