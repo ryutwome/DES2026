@@ -274,16 +274,17 @@ function renderCommunity(commId) {
   } else {
     scrollBot(msgs);
   }
+  const mr = S.userLang === 'mr';
   const COMM_PLACEHOLDERS = {
-    cricket:   'Talk cricket — matches, players, memories...',
-    bollywood: 'Share a Bollywood memory or song...',
-    bhajan:    'Share a bhajan or spiritual thought...',
-    society:   'Ask your neighbours something...',
-    recipes:   'Share a recipe or ask for one...',
-    shayari:   'Share a couplet or poem...',
-    yoga:      'Share a wellness tip or question...',
+    cricket:   mr ? 'क्रिकेट बद्दल बोला... / Talk cricket...' : 'क्रिकेट की बात करें... / Talk cricket...',
+    bollywood: mr ? 'बॉलीवूड आठवण सांगा... / Share a Bollywood memory...' : 'बॉलीवुड याद शेयर करें... / Share a Bollywood memory...',
+    bhajan:    mr ? 'भजन किंवा विचार सांगा... / Share a bhajan...' : 'भजन या विचार शेयर करें... / Share a bhajan...',
+    society:   mr ? 'शेजाऱ्यांना विचारा... / Ask your neighbours...' : 'पड़ोसियों से पूछें... / Ask your neighbours...',
+    recipes:   mr ? 'रेसिपी सांगा... / Share a recipe...' : 'रेसिपी शेयर करें... / Share a recipe...',
+    shayari:   mr ? 'शेर किंवा कविता सांगा... / Share a couplet...' : 'शेर या कविता शेयर करें... / Share a couplet...',
+    yoga:      mr ? 'आरोग्य टिप्स सांगा... / Share a wellness tip...' : 'स्वास्थ्य टिप्स शेयर करें... / Share a wellness tip...',
   };
-  const inputPlaceholder = COMM_PLACEHOLDERS[commId] || 'Say something to the group...';
+  const inputPlaceholder = COMM_PLACEHOLDERS[commId] || (mr ? 'ग्रुपला काहीतरी सांगा... / Say something...' : 'ग्रुप में कुछ कहें... / Say something...');
   renderInputBar('comm-wrap', {placeholder: inputPlaceholder, onSend: async (data) => {
     const {type, text, image, caption} = data;
     markCommActive(commId);

@@ -309,10 +309,10 @@ function _startVoiceAnim(gs){
 function _updateTurnUI(gs){
   const pill = document.getElementById('turn-pill');
   if (pill) {
-    if      (gs.winner==='user') { pill.className='turn-pill turn-pill--win';  pill.innerHTML='You win! '+ej('party','14px'); }
+    if      (gs.winner==='user') { pill.className='turn-pill turn-pill--win';  pill.innerHTML=(S.userLang==='mr'?'तुम्ही जिंकलात! ':'आप जीते! ')+ej('party','14px'); }
     else if (gs.winner==='ai')   { pill.className='turn-pill turn-pill--lose'; pill.innerHTML=`${PERSONAS[gs.opponentId]?.name.split(' ')[0]} wins!`; }
-    else if (gs.winner==='draw') { pill.className='turn-pill turn-pill--draw'; pill.innerHTML='Draw!'; }
-    else if (gs.currentTurn==='user') { pill.className='turn-pill turn-pill--your'; pill.innerHTML='YOUR TURN'; }
+    else if (gs.winner==='draw') { pill.className='turn-pill turn-pill--draw'; pill.innerHTML=S.userLang==='mr'?'बरोबरी / Draw!':'ड्रॉ / Draw!'; }
+    else if (gs.currentTurn==='user') { pill.className='turn-pill turn-pill--your'; pill.innerHTML=S.userLang==='mr'?'तुमची पाळी / Your turn':'आपकी बारी / Your turn'; }
     else                              { pill.className='turn-pill turn-pill--wait'; pill.innerHTML=`${PERSONAS[gs.opponentId]?.name.split(' ')[0]}…`; }
   }
   const bpUser = document.getElementById('bpav-user');
@@ -655,9 +655,9 @@ function _memRefresh(gameId){
     // Game over — show winner in turn pill
     const pill=document.getElementById('turn-pill');
     if(pill){
-      if(gs.score.user>gs.score.ai)      {pill.className='turn-pill turn-pill--win'; pill.innerHTML='You win! '+ej('party','14px');}
+      if(gs.score.user>gs.score.ai)      {pill.className='turn-pill turn-pill--win'; pill.innerHTML=(S.userLang==='mr'?'तुम्ही जिंकलात! ':'आप जीते! ')+ej('party','14px');}
       else if(gs.score.ai>gs.score.user) {pill.className='turn-pill turn-pill--lose';pill.innerHTML=`${PERSONAS[gs.opponentId]?.name.split(' ')[0]} wins!`;}
-      else                               {pill.className='turn-pill turn-pill--draw';pill.innerHTML="Tie game!";}
+      else                               {pill.className='turn-pill turn-pill--draw';pill.innerHTML=S.userLang==='mr'?'बरोबरी / Draw!':'ड्रॉ / Draw!';}
     }
     const statusEl=$('board-status');
     if(statusEl) statusEl.innerHTML=`<button class="board-rematch-btn" onclick="memRematch('${gameId}')">Play Again</button>`;
@@ -749,7 +749,7 @@ function showTambolaRules(){
   ov.className = 'rules-overlay';
   ov.innerHTML = `
     <div class="rules-overlay__box">
-      <div class="rules-overlay__title">${ej('game','20px')} How to Play Tambola</div>
+      <div class="rules-overlay__title">${ej('game','20px')} ${S.userLang==='mr'?'कसे खेळायचे / How to Play':'कैसे खेलें / How to Play'} Tambola</div>
       <div class="rules-overlay__body">
         Tambola is Indian Bingo! Numbers 1&ndash;90 are called one by one. Tap a number on your ticket when it is called to mark it. First to complete a full row wins Jaldi Five! Mark all 15 numbers to win Tambola!
       </div>
@@ -880,7 +880,7 @@ function showTeenPattiRules(){
     <div class="rules-overlay__box">
       <div class="rules-overlay__title">${ej('joker','20px')} Teen Patti Hands</div>
       <div class="rules-overlay__body">
-        <p style="margin:0 0 10px;line-height:1.7"><strong>How to play:</strong><br>
+        <p style="margin:0 0 10px;line-height:1.7"><strong>${S.userLang==='mr'?'कसे खेळायचे / How to play:':'कैसे खेलें / How to play:'}</strong><br>
         • Look at your 3 cards<br>
         • <strong>Call</strong> &mdash; you think your hand beats the dealer. Cards are revealed and the better hand wins chips.<br>
         • <strong>Fold</strong> &mdash; give up this round. You lose nothing extra.<br>
@@ -934,12 +934,12 @@ function renderTeenPatti(gameId){
 
   if(phase==='bet'){
     html += `<div class="tp-actions">`;
-    html += `<button class="btn-secondary" title="Give up this round" onclick="tpAction('${gameId}','fold')">Fold</button>`;
-    html += `<button class="btn-primary" title="Match the stake and compare cards" onclick="tpAction('${gameId}','call')">Call (${ts.stake} chips)</button>`;
+    html += `<button class="btn-secondary" title="Give up this round" onclick="tpAction('${gameId}','fold')">${S.userLang==='mr'?'सोडा / Fold':'छोड़ें / Fold'}</button>`;
+    html += `<button class="btn-primary" title="Match the stake and compare cards" onclick="tpAction('${gameId}','call')">${S.userLang==='mr'?'कॉल / Call':'कॉल / Call'} (${ts.stake} chips)</button>`;
     html += `</div>`;
   } else {
     const pr = tpHandRank(ts.playerHand), ar = tpHandRank(ts.aiHand);
-    const result = pr>ar?'You win!':pr<ar?'Dealer wins':'Tie!';
+    const result = pr>ar?(S.userLang==='mr'?'तुम्ही जिंकलात! / You win!':'आप जीते! / You win!'):pr<ar?(S.userLang==='mr'?'डीलर जिंकला / Dealer wins':'डीलर जीता / Dealer wins'):(S.userLang==='mr'?'बरोबरी / Tie!':'बराबर / Tie!');
     html += `<div class="tp-result">${result}</div>`;
     html += `<button class="btn-primary" onclick="tpNewGame('${gameId}')">Play Again</button>`;
   }
@@ -978,7 +978,7 @@ function renderChess(gameId){
           <div style="font-size:0.78rem;color:#8696a0;text-align:center;margin-top:2px;">Tap the same piece again to deselect it.</div>
           <div class="chess-ai-note chess-ai-note--sub">Playing against a beginner AI.</div>
           <div id="${id}" style="width:min(340px,90vw)"></div>
-          <button class="btn-secondary chess-reset" onclick="resetChess('${gameId}')">New Game</button>
+          <button class="btn-secondary chess-reset" onclick="resetChess('${gameId}')">${S.userLang==='mr'?'नवीन खेळ / New Game':'नया खेल / New Game'}</button>
         </div>
       </div>
     </div>

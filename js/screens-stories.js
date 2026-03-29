@@ -140,7 +140,7 @@ function buildStoryCard(s, isOwn){
         </button>
         <span style="flex:1;"></span>
         ${canTTS()?`<button class="story-tts-btn" onclick="speakStoryCard(this,'${s.id}')" title="Read aloud" aria-label="Read aloud">
-          <i data-lucide="volume-2" style="width:16px;height:16px;"></i><span>Read aloud</span>
+          <i data-lucide="volume-2" style="width:16px;height:16px;"></i><span>${S.userLang==='mr'?'मोठ्याने वाचा / Read aloud':'ज़ोर से पढ़ें / Read aloud'}</span>
         </button>`:''}
         <span class="story-expiry-label" style="font-size:0.78rem;color:${expiryColor};">
           <i data-lucide="clock" style="width:12px;height:12px;vertical-align:-2px;margin-right:2px;"></i>${expiryLabel}
@@ -328,13 +328,13 @@ function showStoryCompose(){
       <img id="sc-img" style="width:100%;max-height:160px;object-fit:cover;border-radius:10px;" />
       <button onclick="document.getElementById('sc-img-preview').style.display='none';scImageUrl='';" style="position:absolute;top:6px;right:6px;background:rgba(0,0,0,0.5);border:none;border-radius:50%;width:28px;height:28px;color:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:16px;">✕</button>
     </div>
-    <textarea class="compose-textarea" id="sc-text" placeholder="What would you like to share? Tap mic to speak, or type..." rows="4" style="font-size:16px;line-height:1.6;"></textarea>
+    <textarea class="compose-textarea" id="sc-text" placeholder="${S.userLang==='mr'?'काय शेअर करायचे आहे? / What would you like to share?':'क्या साझा करना चाहते हैं? / What would you like to share?'}" rows="4" style="font-size:16px;line-height:1.6;"></textarea>
     <div id="sc-hint" style="font-size:12px;color:#8696a0;margin:4px 0 2px;">Start typing or speak to share your story</div>
     <div id="sc-status" style="font-size:13px;color:#8696a0;min-height:18px;margin:4px 0 6px;display:flex;align-items:center;gap:6px;"></div>
     <div style="display:flex;gap:10px;align-items:center;margin-top:2px;">
       <button class="sc-attach-btn" id="sc-attach" title="Add photo">${IC.attach}</button>
       <input type="file" id="sc-file" accept="image/*" style="display:none;" />
-      <button class="compose-post-btn" id="sc-post" disabled style="flex:1;">Post Story</button>
+      <button class="compose-post-btn" id="sc-post" disabled style="flex:1;">${S.userLang==='mr'?'पोस्ट करा / Post':'पोस्ट करें / Post'}</button>
       <button class="sc-mic-btn" id="sc-mic" title="Speak your story">${IC.mic}</button>
     </div>
     <div id="sc-title-row" style="display:none;margin-top:10px;">
@@ -344,7 +344,10 @@ function showStoryCompose(){
   `);
   lucide.createIcons();
 
-  const chips=['A recipe I love','A childhood memory','My opinion on...','Something I learned'];
+  const mr = S.userLang === 'mr';
+  const chips = mr
+    ? ['माझी आवडती रेसिपी / A recipe I love','बालपणीची आठवण / A childhood memory','माझे मत... / My opinion on...','मी शिकलेली गोष्ट / Something I learned']
+    : ['मेरी पसंदीदा रेसिपी / A recipe I love','बचपन की याद / A childhood memory','मेरी राय... / My opinion on...','जो मैंने सीखा / Something I learned'];
   const chipsDiv=$('sc-chips');
   chips.forEach(c=>{const b=document.createElement('button');b.className='compose-chip';b.textContent=c;b.onclick=()=>{$('sc-text').value=c+': ';$('sc-text').focus();$('sc-post').disabled=false;};chipsDiv.appendChild(b);});
 
