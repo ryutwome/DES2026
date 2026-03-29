@@ -507,17 +507,17 @@ function _postGameResultToChat(gs) {
   if (!personaId || gs.resultPosted) return;
   gs.resultPosted = true;
   const WIN_MSGS = [
-    'Arey wah! You beat me! 😄 Good game, very good game!',
+    `Arey wah! You beat me! ${ej('smile')} Good game, very good game!`,
     'Wah wah! You won! I need to practise more — well played!',
-    'Arey yaar, you got me this time! Good game! 😄',
+    `Arey yaar, you got me this time! Good game! ${ej('smile')}`,
   ];
   const LOSE_MSGS = [
-    'Ha! I won this time! Rematch karoge? 😄',
-    'Haha, better luck next time! I was waiting for that moment! 😄',
+    `Ha! I won this time! Rematch karoge? ${ej('smile')}`,
+    `Haha, better luck next time! I was waiting for that moment! ${ej('smile')}`,
     'Arey, I won! Come on, one more game?',
   ];
   const DRAW_MSGS = [
-    'Draw! Very evenly matched we are! 😄',
+    `Draw! Very evenly matched we are! ${ej('smile')}`,
     'Haha, a draw! Neither of us will give up easily!',
     'Tie game! We think alike — rematch?',
   ];
@@ -916,8 +916,8 @@ function renderTeenPatti(gameId){
 
   if(phase==='bet'){
     html += `<div class="tp-actions">`;
-    html += `<button class="btn-secondary" onclick="tpAction('${gameId}','fold')">Fold</button>`;
-    html += `<button class="btn-primary" onclick="tpAction('${gameId}','call')">Call (${ts.stake} chips)</button>`;
+    html += `<button class="btn-secondary" title="Give up this round" onclick="tpAction('${gameId}','fold')">Fold</button>`;
+    html += `<button class="btn-primary" title="Match the stake and compare cards" onclick="tpAction('${gameId}','call')">Call (${ts.stake} chips)</button>`;
     html += `</div>`;
   } else {
     const pr = tpHandRank(ts.playerHand), ar = tpHandRank(ts.aiHand);
@@ -1017,6 +1017,7 @@ function renderSolitaire(gameId){
     ${header(`${ej('joker')} Klondike Solitaire`,{back:true,subtitle:'Move all cards to the foundations'})}
     <div class="screen board-game-screen">
       <div class="screen__scroll board-game-scroll">
+        <div style="text-align:center;font-size:0.83rem;color:#667781;margin:6px 0;">Tap a card to select, then tap where to move it</div>
         <div class="sol-board" id="sol-board"></div>
       </div>
     </div>

@@ -862,7 +862,7 @@ body {
   display: flex; align-items: center; gap: 5px;
   background: #f0f2f5; border: none; border-radius: 20px;
   padding: 7px 14px; font-size: 0.78rem; font-weight: 500;
-  color: #54656f; cursor: pointer; font-family: inherit; min-height: 36px;
+  color: #54656f; cursor: pointer; font-family: inherit; min-height: 44px;
 }
 .story-like-btn.liked { background: #fdecea; color: #E53935; }
 .story-like-btn:active { opacity: 0.8; }
@@ -885,7 +885,7 @@ body {
   display: flex; align-items: center; gap: 5px;
   background: #f0f2f5; border: none; border-radius: 20px;
   padding: 7px 14px; font-size: 0.78rem; font-weight: 500;
-  color: #54656f; cursor: pointer; font-family: inherit; min-height: 36px;
+  color: #54656f; cursor: pointer; font-family: inherit; min-height: 44px;
 }
 .story-replies-btn:active { background: #e9edef; }
 .story-replies-btn.has-replies { background: #d9fdd3; color: #008f72; font-weight: 600; }
@@ -907,7 +907,7 @@ body {
   background: #e9fdf5; border: none; cursor: pointer;
   color: #00A884; padding: 6px 10px; border-radius: 50px;
   display: flex; align-items: center; justify-content: center; gap: 4px;
-  min-height: 36px; font-size: 0.78rem; font-weight: 500; font-family: inherit;
+  min-height: 44px; font-size: 0.78rem; font-weight: 500; font-family: inherit;
 }
 .story-tts-btn:active { background: #c8f5e5; }
 .story-delete-btn {
@@ -1497,7 +1497,7 @@ body {
 }
 .board-player {
   display: flex; flex-direction: column; align-items: center;
-  gap: 5px; font-size: 0.75rem; color: #667781; min-width: 72px;
+  gap: 5px; font-size: 0.83rem; color: #667781; min-width: 72px;
 }
 .board-player.active { color: #00A884; font-weight: 600; }
 .board-status {
@@ -1905,7 +1905,8 @@ body {
 .tambola-called { font-size: 1.1rem; margin-bottom: 12px; color: #333; }
 .tambola-num { font-weight: 700; font-size: 1.4rem; color: #00A884; }
 .tambola-ticket { border-collapse: collapse; margin: 0 auto 16px; }
-.tambola-cell { border: 2px solid #ccc; width: 38px; height: 38px; text-align: center; font-size: 1rem; font-weight: 600; cursor: pointer; background: #fff; }
+.tambola-cell { border: 2px solid #ccc; width: 44px; height: 44px; text-align: center; font-size: 1rem; font-weight: 600; cursor: pointer; background: #fff; }
+.tambola-cell:not(.tambola-cell--blank):not(.tambola-cell--called):active { background: #e0f2fe; }
 .tambola-empty { background: #f0f0f0; cursor: default; }
 .tambola-marked { background: #00A884; color: #fff; }
 .tambola-win { margin-top: 12px; font-size: 1.2rem; font-weight: 700; color: #00A884; }
