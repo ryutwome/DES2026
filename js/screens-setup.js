@@ -34,6 +34,13 @@ function doSetup(e){e.preventDefault();const k=$('s-key').value.trim(),p=$('s-pr
 
 /* ── LANG + NAME — combined first onboarding screen ── */
 function renderLangPicker(){
+  /* Labels shown in the form fields — updated dynamically when a language is picked */
+  const langLabels = {
+    hi: { name: 'आपका नाम', namePh: 'अपना नाम लिखें', age: 'आपकी उम्र (वैकल्पिक)', agePh: 'उम्र लिखें' },
+    mr: { name: 'तुमचे नाव', namePh: 'नाव लिहा', age: 'तुमचे वय (पर्यायी)', agePh: 'वय लिहा' },
+    en: { name: 'Your name', namePh: 'Enter your name', age: 'Your age (optional)', agePh: 'Enter your age' }
+  };
+  const ll = langLabels[S.userLang] || langLabels.en;
   mount(`
     <div class="lang-pick-screen">
       <div class="lang-pick-screen__logo">
@@ -61,27 +68,39 @@ function renderLangPicker(){
       </div>
       <div class="lang-pick-screen__name-section">
         <div class="name-prompt-screen__field-wrap">
-          <label class="name-prompt-screen__label" for="lp-name">Your name</label>
-          <input class="name-prompt-screen__input" id="lp-name" type="text" placeholder="Enter your name" autocomplete="name" autocapitalize="words" maxlength="40" value="${S.userName||''}" />
+          <label class="name-prompt-screen__label" for="lp-name">${ll.name}</label>
+          <input class="name-prompt-screen__input" id="lp-name" type="text" placeholder="${ll.namePh}" autocomplete="name" autocapitalize="words" maxlength="40" value="${S.userName||''}" />
         </div>
         <div class="name-prompt-screen__field-wrap" style="margin-top:12px;">
-          <label class="name-prompt-screen__label" for="lp-age">Your age (optional)</label>
-          <input class="name-prompt-screen__input" id="lp-age" type="number" placeholder="Enter your age" min="1" max="120" style="width:100%;" value="${S.userAge||''}" />
+          <label class="name-prompt-screen__label" for="lp-age">${ll.age}</label>
+          <input class="name-prompt-screen__input" id="lp-age" type="number" placeholder="${ll.agePh}" min="1" max="120" style="width:100%;" value="${S.userAge||''}" />
         </div>
       </div>
       <button class="lang-pick-screen__cta" id="lp-go" ${(S.userLang&&S.userName)?'':'disabled'}>Continue →</button>
+      <div id="lp-hint" style="font-size:0.78rem;color:#E53935;text-align:center;margin-top:6px;min-height:1.2em;"></div>
       <div class="name-prompt-screen__note">Your details are only stored on this device.</div>
     </div>
   `);
   const inp=$('lp-name'), cta=$('lp-go');
-  /* Enable Continue only when both language and name are set */
-  const validate=()=>{cta.disabled=!(S.userLang&&inp.value.trim());};
+  /* Enable Continue only when both language and name are set; show hint for what's missing */
+  const validate=()=>{
+    const hasLang=!!S.userLang;
+    const hasName=!!(inp?.value.trim());
+    cta.disabled=!(hasLang&&hasName);
+    const hint=document.getElementById('lp-hint');
+    if(hint){
+      if(!hasLang&&!hasName) hint.textContent='';
+      else if(!hasLang) hint.textContent=S.userLang==='hi'?'भाषा चुनें':S.userLang==='mr'?'भाषा निवडा':'Please choose a language';
+      else if(!hasName) hint.textContent=S.userLang==='hi'?'कृपया अपना नाम लिखें':S.userLang==='mr'?'कृपया नाव लिहा':'Please enter your name';
+      else hint.textContent='';
+    }
+  };
   inp.oninput=validate;
   inp.addEventListener('keydown',e=>{if(e.key==='Enter'&&inp.value.trim()&&S.userLang)saveLangName();});
   cta.onclick=saveLangName;
 }
 
-/* pickLang: saves language choice, highlights the tile, re-validates Continue.
+/* pickLang: saves language choice, highlights the tile, translates labels, re-validates Continue.
    Called from both the combined screen and legacy route-direct calls. */
 function pickLang(lang){
   S.userLang=lang; saveS();
@@ -89,9 +108,31 @@ function pickLang(lang){
   document.querySelectorAll('.lang-pick-tile').forEach(t=>t.classList.remove('active'));
   const tile = lang==='hi'?$('lp-hi'):$('lp-mr');
   if(tile) tile.classList.add('active');
-  /* Re-validate: need both lang and a name */
-  const cta=$('lp-go');
-  if(cta) cta.disabled=!(S.userLang&&($('lp-name')?.value||'').trim());
+  /* Translate name/age labels and placeholders to the chosen language */
+  const labels = {
+    hi: { name: 'आपका नाम', namePh: 'अपना नाम लिखें', age: 'आपकी उम्र (वैकल्पिक)', agePh: 'उम्र लिखें' },
+    mr: { name: 'तुमचे नाव', namePh: 'नाव लिहा', age: 'तुमचे वय (पर्यायी)', agePh: 'वय लिहा' }
+  };
+  const l=labels[lang];
+  if(l){
+    const nameLabel=document.querySelector('label[for="lp-name"]');
+    const ageLabel=document.querySelector('label[for="lp-age"]');
+    const nameInput=document.getElementById('lp-name');
+    const ageInput=document.getElementById('lp-age');
+    if(nameLabel) nameLabel.textContent=l.name;
+    if(ageLabel) ageLabel.textContent=l.age;
+    if(nameInput) nameInput.placeholder=l.namePh;
+    if(ageInput) ageInput.placeholder=l.agePh;
+  }
+  /* Re-validate: need both lang and a name; also update hint text */
+  const cta=$('lp-go'), inp=$('lp-name');
+  const hasName=!!(inp?.value||'').trim();
+  if(cta) cta.disabled=!hasName;
+  const hint=document.getElementById('lp-hint');
+  if(hint){
+    if(!hasName) hint.textContent=lang==='hi'?'कृपया अपना नाम लिखें':lang==='mr'?'कृपया नाव लिहा':'Please enter your name';
+    else hint.textContent='';
+  }
 }
 
 /* saveLangName: persist language + name/age then advance to interests */
