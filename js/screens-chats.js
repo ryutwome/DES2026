@@ -26,9 +26,6 @@ function renderChats(){
         <button class="filter-chip" onclick="filterChips(this,'groups')">Groups</button>
       </div>
       <div class="screen__scroll" id="chat-list"></div>
-      <button class="fab" onclick="toast('New chat coming soon')" aria-label="New chat">
-        <i data-lucide="square-pen" style="width:22px;height:22px;color:#fff;"></i>
-      </button>
     </div>
     ${bottomNav('chats')}
   `);
@@ -70,11 +67,29 @@ function buildChatList(filter){
   list.innerHTML='';
 
   if(!visible.length){
+    // Context-aware empty state — message depends on which filter is active
+    let icon='chat', title='', desc='', btn='';
+    if(filter==='unread'){
+      title='All caught up!';
+      desc='No unread messages — you\'re up to date.';
+    } else if(filter==='groups'){
+      title='No group chats yet';
+      desc='Join a community to chat with others who share your interests.';
+      btn=`<button style="margin-top:12px;padding:10px 20px;background:#00A884;color:#fff;border:none;border-radius:20px;font-size:14px;font-weight:600;cursor:pointer;" onclick="navigate('#/communities')">Browse Communities</button>`;
+    } else if(filter==='favourites'){
+      title='No favourites yet';
+      desc='Long-press a chat to mark it as a favourite.';
+    } else {
+      // 'all' — shouldn't normally be empty since personas are always seeded
+      title='आपका स्वागत है! / Swagat!';
+      desc='Browse communities or open a chat to get started.';
+      btn=`<button style="margin-top:12px;padding:10px 20px;background:#00A884;color:#fff;border:none;border-radius:20px;font-size:14px;font-weight:600;cursor:pointer;" onclick="navigate('#/communities')">Browse Communities</button>`;
+    }
     list.innerHTML=`<div class="empty-state">
-      <div class="empty-state__icon">${ej('chat','48px')}</div>
-      <div class="empty-state__title">आपका स्वागत है! / Swagat!</div>
-      <div class="empty-state__desc">Someone is waiting to say hello — browse communities or start a chat.</div>
-      <button class="btn-primary" style="margin-top:12px;padding:10px 20px;background:#00A884;color:#fff;border:none;border-radius:20px;font-size:14px;font-weight:600;cursor:pointer;" onclick="navigate('#/communities')">Browse Communities</button>
+      <div class="empty-state__icon">${ej(icon,'48px')}</div>
+      <div class="empty-state__title">${title}</div>
+      <div class="empty-state__desc">${desc}</div>
+      ${btn}
     </div>`;
     return;
   }
@@ -221,11 +236,24 @@ function statusReact(personaId){
   document.getElementById('sv-'+personaId)?.remove();
 }
 
+/* Returns a dynamic "last seen" string — 50% online, otherwise a recent time. */
+function relativeStatus(){
+  const r=Math.random();
+  if(r<0.5) return 'online';
+  // Pick a random time 5–125 minutes ago
+  const minsAgo=Math.floor(Math.random()*120)+5;
+  const t=new Date(Date.now()-minsAgo*60000);
+  const hh=t.getHours(),mm=t.getMinutes().toString().padStart(2,'0');
+  const ampm=hh>=12?'PM':'AM';
+  const h12=hh%12||12;
+  if(minsAgo<1440) return `last seen today at ${h12}:${mm} ${ampm}`;
+  return 'last seen yesterday';
+}
+
 /* ── CHAT SCREEN ── */
 function renderChat(personaId){
   const p=PERSONAS[personaId];if(!p){navigate('#/chats');return;}
-  const onlineStatuses=['online','online','last seen today at 10:32 AM','last seen yesterday at 8:14 PM','online'];
-  const status=onlineStatuses[Math.abs(personaId.split('').reduce((a,c)=>a+c.charCodeAt(0),0))%onlineStatuses.length];
+  const status=relativeStatus();
   mount(`
     ${header(p.name,{back:true,avatarName:p.name,avatarPersonaId:personaId,subtitle:status,right:[
       {icon:IC.phone,label:'Voice call',fn:`toast('Calling ${p.name.split(' ')[0]}...')`},
