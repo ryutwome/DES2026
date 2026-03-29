@@ -236,7 +236,7 @@ function renderCommunity(commId) {
   // Always show a voice room button; disabled with tooltip when no voice room exists
   const right = comm.voiceRoom
     ? [{icon:IC.voiceRoom, label:'Voice Room', fn:`navigate('#/voiceroom/${comm.voiceRoom}')`}]
-    : [{icon:IC.voiceRoom, label:'Voice Room (Coming Soon)', fn:'void(0)'}];
+    : [{icon:IC.voiceRoom, label:'Voice Room (Coming Soon)', fn:"toast('Voice room is coming soon \u2014 stay tuned!')"}];
   mount(`
     ${header(comm.name, {back:true, subtitle:`${comm.members} members`, right, white:true})}
     <div class="screen chat-screen" id="comm-wrap">

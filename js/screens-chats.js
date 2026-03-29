@@ -22,7 +22,6 @@ function renderChats(){
       <div class="filter-chips">
         <button class="filter-chip active" onclick="filterChips(this,'all')">All</button>
         <button class="filter-chip" onclick="filterChips(this,'unread')">Unread</button>
-        <button class="filter-chip" onclick="filterChips(this,'favourites')">Favourites</button>
         <button class="filter-chip" onclick="filterChips(this,'groups')">Groups</button>
       </div>
       <div class="screen__scroll" id="chat-list"></div>
@@ -204,12 +203,12 @@ function openStatus(personaId){
   document.querySelectorAll(`.chat-avatar-story-ring[onclick*="'${personaId}'"]`)
     .forEach(el=>el.classList.add('chat-avatar-story-ring--viewed'));
 
-  // Auto-progress bar — 5 seconds
+  // Auto-progress bar — 8 seconds
   const bar=overlay.querySelector('#sv-bar');
   let start=null;
   function tick(ts){
     if(!start) start=ts;
-    const pct=Math.min(100,(ts-start)/5000*100);
+    const pct=Math.min(100,(ts-start)/8000*100);
     bar.style.width=pct+'%';
     if(pct<100&&overlay.isConnected) requestAnimationFrame(tick);
     else if(overlay.isConnected) overlay.remove();
