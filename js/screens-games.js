@@ -860,36 +860,52 @@ function tpHandRank(hand){
   return vals[0]*10000+vals[1]*100+vals[2];
 }
 
+function showTeenPattiRules(){
+  const ov = document.createElement('div');
+  ov.className = 'rules-overlay';
+  ov.innerHTML = `
+    <div class="rules-overlay__box">
+      <div class="rules-overlay__title">${ej('joker','20px')} Teen Patti Hands</div>
+      <div class="rules-overlay__body">
+        <ol style="margin:0;padding-left:18px;line-height:1.8">
+          <li><strong>Trail</strong> &mdash; Three of a kind (best)</li>
+          <li><strong>Pure Sequence</strong> &mdash; Straight flush</li>
+          <li><strong>Sequence</strong> &mdash; Straight (any suit)</li>
+          <li><strong>Color</strong> &mdash; Flush (same suit)</li>
+          <li><strong>Pair</strong> &mdash; Two of a kind</li>
+          <li><strong>High Card</strong> &mdash; Lowest hand</li>
+        </ol>
+      </div>
+      <button class="rules-overlay__close btn-primary" onclick="this.closest('.rules-overlay').remove()">Got it!</button>
+    </div>`;
+  document.body.appendChild(ov);
+}
+
 function renderTeenPatti(gameId){
   const gs = S.games[gameId]; const persona = gs?PERSONAS[gs.opponentId]:null;
   if(!gs||!persona){navigate('#/games');return;}
   if(!gs.gameState||!gs.gameState.deck) tpNewGame(gameId, true);
   const ts = gs.gameState;
   const phase = ts.phase||'bet';
-  // Show hand-ranking guide once per game session
-  const rulesOpen = !ts.rulesShown;
-  if(rulesOpen){ ts.rulesShown = true; S.games[gameId]=gs; saveS(); }
+  // Show rules overlay once on first visit
+  const showRules = !ts.rulesShown;
+  if(showRules){ ts.rulesShown = true; S.games[gameId]=gs; saveS(); }
 
   mount(`
     ${header(`${ej('joker')} Teen Patti`,{back:true,subtitle:`vs ${persona.name}`})}
     <div class="screen board-game-screen">
       <div class="screen__scroll board-game-scroll">
-        <details class="tp-rules" ${rulesOpen?'open':''}>
-          <summary class="tp-rules__summary">Hand rankings (tap to show/hide)</summary>
-          <ol class="tp-rules__list">
-            <li><strong>Teen Patti</strong> &mdash; Three of a kind (best hand)</li>
-            <li><strong>Straight Flush</strong> &mdash; Running sequence, same suit</li>
-            <li><strong>Flush</strong> &mdash; Same suit</li>
-            <li><strong>Straight</strong> &mdash; Running sequence</li>
-            <li><strong>Pair</strong> &mdash; Two cards of the same rank</li>
-            <li><strong>High Card</strong> &mdash; Highest single card wins</li>
-          </ol>
-        </details>
+        <div class="tambola-header-row">
+          <span></span>
+          <button class="tambola-info-btn" onclick="showTeenPattiRules()" title="Hand rankings">?</button>
+        </div>
         <div class="tp-board" id="tp-board"></div>
       </div>
     </div>
   `);
   const wrap = $('tp-board'); if(!wrap) return;
+  // Auto-show rules overlay on first visit to this game
+  if(showRules) setTimeout(showTeenPattiRules, 120);
   let html = `<div class="tp-pot">Pot: ${ts.pot||0} chips</div>`;
   html += `<div class="tp-hand tp-hand--ai"><div class="tp-hand-label">Dealer</div><div class="tp-hand-cards">`;
   for(const c of ts.aiHand) html += cardHTML(c, phase!=='reveal');
@@ -1035,12 +1051,15 @@ function _solRefresh(gameId){
     html += `<div class="sol-col">`;
     const pile = ts.tableau[c];
     if(pile.length===0){
-      html += `<div class="sol-card sol-empty" onclick="solTap('${gameId}','t',${c})">[ ]</div>`;
+      html += `<div class="sol-card sol-card--empty" onclick="solTap('${gameId}','t',${c})"></div>`;
     } else {
       for(let r=0;r<pile.length;r++){
         const card = pile[r];
         const isSelected = ts.selected&&ts.selected.type==='t'&&ts.selected.col===c&&ts.selected.idx===r;
-        html += `<div class="sol-card${card.faceUp?'':' sol-back'}${isSelected?' sol-selected':''}" onclick="solTap('${gameId}','t',${c},${r})">${card.faceUp?card.r+card.s:'\u{1F0A0}'}</div>`;
+        // Determine color class for face-up cards based on suit
+        const colorCls = card.faceUp ? ((card.s==='\u2665'||card.s==='\u2666') ? ' sol-card--red' : ' sol-card--black') : ' sol-card--back';
+        const selCls = isSelected ? ' sol-card--selected' : '';
+        html += `<div class="sol-card${colorCls}${selCls}" onclick="solTap('${gameId}','t',${c},${r})">${card.faceUp?card.r+card.s:''}</div>`;
       }
     }
     html += `</div>`;

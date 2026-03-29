@@ -1449,7 +1449,7 @@ body {
 .game-type-option.selected { border-color: #00A884; background: #d9fdd3; }
 .game-type-option__emoji { font-size: 1.56rem; flex-shrink: 0; }
 .game-type-option__name { font-size: 0.89rem; font-weight: 600; color: #111b21; }
-.game-type-option__desc { font-size: 0.75rem; color: #667781; margin-top: 2px; }
+.game-type-option__desc { font-size: 0.83rem; color: #667781; margin-top: 2px; }
 .persona-pick-item {
   display: flex; align-items: center; gap: 14px;
   padding: 12px; border-radius: 12px; cursor: pointer; background: #fff;
@@ -1459,7 +1459,7 @@ body {
 .persona-pick-item:active { background: #f0f2f5; }
 .persona-pick-item.selected { border-color: #00A884; background: #d9fdd3; }
 .persona-pick-item__name { font-size: 0.83rem; font-weight: 500; color: #111b21; }
-.persona-pick-item__city { font-size: 0.75rem; color: #667781; }
+.persona-pick-item__city { font-size: 0.83rem; color: #667781; }
 
 /* ── LOBBY CARDS ── */
 .game-lobby-card {
@@ -1937,8 +1937,30 @@ body {
 .sol-stock { background: #1a5276; color: #fff; }
 .sol-tableau { display: flex; gap: 4px; justify-content: center; }
 .sol-col { display: flex; flex-direction: column; }
-.sol-card { width: 48px; min-height: 28px; border: 1px solid #999; border-radius: 4px; text-align: center; font-size: 0.85rem; font-weight: 600; cursor: pointer; background: #fff; padding: 2px 0; margin-top: -16px; }
+.sol-card {
+  background: #fff;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  min-width: 38px;
+  min-height: 54px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1rem;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 1px 2px 4px rgba(0,0,0,0.15);
+  user-select: none;
+  position: relative;
+  margin-top: -28px;
+}
 .sol-card:first-child { margin-top: 0; }
-.sol-back { background: #1a5276; color: #fff; }
-.sol-selected { outline: 3px solid #00A884; outline-offset: -1px; }
-.sol-empty { border-style: dashed; color: #aaa; }
+/* Face-up card colours */
+.sol-card--red, .sol-card.sol-red { color: #e53935; }
+.sol-card--black, .sol-card.sol-black { color: #111; }
+/* Face-down card */
+.sol-card--back, .sol-card.sol-back { background: #1565c0; color: #1565c0; }
+/* Empty slot */
+.sol-card--empty, .sol-card.sol-empty { border: 2px dashed #ccc; background: transparent; min-width: 38px; min-height: 54px; border-radius: 6px; box-shadow: none; }
+/* Selected card */
+.sol-card--selected, .sol-card.sol-selected { outline: 2px solid #00A884; outline-offset: 2px; }
