@@ -1852,7 +1852,7 @@ body {
   background: #f0f2f5; color: #54656f;
   font-size: 0.83rem; font-weight: 400;
   padding: 5px 14px; border-radius: 20px;
-  cursor: pointer; min-height: 32px; min-width: 44px;
+  cursor: pointer; min-height: 44px; min-width: 44px;
   display: flex; align-items: center; justify-content: center;
   border: none; font-family: inherit; white-space: nowrap; flex-shrink: 0;
 }

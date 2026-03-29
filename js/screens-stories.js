@@ -123,8 +123,8 @@ function buildStoryCard(s, isOwn){
       </div>
       <div class="story-feed-card__content-row">
         <div class="story-feed-card__text-col">
-          <div class="story-feed-card__title">${title}</div>
-          ${preview?`<div class="story-feed-card__preview">${preview}</div>`:''}
+          <div class="story-feed-card__title">${renderEmoji(title)}</div>
+          ${preview?`<div class="story-feed-card__preview">${renderEmoji(preview)}</div>`:''}
         </div>
         ${hasImage?`<div class="story-feed-card__thumb-wrap"><img class="story-feed-card__thumb" src="${s.imageUrl}" alt="" loading="lazy"/></div>`:''}
       </div>
@@ -221,14 +221,14 @@ function _storyBubble(r){
   const rName=isUser?(S.userName||'You'):(PERSONAS[r.from]?.name||r.from);
   if(isUser){
     return `<div class="sv-bubble-row sv-bubble-row--user">
-      <div class="sv-bubble sv-bubble--user"><div class="sv-bubble__text">${r.text}</div></div>
+      <div class="sv-bubble sv-bubble--user"><div class="sv-bubble__text">${renderEmoji(r.text)}</div></div>
     </div>`;
   }
   return `<div class="sv-bubble-row">
     <div class="sv-bubble__avatar">${avatar(rName,'xs',r.from)}</div>
     <div class="sv-bubble sv-bubble--other">
       <div class="sv-bubble__name">${rName}</div>
-      <div class="sv-bubble__text">${r.text}</div>
+      <div class="sv-bubble__text">${renderEmoji(r.text)}</div>
     </div>
   </div>`;
 }
@@ -266,7 +266,7 @@ function renderStoryView(storyId){
         <div class="sv-post">
           ${s.title?`<div class="sv-post__title">${s.title}</div>`:''}
           ${s.imageUrl?`<div class="story-thread-img-wrap" style="margin-bottom:10px;"><img src="${s.imageUrl}" class="story-thread-img" alt="" loading="lazy"/></div>`:''}
-          <div class="sv-post__body">${s.text}</div>
+          <div class="sv-post__body">${renderEmoji(s.text)}</div>
           <div class="sv-post__actions">
             <button class="story-like-btn${liked?' liked':''}" id="slike-${s.id}" onclick="likeStoryThread('${s.id}')">
               <i data-lucide="heart" style="width:18px;height:18px;${liked?'fill:#E53935;color:#E53935;':''}"></i>
