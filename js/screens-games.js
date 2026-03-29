@@ -973,6 +973,7 @@ function renderChess(gameId){
       <div class="screen__scroll board-game-scroll">
         <div class="chess-wrap">
           <div class="chess-ai-note">Tap a piece to select it, then tap the square to move.</div>
+          <div style="font-size:0.78rem;color:#8696a0;text-align:center;margin-top:2px;">Tap the same piece again to deselect it.</div>
           <div class="chess-ai-note chess-ai-note--sub">Playing against a beginner AI.</div>
           <div id="${id}" style="width:min(340px,90vw)"></div>
           <button class="btn-secondary chess-reset" onclick="resetChess('${gameId}')">New Game</button>
@@ -990,7 +991,8 @@ function renderChess(gameId){
       draggable: true,
       onDrop: (src,tgt)=>{
         const move = chess.move({from:src,to:tgt,promotion:'q'});
-        if(!move) return 'snapback';
+        // Illegal move — give feedback so the user knows why the piece snapped back
+        if(!move){ toast('That move is not allowed. Try another square.'); return 'snapback'; }
         board.position(chess.fen());
         gs.gameState.fen = chess.fen();
         S.games[gameId]=gs; saveS();
