@@ -11,6 +11,10 @@ async function claude(personaId, messages, extraNote='', imageUrl=''){
   const userRef=S.userName
     ?`The person you are chatting with is named ${S.userName}${userAge?`, and they are ${userAge} years old`:''}.${userAge&&userAge>=55?' They are a fellow senior — treat them as a peer or elder, never as a youngster. Do not use terms like "beta" or "dear child" with them.':''} Use their name naturally sometimes.`
     :'';
+  // Language directive: steer AI responses toward user's regional language
+  const langNote = S.userLang === 'mr'
+    ? 'तुम्ही प्रामुख्याने मराठीत बोला. वापरकर्त्याने इंग्रजीत लिहिले तरी मराठीत उत्तर द्या.'
+    : 'आप मुख्यतः हिंदी में बात करें। अगर यूज़र इंग्लिश में लिखे तो भी हिंदी में जवाब दें।';
   const sys=`${p.system}
 ${userRef}
 RULES:
@@ -22,6 +26,7 @@ RULES:
 - Use emoji only when it genuinely fits — never as punctuation or to signal warmth you should express through words.
 - Respond in the same language the user writes in, mixing in your natural language phrases.
 - Your voice should be distinctly yours — not generic WhatsApp elder.
+${langNote}
 ${extraNote}`;
   const msgs=messages.slice(-10).map(m=>({role:m.from==='user'?'user':'assistant',content:m.text||'...'}));
   // Ensure valid alternating structure
@@ -59,7 +64,10 @@ ${extraNote}`;
 function fallback(id){
   const p=PERSONAS[id]; if(!p) return 'Connection issue. Please try again.';
   if(!_fallbackIdx[id])_fallbackIdx[id]=0;
-  return p.fallbacks[_fallbackIdx[id]++%p.fallbacks.length];
+  // Support both old-style arrays and new {hi:[...], mr:[...]} objects
+  const arr=p.fallbacks;
+  const list=(arr&&typeof arr==='object'&&!Array.isArray(arr))?(arr[S.userLang]||arr.hi||[]):(arr||[]);
+  return list[_fallbackIdx[id]++%list.length]||'';
 }
 
 function delay(ms){return new Promise(r=>setTimeout(r,ms));}

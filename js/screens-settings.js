@@ -4,11 +4,8 @@
 
 /* ── SETTINGS ── */
 function applyFontSize(){
-  const app=document.getElementById('app');
-  if(!app)return;
-  app.classList.remove('fs-large','fs-xlarge');
-  if(S.fontSize==='large') app.classList.add('fs-large');
-  else if(S.fontSize==='xlarge') app.classList.add('fs-xlarge');
+  const size = {normal:'18px', large:'21px', xlarge:'24px'}[S.fontSize||'normal'] || '18px';
+  document.documentElement.style.fontSize = size;
 }
 
 function showSettings(){
@@ -27,6 +24,17 @@ function showSettings(){
           <span style="font-size:${s.bigger?'22px':s.big?'18px':'15px'};font-weight:700;line-height:1;">${s.label}</span>
           <span style="font-size:11px;color:#667781;margin-top:3px;">${s.desc}</span>
         </button>`).join('')}
+    </div>
+    <div class="settings-section-label" style="margin-top:16px;">Language</div>
+    <div class="settings-font-row">
+      <button class="settings-font-btn${S.userLang==='hi'?' active':''}" onclick="changeLang('hi')">
+        <span style="font-size:17px;font-weight:700;line-height:1;">हिन्दी</span>
+        <span style="font-size:11px;color:#667781;margin-top:3px;">Hindi</span>
+      </button>
+      <button class="settings-font-btn${S.userLang==='mr'?' active':''}" onclick="changeLang('mr')">
+        <span style="font-size:17px;font-weight:700;line-height:1;">मराठी</span>
+        <span style="font-size:11px;color:#667781;margin-top:3px;">Marathi</span>
+      </button>
     </div>
     <div class="settings-section-label" style="margin-top:16px;">Account</div>
     <div class="settings-row" onclick="showChangeNameSheet()">
@@ -49,6 +57,8 @@ function showSettings(){
   `);
   lucide.createIcons();
 }
+
+function changeLang(lang){ S.userLang=lang; saveS(); showSettings(); }
 
 function setFontSize(size){
   set({fontSize:size});

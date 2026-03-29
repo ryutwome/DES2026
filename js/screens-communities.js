@@ -185,50 +185,32 @@ function speakCommGroup(btn, groupId, text) {
 }
 
 function renderCommMsgs(container, messages) {
-  // Group consecutive messages by sender
-  const groups = [];
-  messages.forEach(msg => {
-    const last = groups[groups.length - 1];
-    if (last && last.from === msg.from) last.msgs.push(msg);
-    else groups.push({from: msg.from, msgs: [msg]});
-  });
-
   let lastDate = '';
-  groups.forEach(group => {
-    const sent = group.from === 'user';
-    const p = sent ? null : PERSONAS[group.from];
-    const groupId = group.msgs[0].id;
-    const groupText = group.msgs.map(m => m.text||'').join('. ');
-    const ttsAttr = `onclick="speakCommGroup(this,'${groupId}','${groupText.replace(/\\/g,'\\\\').replace(/'/g,"\\'").replace(/\n/g,' ').slice(0,500)}')"`;
-    const ttsBtn = canTTS() ? `<button class="comm-tts-btn" ${ttsAttr} aria-label="Read aloud">${IC.speaker}</button>` : '';
+  messages.forEach(msg => {
+    // Date divider when day changes
+    const d = new Date(msg.timestamp).toDateString();
+    if (d !== lastDate) {
+      lastDate = d;
+      const today = new Date().toDateString(), yday = new Date(Date.now()-86400000).toDateString();
+      const label = d===today?'Today':d===yday?'Yesterday':new Date(msg.timestamp).toLocaleDateString('en-IN',{day:'numeric',month:'long',year:'numeric'});
+      container.insertAdjacentHTML('beforeend', `<div class="chat-date-divider"><span>${label}</span></div>`);
+    }
 
-    group.msgs.forEach((msg, i) => {
-      const isFirst = i === 0;
-      const isLast = i === group.msgs.length - 1;
+    const sent = msg.from === 'user';
+    const p = sent ? null : PERSONAS[msg.from];
 
-      // Date divider between groups
-      if (isFirst) {
-        const d = new Date(msg.timestamp).toDateString();
-        if (d !== lastDate) {
-          lastDate = d;
-          const today = new Date().toDateString(), yday = new Date(Date.now()-86400000).toDateString();
-          const label = d===today?'Today':d===yday?'Yesterday':new Date(msg.timestamp).toLocaleDateString('en-IN',{day:'numeric',month:'long',year:'numeric'});
-          container.insertAdjacentHTML('beforeend', `<div class="chat-date-divider"><span>${label}</span></div>`);
-        }
-      }
+    // Wrap each message in a row div so highlight logic can target it
+    const row = document.createElement('div');
+    row.className = `comm-msg-row${sent?' comm-msg-row--sent':''}`;
+    row.dataset.msgId = msg.id;
 
-      const row = document.createElement('div');
-      row.className = `comm-msg-row${sent?' comm-msg-row--sent':''}${isFirst?' comm-msg-row--group-start':''}`;
-      row.dataset.msgId = msg.id;
+    // Show sender name above received messages (WhatsApp group style)
+    const nameLabel = (!sent && p)
+      ? `<div class="comm-sender-name" style="color:${p.color||'#667781'}">${p.name||msg.from}</div>`
+      : '';
 
-      const avatarSlot = sent ? '' : `<div class="comm-avatar-slot">${isLast ? avatar(p?.name||'?','sm',group.from) : ''}</div>`;
-      const senderName = (!sent && isFirst) ? `<div class="comm-sender-name" style="color:${p?.color||'#667781'}">${p?.name||'?'}</div>` : '';
-      const tailClass = isLast ? ' comm-bubble--tail' : '';
-      const footer = `<div class="comm-msg-footer"><span class="comm-msg-time">${ftime(msg.timestamp)}</span>${isLast ? ttsBtn : ''}</div>`;
-
-      row.innerHTML = `${avatarSlot}<div class="comm-bubble comm-bubble--${sent?'sent':'recv'}${tailClass}">${senderName}<div>${renderEmoji(msg.text||'')}</div>${footer}</div>`;
-      container.appendChild(row);
-    });
+    row.innerHTML = nameLabel + bubble(msg);
+    container.appendChild(row);
   });
 }
 
@@ -261,25 +243,27 @@ function renderCommunity(commId) {
   // Scroll to and highlight the mention message
   if (hasMentionBadge) {
     const userName = S.userName || 'everyone';
-    const mentionRow = [...msgs.querySelectorAll('.comm-msg-row')].find(r => r.querySelector('.comm-bubble')?.textContent.includes(`@${userName}`));
+    const mentionRow = [...msgs.querySelectorAll('.comm-msg-row')].find(r => r.querySelector('.bubble')?.textContent.includes(`@${userName}`));
     if (mentionRow) {
       setTimeout(() => {
         mentionRow.scrollIntoView({behavior:'smooth', block:'center'});
-        mentionRow.querySelector('.comm-bubble')?.classList.add('comm-bubble--highlight');
-        setTimeout(() => mentionRow.querySelector('.comm-bubble')?.classList.remove('comm-bubble--highlight'), 2500);
+        mentionRow.querySelector('.bubble')?.classList.add('comm-bubble--highlight');
+        setTimeout(() => mentionRow.querySelector('.bubble')?.classList.remove('comm-bubble--highlight'), 2500);
       }, 200);
     }
   } else {
     scrollBot(msgs);
   }
-  renderInputBar('comm-wrap', {placeholder:'Message community', onSend: async ({type, text}) => {
+  renderInputBar('comm-wrap', {placeholder:'Message community', onSend: async (data) => {
+    const {type, text, image, caption} = data;
     markCommActive(commId);
-    const msg = mkMsg('user', type, text);
+    const msg = mkMsg('user', type, text||caption||'');
+    if(type==='image'){ msg.image=image; msg.caption=caption; }
     addMsg('communities', commId, msg);
     // Re-render last few messages so grouping stays correct
     const allMsgs = S.communities[commId] || [];
     const lastRow = msgs.lastElementChild;
-    if (lastRow && lastRow.classList.contains('comm-msg-row')) lastRow.remove(); // remove last row to re-render as group
+    if (lastRow && lastRow.classList.contains('comm-msg-row')) lastRow.remove(); // remove last row before re-appending with updated state
     renderCommMsgs(msgs, allMsgs.slice(-1));
     scrollBot(msgs);
     // Pick 2–3 responders (shuffled, no repeats)

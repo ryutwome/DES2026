@@ -69,6 +69,16 @@ function renderNamePrompt(){
       </div>
       <div class="name-prompt-screen__title">Welcome to DES2026</div>
       <div class="name-prompt-screen__subtitle">What should we call you?</div>
+      <div class="lang-picker">
+        <button class="lang-tile${S.userLang==='hi'?' active':''}" onclick="pickLang('hi')">
+          <span class="lang-tile__label">हिन्दी</span>
+          <span class="lang-tile__sub">(Hindi)</span>
+        </button>
+        <button class="lang-tile${S.userLang==='mr'?' active':''}" onclick="pickLang('mr')">
+          <span class="lang-tile__label">मराठी</span>
+          <span class="lang-tile__sub">(Marathi)</span>
+        </button>
+      </div>
       <div class="name-prompt-screen__field-wrap">
         <input class="name-prompt-screen__input" id="np-name" type="text" placeholder="Your name" autocomplete="name" autocapitalize="words" maxlength="40" />
       </div>
@@ -86,6 +96,8 @@ function renderNamePrompt(){
   btn.onclick=saveUserName;
   setTimeout(()=>inp.focus(),300);
 }
+function pickLang(lang){ S.userLang=lang; saveS(); renderNamePrompt(); }
+
 function saveUserName(){
   const name=$('np-name')?.value?.trim();
   if(!name)return;

@@ -105,12 +105,45 @@ function dismissDesktop(){set({desktopBannerDismissed:true});render();}
 
 function resBar(){return S.researcherMode?`<div class="researcher-mode-bar">${ej('eye')} RESEARCHER MODE — AI personas are labeled</div>`:'';}
 
+/* ── IMAGE COMPRESSION ── */
+function compressImage(file, cb){
+  const reader = new FileReader();
+  reader.onload = e => {
+    const img = new Image();
+    img.onload = () => {
+      const MAX = 800;
+      let w = img.width, h = img.height;
+      if(w > MAX || h > MAX){
+        if(w > h){ h = Math.round(h * MAX / w); w = MAX; }
+        else { w = Math.round(w * MAX / h); h = MAX; }
+      }
+      const canvas = document.createElement('canvas');
+      canvas.width = w; canvas.height = h;
+      canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+      cb(canvas.toDataURL('image/jpeg', 0.7));
+    };
+    img.src = e.target.result;
+  };
+  reader.readAsDataURL(file);
+}
+
+/* ── FULLSCREEN IMAGE VIEWER ── */
+function openImageViewer(src){
+  const ov = document.createElement('div');
+  ov.className = 'img-viewer';
+  ov.innerHTML = `<img src="${src}"><div class="img-viewer__close">${IC.close}</div>`;
+  ov.onclick = () => ov.remove();
+  document.body.appendChild(ov);
+}
+
 function bubble(msg, opts={}){
   const sent=msg.from==='user';
   const p=!sent&&PERSONAS[msg.from];
   const aiBadge=(p&&S.researcherMode)?'<span class="ai-badge">AI</span>':'';
   let content='';
-  if(msg.type==='voice'){
+  if(msg.type==='image'){
+    content=`${aiBadge}<div class="img-bubble" onclick="openImageViewer('${msg.image.replace(/'/g,"\\'")}')"><img src="${msg.image}" alt="Image"></div>${msg.caption?`<div class="img-caption">${renderEmoji(msg.caption)}</div>`:''}`;
+  } else if(msg.type==='voice'){
     const bars=Array.from({length:18},(_,i)=>{const h=4+Math.round(Math.sin(i*.8)*8+10);return`<div class="voice-bubble__bar" style="height:${h}px"></div>`;}).join('');
     content=`<div class="voice-bubble">
       <div class="voice-bubble__controls">
@@ -165,6 +198,8 @@ function renderInputBar(containerId, {onSend,onGame=null,placeholder='Message'})
     <div class="message-input-bar__field-wrap">
       ${onGame?`<button class="message-input-bar__game-btn" id="ib-game" aria-label="Start game">${IC.controller}</button>`:''}
       <textarea class="message-input-bar__field" id="ib-field" placeholder="${placeholder}" rows="1"></textarea>
+      <button class="attach-btn" id="ib-attach" aria-label="Attach image">${IC.attach}</button>
+      <input type="file" accept="image/*" id="ib-file" style="display:none">
     </div>
     <button class="message-input-bar__send message-input-bar__send--mic" id="ib-send" aria-label="Send or record">${IC.mic}</button>
   `;
@@ -174,6 +209,19 @@ function renderInputBar(containerId, {onSend,onGame=null,placeholder='Message'})
 
   const field=$('ib-field'), sendBtn=$('ib-send');
   if(onGame&&$('ib-game')) $('ib-game').onclick=onGame;
+
+  /* ── Attachment flow ── */
+  const attachBtn=$('ib-attach'), fileInput=$('ib-file');
+  if(attachBtn&&fileInput){
+    attachBtn.onclick=()=>fileInput.click();
+    fileInput.onchange=()=>{
+      const file=fileInput.files[0]; if(!file)return;
+      compressImage(file, dataUrl=>{
+        fileInput.value='';
+        showAttachPreview(dataUrl, onSend);
+      });
+    };
+  }
 
   field.addEventListener('input',()=>{
     field.style.height='auto';field.style.height=Math.min(field.scrollHeight,120)+'px';
@@ -195,7 +243,7 @@ function renderInputBar(containerId, {onSend,onGame=null,placeholder='Message'})
     const ov=document.createElement('div');ov.className='recording-overlay';ov.id='rec-ov';
     const bars=Array.from({length:12},(_,i)=>`<div class="recording-overlay__bar" style="animation-delay:${i*.07}s"></div>`).join('');
     ov.innerHTML=`<div class="recording-overlay__waveform">${bars}</div>
-      <div class="recording-overlay__status">Listening...</div>
+      <div class="recording-overlay__status">${(typeof S!=='undefined'&&S.userLang==='mr')?'मराठीत बोला...':(typeof S!=='undefined'&&S.userLang==='hi')?'हिंदी में बोलें...':'Listening...'}</div>
       <div class="recording-overlay__preview" id="rec-preview"> </div>
       <div class="recording-overlay__actions">
         <button class="recording-overlay__cancel" id="rec-cancel">Cancel</button>
@@ -221,6 +269,21 @@ function renderInputBar(containerId, {onSend,onGame=null,placeholder='Message'})
       onError:()=>{removeOv();toast('Could not hear clearly. Please try again.');},
       onEnd:()=>{recording=false;sendBtn.innerHTML=IC.mic;sendBtn.className='message-input-bar__send message-input-bar__send--mic';const s=$('rec-send');if(s&&transcript.trim())s.disabled=false;else if(!transcript.trim())removeOv();}
     });
+  };
+}
+
+/* ── ATTACH PREVIEW ── */
+function showAttachPreview(dataUrl, onSend){
+  const bk=document.createElement('div');bk.className='bottom-sheet-backdrop';
+  bk.onclick=e=>{if(e.target===bk)bk.remove();};
+  const sh=document.createElement('div');sh.className='attach-preview';
+  sh.innerHTML=`<img src="${dataUrl}"><input class="attach-preview__caption" type="text" placeholder="Add a caption..."><div class="attach-preview__actions"><button class="attach-preview__cancel">Cancel</button><button class="attach-preview__send">${IC.send} Send</button></div>`;
+  bk.appendChild(sh);app().appendChild(bk);
+  sh.querySelector('.attach-preview__cancel').onclick=()=>bk.remove();
+  sh.querySelector('.attach-preview__send').onclick=()=>{
+    const caption=sh.querySelector('.attach-preview__caption').value.trim();
+    bk.remove();
+    onSend({type:'image', image:dataUrl, caption});
   };
 }
 

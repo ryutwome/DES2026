@@ -333,7 +333,8 @@ function seedData(interests) {
   const now=Date.now();
   PERSONA_LIST.forEach((p,i)=>{
     if(!S.chats[p.id]){
-      const msg=mkMsg(p.id,'text',p.fallbacks[0]);
+      const fb=(p.fallbacks&&typeof p.fallbacks==='object'&&!Array.isArray(p.fallbacks))?(p.fallbacks[S.userLang]||p.fallbacks.hi||[]):p.fallbacks||[];
+      const msg=mkMsg(p.id,'text',fb[0]||'');
       msg.timestamp=now-(i*7*60000)-(Math.random()*3*60000); // stagger by minutes
       S.chats[p.id]=[msg];
     }
@@ -472,7 +473,9 @@ ${extraNote}`;
 function fallback(id){
   const p=PERSONAS[id]; if(!p) return 'Connection issue. Please try again.';
   if(!_fallbackIdx[id])_fallbackIdx[id]=0;
-  return p.fallbacks[_fallbackIdx[id]++%p.fallbacks.length];
+  const arr=p.fallbacks;
+  const list=(arr&&typeof arr==='object'&&!Array.isArray(arr))?(arr[S.userLang]||arr.hi||[]):(arr||[]);
+  return list[_fallbackIdx[id]++%list.length]||'';
 }
 
 /* ── ROUTER ── */

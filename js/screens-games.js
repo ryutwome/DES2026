@@ -3,21 +3,15 @@
    ============================================================ */
 
 /* ── CONSTANTS ── */
-const HANGMAN_WORDS = [
-  'MANGO','TIGER','BRIDGE','FLOWER','CRICKET','CINEMA','GARDEN','PALACE',
-  'MONSOON','TEMPLE','BUFFALO','JUNGLE','ROCKET','CANDLE','MIRROR','PILLOW',
-  'FOREST','DESERT','CASTLE','ISLAND','BUTTER','COFFEE','PENCIL','RIBBON',
-  'SILVER','PLANET','CLOUDS','GUITAR','BASKET','WINDOW'
-];
-
-const MEMORY_EMOJIS = ['apple','orange','lemon','grapes','strawberry','peach','kiwi','pineapple'];
+const MEMORY_EMOJIS = ['prayer','music','cricket','seedling','books','pot','smile','sunrise'];
 
 // Static lobby rooms — AI personas + watchers waiting to play
 const SEED_LOBBIES = [
   {type:'tictactoe',  personaId:'rameshbhai',  watchers:['meenakshiamma','lalitha'],    label:'3 in room', waiting:'Rameshbhai waiting'},
   {type:'connectfour',personaId:'harbhajan',   watchers:['krishnaswamy','abdulrehman'], label:'3 in room', waiting:'Harbhajan waiting'},
   {type:'memory',     personaId:'sunitadevi',  watchers:['padmavathi','rameshbhai'],    label:'3 in room', waiting:'Sunita Devi waiting'},
-  {type:'hangman',    personaId:'padmavathi',  watchers:['lalitha','meenakshiamma'],    label:'3 in room', waiting:'Padmavathi waiting'},
+  {type:'tambola',    personaId:'rameshbhai',   watchers:['sunitadevi'],                 label:'2 in room', waiting:'Rameshbhai waiting'},
+  {type:'teenpatti',  personaId:'harbhajan',    watchers:['krishnaswamy'],               label:'2 in room', waiting:'Harbhajan waiting'},
 ];
 
 const gameTypes = {
@@ -26,7 +20,10 @@ const gameTypes = {
   tictactoe:         {id:'tictactoe',         emoji:'circle-o',  name:'Tic Tac Toe',      desc:'Classic 3-in-a-row — can you beat the AI?',   category:'board'},
   connectfour:       {id:'connectfour',       emoji:'red-circle',name:'Connect Four',     desc:'Drop pieces, four in a row wins',              category:'board'},
   memory:            {id:'memory',            emoji:'joker',     name:'Memory Match',     desc:'Flip cards and find matching pairs',           category:'board'},
-  hangman:           {id:'hangman',           emoji:'text-abc',  name:'Hangman',          desc:'Guess the word before the figure is complete', category:'word'},
+  tambola:           {id:'tambola',           emoji:'game',      name:'Tambola',          desc:'Indian bingo — mark numbers on your ticket',   category:'board'},
+  teenpatti:         {id:'teenpatti',         emoji:'joker',     name:'Teen Patti',       desc:'3-card Indian poker against the dealer',       category:'board'},
+  chess:             {id:'chess',             emoji:'game',      name:'Chess',            desc:'Classic chess — drag pieces to move',           category:'board'},
+  solitaire:         {id:'solitaire',         emoji:'joker',     name:'Solitaire',        desc:'Klondike card game — tap to move cards',       category:'board'},
 };
 
 /* ── CREATE GAME STATE ── */
@@ -43,9 +40,18 @@ function createGameState(gameId, type, personaId) {
     const cards = [...MEMORY_EMOJIS,...MEMORY_EMOJIS].sort(()=>Math.random()-0.5).map((e,i)=>({id:i,emoji:e,flipped:false,matched:false}));
     return {...base, cards, flippedIndices:[], currentTurn:'user'};
   }
-  if (type === 'hangman') {
-    const word = HANGMAN_WORDS[Math.floor(Math.random()*HANGMAN_WORDS.length)];
-    return {...base, word, guessed:[], attempts:0, maxAttempts:6};
+  if (type === 'tambola') {
+    return {...base, gameState:{ticket:generateTambolaTicket(),called:[],marked:[]}};
+  }
+  if (type === 'teenpatti') {
+    const deck = shuffleDeck();
+    return {...base, gameState:{deck,playerHand:[deck[0],deck[2],deck[4]],aiHand:[deck[1],deck[3],deck[5]],pot:0,stake:10,phase:'bet'}};
+  }
+  if (type === 'chess') {
+    return {...base, gameState:{fen:null}};
+  }
+  if (type === 'solitaire') {
+    return {...base, gameState:initSolitaire()};
   }
   return {...base, currentLetter:'', questionNumber:1, lastQuestion:'', messages:[], completedAt:null};
 }
@@ -102,7 +108,7 @@ function rejoinCard(g){
 function gameCard(g){
   const p = PERSONAS[g.opponentId]; const gt = gameTypes[g.type]||{emoji:'game',name:g.type};
   const div = document.createElement('div'); div.className = 'game-card';
-  const isBoardGame = ['tictactoe','connectfour','memory','hangman'].includes(g.type);
+  const isBoardGame = ['tictactoe','connectfour','memory','tambola','teenpatti','chess','solitaire'].includes(g.type);
   const meta = g.status==='completed' ? 'Completed' : isBoardGame ? 'In progress' : 'Your turn';
   div.innerHTML = `<div class="game-card__icon">${ej(gt.emoji,'30px')}</div><div class="game-card__body"><div class="game-card__title">${gt.name}</div><div class="game-card__subtitle">vs ${p?.name||'?'}</div><div class="game-card__meta">${meta}</div></div>`;
   if (g.status === 'active') div.onclick = () => navigate(`#/game/${g.id}/${g.type}`);
@@ -174,7 +180,10 @@ function renderGame(gameId, gameType){
   if (gameType === 'tictactoe')   return renderTicTacToe(gameId);
   if (gameType === 'connectfour') return renderConnectFour(gameId);
   if (gameType === 'memory')      return renderMemoryMatch(gameId);
-  if (gameType === 'hangman')     return renderHangman(gameId);
+  if (gameType === 'tambola')     return renderTambola(gameId);
+  if (gameType === 'teenpatti')   return renderTeenPatti(gameId);
+  if (gameType === 'chess')       return renderChess(gameId);
+  if (gameType === 'solitaire')   return renderSolitaire(gameId);
   renderChatGame(gameId, gameType);
 }
 
@@ -658,68 +667,349 @@ function memRematch(gameId){
   S.games[gameId]=gs; saveS(); _memRefresh(gameId);
 }
 
-/* ── HANGMAN ── */
-function renderHangman(gameId){
-  const gs=S.games[gameId]; const persona=gs?PERSONAS[gs.opponentId]:null;
+/* ── TAMBOLA (Indian Bingo) ── */
+function generateTambolaTicket(){
+  // 3x9 grid; each row has 5 numbers, columns map to number ranges
+  const ticket = Array.from({length:3}, ()=>Array(9).fill(0));
+  const colRanges = [[1,9],[10,19],[20,29],[30,39],[40,49],[50,59],[60,69],[70,79],[80,90]];
+  for(let c=0;c<9;c++){
+    const [lo,hi] = colRanges[c];
+    const nums = [];
+    while(nums.length < 3){
+      const n = lo + Math.floor(Math.random()*(hi-lo+1));
+      if(!nums.includes(n)) nums.push(n);
+    }
+    nums.sort((a,b)=>a-b);
+    for(let i=0;i<nums.length;i++) ticket[i][c] = nums[i];
+  }
+  // Each row must have exactly 5 numbers — zero out excess
+  for(let r=0;r<3;r++){
+    const filled = ticket[r].map((v,i)=>({v,i})).filter(x=>x.v>0);
+    while(filled.length > 5){
+      const idx = filled.splice(Math.floor(Math.random()*filled.length),1)[0].i;
+      ticket[r][idx] = 0;
+    }
+  }
+  return ticket;
+}
+
+function renderTambola(gameId){
+  const gs = S.games[gameId]; const persona = gs?PERSONAS[gs.opponentId]:null;
   if(!gs||!persona){navigate('#/games');return;}
-  const {vbar}=_boardTopBars(gs);
+  if(!gs.gameState) gs.gameState = {ticket:generateTambolaTicket(),called:[],marked:[]};
+  const ts = gs.gameState;
+  const allNums = Array.from({length:90},(_,i)=>i+1).filter(n=>!ts.called.includes(n));
+  const win = checkTambolaWin(ts);
+
   mount(`
-    ${header(`${ej('text-abc')} Hangman`,{back:true,subtitle:`${persona.name} chose the word`})}
+    ${header(`${ej('game')} Tambola`,{back:true,subtitle:`with ${persona.name}`})}
     <div class="screen board-game-screen">
-      ${vbar}
       <div class="screen__scroll board-game-scroll">
-        <div class="hangman-wrap" id="hangman-wrap"></div>
-        ${_gameChatHtml(gameId)}
+        <div class="tambola-board" id="tambola-board"></div>
       </div>
     </div>
   `);
-  _hangRefresh(gameId);
-  renderBoardChat(gameId);
-  _startVoiceAnim(gs);
+  const wrap = $('tambola-board'); if(!wrap) return;
+  let html = `<div class="tambola-called">Last called: <span class="tambola-num">${ts.called.length?ts.called[ts.called.length-1]:'--'}</span></div>`;
+  html += `<table class="tambola-ticket">`;
+  for(let r=0;r<3;r++){
+    html += `<tr>`;
+    for(let c=0;c<9;c++){
+      const n = ts.ticket[r][c];
+      const isMarked = ts.marked.includes(n);
+      if(n===0) html += `<td class="tambola-cell tambola-empty"></td>`;
+      else html += `<td class="tambola-cell${isMarked?' tambola-marked':''}" onclick="markTambola('${gameId}',${n})">${n}</td>`;
+    }
+    html += `</tr>`;
+  }
+  html += `</table>`;
+  if(allNums.length > 0) html += `<button class="btn-primary" onclick="callTambola('${gameId}')">Call Next Number</button>`;
+  else html += `<div class="game-over-msg">All numbers called!</div>`;
+  if(win) html += `<div class="tambola-win">Tambola! You won!</div>`;
+  wrap.innerHTML = html;
 }
-function _hangRefresh(gameId){
-  const gs=S.games[gameId]; const wrap=$('hangman-wrap'); if(!wrap)return;
-  const word=gs.word, guessed=gs.guessed||[], attempts=gs.attempts||0, max=gs.maxAttempts||6;
-  const won=word.split('').every(l=>guessed.includes(l));
-  const lost=attempts>=max;
-  const parts=[
-    '<circle cx="60" cy="30" r="14" fill="none" stroke="#333" stroke-width="3"/>',
-    '<line x1="60" y1="44" x2="60" y2="90" stroke="#333" stroke-width="3"/>',
-    '<line x1="60" y1="58" x2="36" y2="78" stroke="#333" stroke-width="3"/>',
-    '<line x1="60" y1="58" x2="84" y2="78" stroke="#333" stroke-width="3"/>',
-    '<line x1="60" y1="90" x2="40" y2="116" stroke="#333" stroke-width="3"/>',
-    '<line x1="60" y1="90" x2="80" y2="116" stroke="#333" stroke-width="3"/>',
-  ];
-  const wordHtml=word.split('').map(l=>`<span class="hangman-letter${guessed.includes(l)?' revealed':''}">${guessed.includes(l)||(lost)?l:'_'}</span>`).join('');
-  const keys='ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('').map(l=>{
-    const used=guessed.includes(l);
-    return`<button class="hangman-key${used?(word.includes(l)?' correct':' wrong'):''}" ${used||won||lost?'disabled':''} onclick="hangGuess('${gameId}','${l}')">${l}</button>`;
-  }).join('');
-  wrap.innerHTML=`
-    <svg class="hangman-svg" viewBox="0 0 120 140">
-      <line x1="10" y1="135" x2="110" y2="135" stroke="#333" stroke-width="3"/>
-      <line x1="28" y1="135" x2="28" y2="5" stroke="#333" stroke-width="3"/>
-      <line x1="28" y1="5" x2="60" y2="5" stroke="#333" stroke-width="3"/>
-      <line x1="60" y1="5" x2="60" y2="16" stroke="#333" stroke-width="3"/>
-      ${parts.slice(0,attempts).join('')}
-    </svg>
-    <div class="hangman-word">${wordHtml}</div>
-    <div class="hangman-hint">${attempts} / ${max} wrong guesses</div>
-    ${won?`<div class="board-result win">You got it! ${ej('party')}</div><button class="board-rematch-btn" onclick="hangRematch('${gameId}')">New Word</button>`:''}
-    ${lost&&!won?`<div class="board-result lose">The word was <strong>${word}</strong></div><button class="board-rematch-btn" onclick="hangRematch('${gameId}')">Try Again</button>`:''}
-    ${!won&&!lost?`<div class="hangman-keys">${keys}</div>`:''}
-  `;
+
+function markTambola(gameId, n){
+  const gs = S.games[gameId]; if(!gs||!gs.gameState) return;
+  if(!gs.gameState.marked.includes(n) && gs.gameState.called.includes(n)){
+    gs.gameState.marked.push(n);
+    S.games[gameId]=gs; saveS(); renderGame(gameId,'tambola');
+  }
 }
-function hangGuess(gameId,letter){
-  const gs=S.games[gameId]; if(!gs||gs.guessed.includes(letter))return;
-  gs.guessed=[...gs.guessed,letter];
-  if(!gs.word.includes(letter)) gs.attempts=(gs.attempts||0)+1;
-  S.games[gameId]=gs; saveS(); _hangRefresh(gameId);
-  _triggerSpectatorComment(gameId);
+
+function callTambola(gameId){
+  const gs = S.games[gameId]; if(!gs) return;
+  if(!gs.gameState) gs.gameState = {ticket:generateTambolaTicket(),called:[],marked:[]};
+  const remaining = Array.from({length:90},(_,i)=>i+1).filter(n=>!gs.gameState.called.includes(n));
+  if(remaining.length===0) return;
+  const n = remaining[Math.floor(Math.random()*remaining.length)];
+  gs.gameState.called.push(n);
+  S.games[gameId]=gs; saveS(); renderGame(gameId,'tambola');
 }
-function hangRematch(gameId){
-  const gs=S.games[gameId];
-  gs.word=HANGMAN_WORDS[Math.floor(Math.random()*HANGMAN_WORDS.length)];
-  gs.guessed=[]; gs.attempts=0;
-  S.games[gameId]=gs; saveS(); _hangRefresh(gameId);
+
+function checkTambolaWin(ts){
+  if(!ts||!ts.ticket||!ts.marked) return false;
+  for(let r=0;r<3;r++)
+    for(let c=0;c<9;c++)
+      if(ts.ticket[r][c]>0 && !ts.marked.includes(ts.ticket[r][c])) return false;
+  return ts.marked.length > 0;
+}
+
+/* ── TEEN PATTI (3-card poker vs AI) ── */
+const TP_SUITS = ['\u2660','\u2665','\u2666','\u2663'];
+const TP_RANKS = ['2','3','4','5','6','7','8','9','10','J','Q','K','A'];
+
+function shuffleDeck(){
+  const deck = [];
+  for(const s of TP_SUITS) for(const r of TP_RANKS) deck.push({s,r});
+  for(let i=deck.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[deck[i],deck[j]]=[deck[j],deck[i]];}
+  return deck;
+}
+
+function cardHTML(card, hidden){
+  if(hidden) return `<div class="tp-card tp-card--back">\u{1F0A0}</div>`;
+  const color = (card.s==='\u2665'||card.s==='\u2666') ? 'red' : 'black';
+  return `<div class="tp-card tp-card--${color}">${card.r}${card.s}</div>`;
+}
+
+function tpHandRank(hand){
+  const rankVal = r => TP_RANKS.indexOf(r);
+  const vals = hand.map(c=>rankVal(c.r)).sort((a,b)=>b-a);
+  const suits = hand.map(c=>c.s);
+  const flush = suits.every(s=>s===suits[0]);
+  const straight = (vals[0]-vals[2]===2 && new Set(vals).size===3) ||
+                   (vals[0]===12&&vals[1]===1&&vals[2]===0);
+  const triple = new Set(vals).size===1;
+  const pair = new Set(vals).size===2;
+  if(triple) return 6*1000000 + vals[0]*10000;
+  if(straight&&flush) return 5*1000000 + vals[0]*10000;
+  if(flush) return 4*1000000 + vals[0]*10000+vals[1]*100+vals[2];
+  if(straight) return 3*1000000 + vals[0]*10000;
+  if(pair) return 2*1000000 + vals[0]*10000 + vals.find((_,i,a)=>a.filter(x=>x===a[i]).length===1)*100;
+  return vals[0]*10000+vals[1]*100+vals[2];
+}
+
+function renderTeenPatti(gameId){
+  const gs = S.games[gameId]; const persona = gs?PERSONAS[gs.opponentId]:null;
+  if(!gs||!persona){navigate('#/games');return;}
+  if(!gs.gameState||!gs.gameState.deck) tpNewGame(gameId, true);
+  const ts = gs.gameState;
+  const phase = ts.phase||'bet';
+
+  mount(`
+    ${header(`${ej('joker')} Teen Patti`,{back:true,subtitle:`vs ${persona.name}`})}
+    <div class="screen board-game-screen">
+      <div class="screen__scroll board-game-scroll">
+        <div class="tp-board" id="tp-board"></div>
+      </div>
+    </div>
+  `);
+  const wrap = $('tp-board'); if(!wrap) return;
+  let html = `<div class="tp-pot">Pot: ${ts.pot||0} chips</div>`;
+  html += `<div class="tp-hand tp-hand--ai"><div class="tp-hand-label">Dealer</div><div class="tp-hand-cards">`;
+  for(const c of ts.aiHand) html += cardHTML(c, phase!=='reveal');
+  html += `</div></div>`;
+  html += `<div class="tp-hand tp-hand--player"><div class="tp-hand-label">Your hand</div><div class="tp-hand-cards">`;
+  for(const c of ts.playerHand) html += cardHTML(c, false);
+  html += `</div></div>`;
+
+  if(phase==='bet'){
+    html += `<div class="tp-actions">`;
+    html += `<button class="btn-secondary" onclick="tpAction('${gameId}','fold')">Fold</button>`;
+    html += `<button class="btn-primary" onclick="tpAction('${gameId}','call')">Call (${ts.stake} chips)</button>`;
+    html += `</div>`;
+  } else {
+    const pr = tpHandRank(ts.playerHand), ar = tpHandRank(ts.aiHand);
+    const result = pr>ar?'You win!':pr<ar?'Dealer wins':'Tie!';
+    html += `<div class="tp-result">${result}</div>`;
+    html += `<button class="btn-primary" onclick="tpNewGame('${gameId}')">Play Again</button>`;
+  }
+  wrap.innerHTML = html;
+}
+
+function tpAction(gameId, action){
+  const gs = S.games[gameId]; if(!gs||!gs.gameState) return;
+  const ts = gs.gameState;
+  if(action==='fold') ts.phase='reveal';
+  else if(action==='call'){ ts.pot=(ts.pot||0)+ts.stake; ts.phase='reveal'; }
+  S.games[gameId]=gs; saveS(); renderGame(gameId,'teenpatti');
+}
+
+function tpNewGame(gameId, initOnly){
+  const gs = S.games[gameId]; if(!gs) return;
+  const deck = shuffleDeck();
+  gs.gameState = {deck, playerHand:[deck[0],deck[2],deck[4]], aiHand:[deck[1],deck[3],deck[5]], pot:0, stake:10, phase:'bet'};
+  S.games[gameId]=gs; saveS();
+  if(!initOnly) renderGame(gameId,'teenpatti');
+}
+
+/* ── CHESS ── */
+function renderChess(gameId){
+  const gs = S.games[gameId]; const persona = gs?PERSONAS[gs.opponentId]:null;
+  if(!gs||!persona){navigate('#/games');return;}
+  if(!gs.gameState) gs.gameState = {fen:null};
+  const id = 'chess-board-'+gameId;
+
+  mount(`
+    ${header(`${ej('game')} Chess`,{back:true,subtitle:`vs ${persona.name}`})}
+    <div class="screen board-game-screen">
+      <div class="screen__scroll board-game-scroll">
+        <div class="chess-wrap">
+          <div id="${id}" style="width:min(340px,90vw)"></div>
+          <button class="btn-secondary chess-reset" onclick="resetChess('${gameId}')">New Game</button>
+        </div>
+      </div>
+    </div>
+  `);
+
+  // Board renders via chessboard.js CDN after DOM insert
+  setTimeout(()=>{
+    if(typeof Chessboard === 'undefined' || typeof Chess === 'undefined') return;
+    const chess = new Chess(gs.gameState.fen||undefined);
+    const board = Chessboard(id, {
+      position: chess.fen(),
+      draggable: true,
+      onDrop: (src,tgt)=>{
+        const move = chess.move({from:src,to:tgt,promotion:'q'});
+        if(!move) return 'snapback';
+        board.position(chess.fen());
+        gs.gameState.fen = chess.fen();
+        S.games[gameId]=gs; saveS();
+        if(!chess.game_over()){
+          // Simple AI: pick random legal move
+          const moves = chess.moves();
+          if(moves.length){
+            chess.move(moves[Math.floor(Math.random()*moves.length)]);
+            board.position(chess.fen());
+            gs.gameState.fen = chess.fen();
+            S.games[gameId]=gs; saveS();
+          }
+        }
+        if(chess.game_over()) alert('Game over! '+(chess.in_checkmate()?'Checkmate':'Draw'));
+      }
+    });
+  }, 100);
+}
+
+function resetChess(gameId){
+  const gs = S.games[gameId];
+  if(gs){ gs.gameState={}; S.games[gameId]=gs; saveS(); renderGame(gameId,'chess'); }
+}
+
+/* ── SOLITAIRE (Klondike) ── */
+function initSolitaire(){
+  const deck = shuffleDeck();
+  const tableau = Array.from({length:7},()=>[]);
+  for(let i=0;i<7;i++) for(let j=i;j<7;j++) tableau[j].push({...deck.pop(), faceUp:j===i});
+  return { stock:deck.map(c=>({...c,faceUp:false})), waste:[], foundations:[[],[],[],[]], tableau, selected:null };
+}
+
+function renderSolitaire(gameId){
+  const gs = S.games[gameId]; const persona = gs?PERSONAS[gs.opponentId]:null;
+  if(!gs||!persona){navigate('#/games');return;}
+  if(!gs.gameState||!gs.gameState.tableau) gs.gameState = initSolitaire();
+  const ts = gs.gameState;
+
+  mount(`
+    ${header(`${ej('joker')} Solitaire`,{back:true,subtitle:'Klondike'})}
+    <div class="screen board-game-screen">
+      <div class="screen__scroll board-game-scroll">
+        <div class="sol-board" id="sol-board"></div>
+      </div>
+    </div>
+  `);
+  _solRefresh(gameId);
+}
+
+function _solRefresh(gameId){
+  const gs = S.games[gameId]; if(!gs||!gs.gameState) return;
+  const ts = gs.gameState;
+  const wrap = $('sol-board'); if(!wrap) return;
+  let html = '';
+
+  // Foundations
+  html += `<div class="sol-foundations">`;
+  for(let i=0;i<4;i++){
+    const top = ts.foundations[i][ts.foundations[i].length-1];
+    html += `<div class="sol-foundation" onclick="solTap('${gameId}','f',${i})">${top?top.r+top.s:'Empty'}</div>`;
+  }
+  html += `</div>`;
+
+  // Stock + waste
+  html += `<div class="sol-stock-area">`;
+  html += `<div class="sol-stock" onclick="solDraw('${gameId}')">${ts.stock.length?'[Draw]':'[Reset]'}</div>`;
+  const wasteTop = ts.waste[ts.waste.length-1];
+  html += `<div class="sol-waste" onclick="solTap('${gameId}','w',0)">${wasteTop?wasteTop.r+wasteTop.s:'--'}</div>`;
+  html += `</div>`;
+
+  // Tableau
+  html += `<div class="sol-tableau">`;
+  for(let c=0;c<7;c++){
+    html += `<div class="sol-col">`;
+    const pile = ts.tableau[c];
+    if(pile.length===0){
+      html += `<div class="sol-card sol-empty" onclick="solTap('${gameId}','t',${c})">[ ]</div>`;
+    } else {
+      for(let r=0;r<pile.length;r++){
+        const card = pile[r];
+        const isSelected = ts.selected&&ts.selected.type==='t'&&ts.selected.col===c&&ts.selected.idx===r;
+        html += `<div class="sol-card${card.faceUp?'':' sol-back'}${isSelected?' sol-selected':''}" onclick="solTap('${gameId}','t',${c},${r})">${card.faceUp?card.r+card.s:'\u{1F0A0}'}</div>`;
+      }
+    }
+    html += `</div>`;
+  }
+  html += `</div>`;
+  wrap.innerHTML = html;
+}
+
+function solDraw(gameId){
+  const gs = S.games[gameId]; if(!gs||!gs.gameState) return;
+  const ts = gs.gameState;
+  if(ts.stock.length===0){
+    ts.stock = ts.waste.reverse().map(c=>({...c,faceUp:false}));
+    ts.waste = [];
+  } else {
+    const card = ts.stock.pop();
+    card.faceUp = true;
+    ts.waste.push(card);
+  }
+  ts.selected = null;
+  S.games[gameId]=gs; saveS(); _solRefresh(gameId);
+}
+
+function solTap(gameId, type, col, idx){
+  const gs = S.games[gameId]; if(!gs||!gs.gameState) return;
+  const ts = gs.gameState;
+
+  if(!ts.selected){
+    if(type==='w'){ const top=ts.waste[ts.waste.length-1]; if(top) ts.selected={type:'w',card:top}; }
+    else if(type==='t' && idx!==undefined){ const card=ts.tableau[col][idx]; if(card&&card.faceUp) ts.selected={type:'t',col,idx,card}; }
+  } else {
+    const sel = ts.selected;
+    ts.selected = null;
+    let moved = false;
+    const rankIdx = r => TP_RANKS.indexOf(r);
+    const isRed = s => s==='\u2665'||s==='\u2666';
+
+    if(type==='f'){
+      const card = sel.card;
+      const found = ts.foundations[col];
+      const topF = found[found.length-1];
+      if((!topF && card.r==='A') || (topF && topF.s===card.s && rankIdx(card.r)===rankIdx(topF.r)+1)){
+        found.push(card);
+        if(sel.type==='w') ts.waste.pop();
+        else { ts.tableau[sel.col].splice(sel.idx,1); const newTop=ts.tableau[sel.col][ts.tableau[sel.col].length-1]; if(newTop)newTop.faceUp=true; }
+        moved=true;
+      }
+    } else if(type==='t'){
+      const card = sel.card;
+      const pile = ts.tableau[col];
+      const topT = pile[pile.length-1];
+      if((!topT && card.r==='K') || (topT && topT.faceUp && rankIdx(card.r)===rankIdx(topT.r)-1 && isRed(card.s)!==isRed(topT.s))){
+        if(sel.type==='w'){ pile.push(card); ts.waste.pop(); moved=true; }
+        else { const cards=ts.tableau[sel.col].splice(sel.idx); pile.push(...cards); const newTop=ts.tableau[sel.col][ts.tableau[sel.col].length-1]; if(newTop)newTop.faceUp=true; moved=true; }
+      }
+    }
+  }
+  S.games[gameId]=gs; saveS(); _solRefresh(gameId);
 }

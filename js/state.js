@@ -20,6 +20,7 @@ let S = {
   unreadChats:{},
   unreadStoryReplies:{}, // storyId → unread reply count (own stories only)
   viewedStatuses:[],
+  userLang:'hi',
 };
 
 function loadS() {
@@ -31,6 +32,9 @@ function saveS() {
   try { localStorage.setItem('des2026', JSON.stringify(S)); } catch(e){}
 }
 function set(patch) { Object.assign(S, patch); saveS(); }
+
+/* Resolve a bilingual {hi,mr} object to a string using S.userLang. */
+function bi(v){ if(!v||typeof v==='string') return v||''; return v[S.userLang]||v.hi||v.mr||''; }
 
 function mkId() { return Date.now()+'_'+Math.random().toString(36).slice(2,6); }
 function mkGameId() { return 'game_'+mkId(); }
@@ -88,7 +92,7 @@ function seedData(interests) {
   Object.values(COMMUNITIES).forEach(c=>{
     const isJoined=joinedList.includes(c.id);
     const baseAge=isJoined?3:30; // joined: 3 min apart; recommended: 30 min apart, older
-    S.communities[c.id]=c.seed.map((m,i)=>({...mkMsg(m.from,'text',m.text),timestamp:Date.now()-((c.seed.length-i)*baseAge*60000+(isJoined?0:6*3600000))}));
+    S.communities[c.id]=c.seed.map((m,i)=>({...mkMsg(m.from,'text',bi(m.text)),timestamp:Date.now()-((c.seed.length-i)*baseAge*60000+(isJoined?0:6*3600000))}));
   });
 
   // Seed 4 chats with realistic multi-message history spread over ~3 days
@@ -99,10 +103,11 @@ function seedData(interests) {
     if(!S.chats[p.id]){
       const msgs=[];
       const base=now-chatBaseOffsets[chatIdx];
-      const intro=mkMsg(p.id,'text',p.intro||p.fallbacks[0]);
+      const introText=bi(p.intro)||(bi(p.fallbacks)||p.fallbacks)[0];
+      const intro=mkMsg(p.id,'text',introText);
       intro.timestamp=base; msgs.push(intro);
       (p.chatSeed||[]).forEach((s,i)=>{
-        const m=mkMsg(s.from==='user'?'user':p.id,'text',s.text);
+        const m=mkMsg(s.from==='user'?'user':p.id,'text',bi(s.text));
         m.timestamp=base+(i+1)*(50*MIN)+Math.floor(i/3)*HR;
         msgs.push(m);
       });

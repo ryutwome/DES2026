@@ -1,5 +1,9 @@
 # Project Instructions
 
+## Planning
+
+Use **planning-with-files** (`/planning`) for any multi-step task. It's the only planning method — not `TodoWrite`, not superpowers' write-plan. Skip for simple fixes or single-file edits.
+
 ## Before Every Commit
 
 ### 1. Remove debug code

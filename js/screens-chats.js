@@ -42,7 +42,7 @@ function renderChats(){
     const p=PERSONAS[id];
     const unread=S.unreadChats[id]||0;
     const isUserMsg=last?.from==='user';
-    const previewText=last?(last.type==='voice'?`${ej('mic')} Voice message`:(last.text||'')):'' ;
+    const previewText=last?(last.type==='voice'?`${ej('mic')} Voice message`:last.type==='image'?`${IC.image} Photo${last.caption?' '+last.caption:''}`:(last.text||'')):'' ;
     const tickHtml=isUserMsg?`<svg width="16" height="11" viewBox="0 0 18 11" fill="#53bdeb" style="flex-shrink:0;margin-right:2px"><path d="M17.394.606a.75.75 0 0 1 0 1.06L8.9 10.16a.75.75 0 0 1-1.06 0L4.606 6.928a.75.75 0 1 1 1.06-1.06l2.704 2.703 7.963-7.965a.75.75 0 0 1 1.06 0zM1 5.868l2.704 2.704a.75.75 0 1 0 1.06-1.06L2.06 4.806A.75.75 0 0 0 1 5.868z"/></svg>`:'';
     const ai=S.researcherMode?'<span class="ai-badge">AI</span>':'';
     const timeClass=unread?'chat-list-item__time chat-list-item__time--unread':'chat-list-item__time';
@@ -174,8 +174,10 @@ function renderChat(personaId){
   renderInputBar('chat-wrap',{
     placeholder:'Message',
     onGame:()=>showGameSheet(personaId),
-    onSend:async({type,text})=>{
-      const msg=mkMsg('user',type,text);
+    onSend:async(data)=>{
+      const {type,text,image,caption}=data;
+      const msg=mkMsg('user',type,text||caption||'');
+      if(type==='image'){msg.image=image;msg.caption=caption;}
       addMsg('chats',personaId,msg);
       msgs.insertAdjacentHTML('beforeend',bubble(msg));
       scrollBot(msgs);
