@@ -38,11 +38,21 @@ function render(){
   if(window._vrCleanup){window._vrCleanup();window._vrCleanup=null;}
   const hash=window.location.hash||'#/';
   const{screen,params}=parseRoute(hash);
-  if(!S.onboardingDone){set({onboardingDone:true,interests:['cooking','cricket','music','gardening','literature','spirituality']});seedData(S.interests);}
+
+  /* Dev-only: researcher setup screen, gated behind ?dev=true */
+  const isDev=new URLSearchParams(window.location.search).get('dev')==='true';
+  if(screen==='setup'){if(isDev){renderSetup();return;}else{navigate('#/');return;}}
+
+  /* Onboarding gate: lang → name → interests, in that order */
+  if(!S.userLang){renderLangPicker();return;}
   if(!S.userName){renderNamePrompt();return;}
+  if(!S.onboardingDone){renderOnboarding();return;}
+
   switch(screen){
     case'':renderChats();break;
-    case'onboarding':renderChats();break;
+    case'lang':renderLangPicker();break;
+    case'name':renderNamePrompt();break;
+    case'onboarding':renderOnboarding();break;
     case'chats':renderChats();break;
     case'chat':renderChat(params.personaId);break;
     case'stories':renderStories();break;

@@ -2,7 +2,7 @@
    DES2026 — Setup, onboarding, and name prompt screens
    ============================================================ */
 
-/* ── SETUP SCREEN ── */
+/* ── SETUP SCREEN (dev-only: visible only when URL contains ?dev=true) ── */
 function renderSetup(){
   mount(`<div class="setup-screen">
     <div class="setup-screen__logo"><svg width="40" height="40" viewBox="0 0 40 40"><circle cx="20" cy="17" r="8" fill="#25D366"/><path d="M8 36c0-6.627 5.373-12 12-12s12 5.373 12 12" stroke="#25D366" stroke-width="3" stroke-linecap="round"/><path d="M4 30l-3 6 6-2" fill="#25D366"/></svg></div>
@@ -30,7 +30,47 @@ function renderSetup(){
   $('s-key').oninput=$('s-proxy').oninput=()=>{$('s-submit').disabled=!($('s-key').value.trim()&&$('s-proxy').value.trim());};
 }
 function toggleKeyVis(){const i=$('s-key');i.type=i.type==='password'?'text':'password';$('s-eye').innerHTML=i.type==='password'?IC.eye:IC.eyeOff;}
-function doSetup(e){e.preventDefault();const k=$('s-key').value.trim(),p=$('s-proxy').value.trim();if(!k||!p)return;set({apiKey:k,proxyUrl:p});if(S.onboardingDone)navigate('#/chats');else navigate('#/onboarding');}
+function doSetup(e){e.preventDefault();const k=$('s-key').value.trim(),p=$('s-proxy').value.trim();if(!k||!p)return;set({apiKey:k,proxyUrl:p});if(S.onboardingDone)navigate('#/chats');else navigate('#/lang');}
+
+/* ── LANG PICKER — first onboarding step ── */
+function renderLangPicker(){
+  mount(`
+    <div class="lang-pick-screen">
+      <div class="lang-pick-screen__logo">
+        <svg width="64" height="64" viewBox="0 0 72 72"><circle cx="36" cy="36" r="36" fill="#00A884"/><path d="M36 16c-11 0-20 9-20 20 0 3.5.93 6.85 2.55 9.74L16 56l10.52-2.47A19.9 19.9 0 0 0 36 56c11 0 20-9 20-20S47 16 36 16zm0 3.6c9 0 16.4 7.3 16.4 16.4S45 52.4 36 52.4c-2.9 0-5.63-.76-7.98-2.1l-.57-.33-5.93 1.4 1.43-5.78-.36-.6A16.3 16.3 0 0 1 19.6 36C19.6 27 27 19.6 36 19.6z" fill="white"/></svg>
+      </div>
+      <div class="lang-pick-screen__heading">
+        <span class="lang-pick-screen__hi">अपनी भाषा चुनें</span>
+        <span class="lang-pick-screen__sep"> · </span>
+        <span class="lang-pick-screen__mr">तुमची भाषा निवडा</span>
+      </div>
+      <div class="lang-pick-screen__subtext">Choose your language / भाषा निवडा</div>
+      <div class="lang-pick-screen__tiles">
+        <button class="lang-pick-tile${S.userLang==='hi'?' active':''}" id="lp-hi" onclick="pickLang('hi')">
+          <span class="lang-pick-tile__script">हिन्दी</span>
+          <span class="lang-pick-tile__eng">Hindi</span>
+        </button>
+        <button class="lang-pick-tile${S.userLang==='mr'?' active':''}" id="lp-mr" onclick="pickLang('mr')">
+          <span class="lang-pick-tile__script">मराठी</span>
+          <span class="lang-pick-tile__eng">Marathi</span>
+        </button>
+      </div>
+      <button class="lang-pick-screen__cta" id="lp-go" ${S.userLang?'':'disabled'}>Continue →</button>
+    </div>
+  `);
+  $('lp-go').onclick=()=>navigate('#/name');
+}
+/* pickLang: saves language choice, highlights the tile, enables Continue.
+   Called from both the full-screen lang picker and inline usages. */
+function pickLang(lang){
+  S.userLang=lang; saveS();
+  /* Update tile active states without a full re-render */
+  document.querySelectorAll('.lang-pick-tile').forEach(t=>t.classList.remove('active'));
+  const tile = lang==='hi'?$('lp-hi'):$('lp-mr');
+  if(tile) tile.classList.add('active');
+  const cta=$('lp-go');
+  if(cta) cta.disabled=false;
+}
 
 /* ── ONBOARDING ── */
 function renderOnboarding(){
@@ -45,7 +85,9 @@ function renderOnboarding(){
         <div class="onboarding-screen__subheading">Select topics to find communities and start chatting.</div>
       </div>
       <div class="interest-grid" id="ig"></div>
+      <div class="interest-subtext">We'll connect you with people who share these interests. You can change this later.</div>
       <button class="onboarding-screen__cta" id="ob-cta" disabled>Continue</button>
+      <button class="onboarding-screen__skip" id="ob-skip">Skip for now</button>
     </div>
   `);
   const interests=[{id:'cooking',l:'Cooking',e:'pot'},{id:'cricket',l:'Cricket',e:'cricket'},{id:'music',l:'Music',e:'music'},{id:'gardening',l:'Gardening',e:'seedling'},{id:'literature',l:'Literature',e:'books'},{id:'spirituality',l:'Spirituality',e:'prayer'}];
@@ -57,7 +99,10 @@ function renderOnboarding(){
     t.onclick=()=>{sel.has(id)?(sel.delete(id),t.classList.remove('selected')):(sel.add(id),t.classList.add('selected'));$('ob-cta').disabled=!sel.size;};
     grid.appendChild(t);
   });
-  $('ob-cta').onclick=()=>{if(!sel.size)return;set({interests:[...sel],onboardingDone:true});seedData([...sel]);navigate('#/chats');};
+  const finish=(chosen)=>{set({interests:chosen,onboardingDone:true});seedData(chosen);navigate('#/chats');};
+  $('ob-cta').onclick=()=>{if(!sel.size)return;finish([...sel]);};
+  /* Skip seeds sensible defaults so the app has something to work with */
+  $('ob-skip').onclick=()=>finish(['cooking','cricket','spirituality']);
 }
 
 /* ── NAME PROMPT ── */
@@ -67,18 +112,12 @@ function renderNamePrompt(){
       <div class="name-prompt-screen__logo">
         <svg width="72" height="72" viewBox="0 0 72 72"><circle cx="36" cy="36" r="36" fill="#00A884"/><path d="M36 16c-11 0-20 9-20 20 0 3.5.93 6.85 2.55 9.74L16 56l10.52-2.47A19.9 19.9 0 0 0 36 56c11 0 20-9 20-20S47 16 36 16zm0 3.6c9 0 16.4 7.3 16.4 16.4S45 52.4 36 52.4c-2.9 0-5.63-.76-7.98-2.1l-.57-.33-5.93 1.4 1.43-5.78-.36-.6A16.3 16.3 0 0 1 19.6 36C19.6 27 27 19.6 36 19.6zm-5 8.6c-.35 0-.92.14-1.4.66-.48.53-1.83 1.79-1.83 4.36s1.88 5.06 2.14 5.41c.26.35 3.65 5.8 8.97 7.92 1.25.52 2.23.82 2.99 1.05 1.26.38 2.41.33 3.32.2 1.02-.15 3.12-1.28 3.57-2.52.44-1.23.44-2.29.31-2.51-.14-.23-.49-.36-1.03-.62-.53-.26-3.12-1.54-3.6-1.72-.48-.18-.83-.26-1.19.26-.35.54-1.36 1.72-1.67 2.07-.31.34-.62.4-1.15.14-.54-.27-2.27-.84-4.32-2.67-1.6-1.43-2.68-3.19-2.99-3.73-.31-.54-.03-.82.23-1.09.24-.24.54-.62.8-.93.26-.31.35-.54.54-.89.17-.35.09-.66-.04-.93-.14-.26-1.19-2.87-1.63-3.93-.43-1.04-.87-.9-1.19-.93z" fill="white"/></svg>
       </div>
+      <div class="persona-welcome">
+        <img src="./avatars/meenakshiamma.svg" class="persona-welcome__avatar" alt="Meenakshiamma" />
+        <div class="persona-welcome__text">Meenakshiamma and 7 others are waiting to meet you!</div>
+      </div>
       <div class="name-prompt-screen__title">Welcome to DES2026</div>
       <div class="name-prompt-screen__subtitle">What should we call you?</div>
-      <div class="lang-picker">
-        <button class="lang-tile${S.userLang==='hi'?' active':''}" onclick="pickLang('hi')">
-          <span class="lang-tile__label">हिन्दी</span>
-          <span class="lang-tile__sub">(Hindi)</span>
-        </button>
-        <button class="lang-tile${S.userLang==='mr'?' active':''}" onclick="pickLang('mr')">
-          <span class="lang-tile__label">मराठी</span>
-          <span class="lang-tile__sub">(Marathi)</span>
-        </button>
-      </div>
       <div class="name-prompt-screen__field-wrap">
         <input class="name-prompt-screen__input" id="np-name" type="text" placeholder="Your name" autocomplete="name" autocapitalize="words" maxlength="40" />
       </div>
@@ -96,12 +135,12 @@ function renderNamePrompt(){
   btn.onclick=saveUserName;
   setTimeout(()=>inp.focus(),300);
 }
-function pickLang(lang){ S.userLang=lang; saveS(); renderNamePrompt(); }
 
 function saveUserName(){
   const name=$('np-name')?.value?.trim();
   if(!name)return;
   const age=parseInt($('np-age')?.value)||null;
   set({userName:name,userAge:age});
-  navigate('#/chats');
+  /* After name, go to interests (onboarding gate will redirect if already done) */
+  navigate('#/onboarding');
 }
