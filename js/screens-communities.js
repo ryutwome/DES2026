@@ -114,7 +114,6 @@ function renderCommunities() {
     <div class="header header--white">
       <div class="header__title" onclick="headerTap()"><h1 style="color:#111b21;">Communities</h1></div>
       <div class="header__actions">
-        <button class="header__action-btn" aria-label="Search">${IC.search}</button>
         <button class="header__action-btn" aria-label="More">${IC.more}</button>
       </div>
     </div>
@@ -161,7 +160,7 @@ function commCard(comm) {
         ${badge}
       </div>
       <div class="community-card__desc">${preview}</div>
-      <div style="font-size:11px;color:#667781;margin-top:3px;"><span style="color:#25d366;">&#9679;</span> ${activeCount} active</div>`;
+      <div style="font-size:11px;color:#667781;margin-top:3px;"><span style="color:#25d366;">&#9679;</span> ${activeCount} active members</div>`;
   } else {
     // Recommended: name + member count right, desc, tags
     bodyHTML = `
@@ -232,7 +231,7 @@ function renderCommunity(commId) {
   // Always show a voice room button; disabled with tooltip when no voice room exists
   const right = comm.voiceRoom
     ? [{icon:IC.voiceRoom, label:'Voice Room', fn:`navigate('#/voiceroom/${comm.voiceRoom}')`}]
-    : [{icon:IC.voiceRoom, label:'Voice room coming soon', fn:'void(0)'}];
+    : [{icon:IC.voiceRoom, label:'Voice Room (Coming Soon)', fn:'void(0)'}];
   mount(`
     ${header(comm.name, {back:true, subtitle:`${comm.members} members`, right, white:true})}
     <div class="screen chat-screen" id="comm-wrap">
@@ -240,10 +239,16 @@ function renderCommunity(commId) {
     </div>
   `);
 
-  // Style the voice room button as disabled when no voice room is configured
+  // Style and label the voice room button as disabled when no voice room is configured
   if (!comm.voiceRoom) {
     const vrBtn = document.querySelector('.header__actions .header__action-btn');
-    if (vrBtn) { vrBtn.style.opacity = '0.38'; vrBtn.style.cursor = 'not-allowed'; vrBtn.title = 'Voice room coming soon'; }
+    if (vrBtn) {
+      vrBtn.style.opacity = '0.55';
+      vrBtn.style.cursor = 'not-allowed';
+      vrBtn.title = 'Voice Room (Coming Soon)';
+      // Replace icon-only content with a text label so elderly users know it's not broken
+      vrBtn.innerHTML = `<span style="font-size:0.72rem;font-weight:600;color:#667781;white-space:nowrap;">Voice Room<br>(Coming Soon)</span>`;
+    }
   }
 
   const msgs = $('comm-msgs');

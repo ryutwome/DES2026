@@ -1556,6 +1556,40 @@ body {
 .gvb-avatars { display: flex; gap: 4px; margin-left: 4px; }
 .gvb-av { border-radius: 50%; }
 
+/* ── SHARED BUTTON STYLES ── */
+.btn-primary {
+  background: #00A884;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 12px 20px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+.btn-primary:active { background: #008f71; }
+.btn-secondary {
+  background: #fff;
+  color: #00A884;
+  border: 2px solid #00A884;
+  border-radius: 8px;
+  padding: 10px 18px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+.btn-secondary:active { background: #f0fdf9; }
+
 /* ── RULES OVERLAY (Tambola / Teen Patti first-time help) ── */
 .rules-overlay {
   position: fixed; inset: 0; background: rgba(0,0,0,0.55);
