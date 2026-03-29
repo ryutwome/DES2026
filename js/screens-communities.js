@@ -66,14 +66,19 @@ async function commBgTick() {
   const text = (isMention && !resp.includes(`@${uname}`)) ? `@${uname} — ${resp}` : resp;
   addMsg('communities', comm.id, mkMsg(personaId, 'text', text));
 
-  // Update badge — @ wins over a plain number
-  const uc = {...(S.unreadCommunities||{})};
-  if (isMention) {
-    uc[comm.id] = '@';
-  } else if (uc[comm.id] !== '@') {
-    uc[comm.id] = ((typeof uc[comm.id] === 'number') ? uc[comm.id] : 0) + 1;
+  // Update badge — @ wins over a plain number.
+  // Skip increment while user is browsing the communities list to avoid
+  // badge churn; messages still accumulate and show on next tap-in.
+  const onCommList = location.hash === '#/communities' || location.hash === '';
+  if (!onCommList) {
+    const uc = {...(S.unreadCommunities||{})};
+    if (isMention) {
+      uc[comm.id] = '@';
+    } else if (uc[comm.id] !== '@') {
+      uc[comm.id] = ((typeof uc[comm.id] === 'number') ? uc[comm.id] : 0) + 1;
+    }
+    set({unreadCommunities: uc});
   }
-  set({unreadCommunities: uc});
 
   // Refresh the list if user is currently on it
   if (location.hash === '#/communities' || location.hash === '') renderCommunities();
