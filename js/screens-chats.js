@@ -17,7 +17,7 @@ function renderChats(){
     <div class="screen" style="background:#fff;position:relative;">
       <div class="chats-search-bar">
         <i data-lucide="search" style="width:18px;height:18px;color:#8696a0;flex-shrink:0;"></i>
-        <span style="font-size:15px;color:#8696a0;">Ask Meta AI or Search</span>
+        <span style="font-size:15px;color:#8696a0;">Search</span>
       </div>
       <div class="filter-chips">
         <button class="filter-chip active" onclick="filterChips(this,'all')">All</button>
@@ -32,56 +32,100 @@ function renderChats(){
     </div>
     ${bottomNav('chats')}
   `);
-  const list=$('chat-list');
-  const items=Object.keys(S.chats).filter(id=>PERSONAS[id]).map(id=>{
-    const msgs=S.chats[id]||[],last=msgs[msgs.length-1];
-    return{id,last,time:last?.timestamp||0};
-  }).sort((a,b)=>b.time-a.time);
-  if(!items.length){list.innerHTML=`<div class="empty-state"><div class="empty-state__icon">${ej('chat','48px')}</div><div class="empty-state__title">No chats yet</div><div class="empty-state__desc">Join a community to start connecting.</div></div>`;return;}
-  items.forEach(({id,last,time})=>{
-    const p=PERSONAS[id];
-    const unread=S.unreadChats[id]||0;
-    const isUserMsg=last?.from==='user';
-    const previewText=last?(last.type==='voice'?`${ej('mic')} Voice message`:last.type==='image'?`${IC.image} Photo${last.caption?' '+last.caption:''}`:(last.text||'')):'' ;
-    const tickHtml=isUserMsg?`<svg width="16" height="11" viewBox="0 0 18 11" fill="#53bdeb" style="flex-shrink:0;margin-right:2px"><path d="M17.394.606a.75.75 0 0 1 0 1.06L8.9 10.16a.75.75 0 0 1-1.06 0L4.606 6.928a.75.75 0 1 1 1.06-1.06l2.704 2.703 7.963-7.965a.75.75 0 0 1 1.06 0zM1 5.868l2.704 2.704a.75.75 0 1 0 1.06-1.06L2.06 4.806A.75.75 0 0 0 1 5.868z"/></svg>`:'';
-    const ai=S.researcherMode?'<span class="ai-badge">AI</span>':'';
-    const timeClass=unread?'chat-list-item__time chat-list-item__time--unread':'chat-list-item__time';
-    const div=document.createElement('div');div.className='chat-list-item';
-    const hasStatus=PERSONA_STATUS_IMAGES[id]!==undefined;
-    const viewed=(S.viewedStatuses||[]).includes(id);
-    const avatarEl=hasStatus
-      ?`<div class="chat-avatar-story-ring${viewed?' chat-avatar-story-ring--viewed':''}" onclick="event.stopPropagation();openStatus('${id}')">${avatar(p.name,'md',id)}</div>`
-      :`<div>${avatar(p.name,'md',id)}</div>`;
-    div.innerHTML=`<div class="chat-list-item__avatar">${avatarEl}</div><div class="chat-list-item__body"><div class="chat-list-item__top"><div class="chat-list-item__name">${p.name}${ai}</div><div class="${timeClass}">${fdate(time)}</div></div><div class="chat-list-item__bottom"><div class="chat-list-item__preview" style="display:flex;align-items:center;">${tickHtml}<span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${previewText}</span></div>${unread?`<div class="chat-list-item__badge">${unread}</div>`:''}</div></div>`;
-    div.onclick=()=>{const u={...S.unreadChats};delete u[id];set({unreadChats:u});navigate('#/chat/'+id);};
-    list.appendChild(div);
-  });
+  buildChatList('all');
+}
 
-  // Append joined communities to the chat list, sorted by recency of last message
+/* Build (or rebuild) the visible chat list rows for the given filter tab.
+   Called once on render and again whenever a filter chip is tapped. */
+function buildChatList(filter){
   const iconMap={cricket:'1f3cf',bollywood:'1f3ac',bhajan:'1f64f',society:'1f3e2',recipes:'1f35b',shayari:'1f338',yoga:'1f9d8'};
   const colorMap={cricket:'#E53935',bollywood:'#FB8C00',bhajan:'#8E24AA',society:'#546E7A',recipes:'#00897B',shayari:'#AD1457',yoga:'#2E7D32'};
-  const joinedComms=Object.values(COMMUNITIES)
+
+  // Build persona items
+  const personaItems=Object.keys(S.chats).filter(id=>PERSONAS[id]).map(id=>{
+    const msgs=S.chats[id]||[],last=msgs[msgs.length-1];
+    return{kind:'persona',id,last,time:last?.timestamp||0};
+  });
+
+  // Build joined-community items
+  const commItems=Object.values(COMMUNITIES)
     .filter(c=>isJoinedComm(c.id))
-    .map(c=>{const msgs=S.communities[c.id]||[];const last=msgs[msgs.length-1];return{c,last,time:last?.timestamp||0};})
-    .sort((a,b)=>b.time-a.time);
-  joinedComms.forEach(({c,last,time})=>{
-    const badgeVal=(S.unreadCommunities||{})[c.id];
-    const badgeHtml=badgeVal==='@'?`<span class="comm-badge comm-badge--mention">@</span>`:
-      (typeof badgeVal==='number'&&badgeVal>0)?`<div class="chat-list-item__badge">${badgeVal}</div>`:'';
-    const timeClass=badgeVal?'chat-list-item__time chat-list-item__time--unread':'chat-list-item__time';
-    const lastSender=last?(last.from==='user'?'You':(PERSONAS[last.from]?.name?.split(' ')[0]||'')):'' ;
-    const preview=last?`${lastSender}: ${last.text||''}`:c.desc;
-    const iconFile=iconMap[c.id]||'1f464';
-    const groupColor=colorMap[c.id]||'#667781';
-    const iconEl=`<div style="width:49px;height:49px;border-radius:50%;background:${groupColor};display:flex;align-items:center;justify-content:center;flex-shrink:0;"><img src="./icons/groups/${iconFile}.svg" style="width:28px;height:28px;" alt=""></div>`;
-    const div=document.createElement('div');div.className='chat-list-item';
-    div.innerHTML=`<div class="chat-list-item__avatar"><div>${iconEl}</div></div><div class="chat-list-item__body"><div class="chat-list-item__top"><div class="chat-list-item__name">${c.name}</div><div class="${timeClass}">${fdate(time)}</div></div><div class="chat-list-item__bottom"><div class="chat-list-item__preview" style="display:flex;align-items:center;"><span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${preview}</span></div>${badgeHtml}</div></div>`;
-    div.onclick=()=>{const uc={...S.unreadCommunities};delete uc[c.id];set({unreadCommunities:uc});navigate('#/community/'+c.id);};
+    .map(c=>{const msgs=S.communities[c.id]||[];const last=msgs[msgs.length-1];return{kind:'comm',c,last,time:last?.timestamp||0};});
+
+  // Merge and sort all items by recency
+  const allItems=[...personaItems,...commItems].sort((a,b)=>b.time-a.time);
+
+  // Apply filter
+  const visible=allItems.filter(item=>{
+    if(filter==='groups') return item.kind==='comm';
+    if(filter==='unread'){
+      if(item.kind==='persona') return (S.unreadChats[item.id]||0)>0;
+      const bv=(S.unreadCommunities||{})[item.c.id];
+      return bv==='@'||(typeof bv==='number'&&bv>0);
+    }
+    return true; // 'all' and 'favourites' (favourites not yet tracked, show all)
+  });
+
+  const list=$('chat-list');
+  list.innerHTML='';
+
+  if(!visible.length){
+    list.innerHTML=`<div class="empty-state">
+      <div class="empty-state__icon">${ej('chat','48px')}</div>
+      <div class="empty-state__title">आपका स्वागत है! / Swagat!</div>
+      <div class="empty-state__desc">Someone is waiting to say hello — browse communities or start a chat.</div>
+      <button class="btn-primary" style="margin-top:12px;padding:10px 20px;background:#00A884;color:#fff;border:none;border-radius:20px;font-size:14px;font-weight:600;cursor:pointer;" onclick="navigate('#/communities')">Browse Communities</button>
+    </div>`;
+    return;
+  }
+
+  visible.forEach(item=>{
+    const div=document.createElement('div');
+    div.className='chat-list-item';
+
+    if(item.kind==='persona'){
+      const {id,last,time}=item;
+      const p=PERSONAS[id];
+      const unread=S.unreadChats[id]||0;
+      const isUserMsg=last?.from==='user';
+      const previewText=last?(last.type==='voice'?`${ej('mic')} Voice message`:last.type==='image'?`${IC.image} Photo${last.caption?' '+last.caption:''}`:(last.text||'')):'' ;
+      const tickHtml=isUserMsg?`<svg width="16" height="11" viewBox="0 0 18 11" fill="#53bdeb" style="flex-shrink:0;margin-right:2px"><path d="M17.394.606a.75.75 0 0 1 0 1.06L8.9 10.16a.75.75 0 0 1-1.06 0L4.606 6.928a.75.75 0 1 1 1.06-1.06l2.704 2.703 7.963-7.965a.75.75 0 0 1 1.06 0zM1 5.868l2.704 2.704a.75.75 0 1 0 1.06-1.06L2.06 4.806A.75.75 0 0 0 1 5.868z"/></svg>`:'';
+      const ai=S.researcherMode?'<span class="ai-badge">AI</span>':'';
+      const timeClass=unread?'chat-list-item__time chat-list-item__time--unread':'chat-list-item__time';
+      const hasStatus=PERSONA_STATUS_IMAGES[id]!==undefined;
+      const viewed=(S.viewedStatuses||[]).includes(id);
+      const avatarEl=hasStatus
+        ?`<div class="chat-avatar-story-ring${viewed?' chat-avatar-story-ring--viewed':''}" onclick="event.stopPropagation();openStatus('${id}')">${avatar(p.name,'md',id)}</div>`
+        :`<div>${avatar(p.name,'md',id)}</div>`;
+      // Presence dot marks every persona as online
+      div.innerHTML=`<div class="chat-list-item__avatar">${avatarEl}<span class="presence-dot"></span></div><div class="chat-list-item__body"><div class="chat-list-item__top"><div class="chat-list-item__name">${p.name}${ai}</div><div class="${timeClass}">${fdate(time)}</div></div><div class="chat-list-item__bottom"><div class="chat-list-item__preview" style="display:flex;align-items:center;">${tickHtml}<span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${previewText}</span></div>${unread?`<div class="chat-list-item__badge">${unread}</div>`:''}</div></div>`;
+      div.onclick=()=>{const u={...S.unreadChats};delete u[id];set({unreadChats:u});navigate('#/chat/'+id);};
+
+    }else{
+      const {c,last,time}=item;
+      const badgeVal=(S.unreadCommunities||{})[c.id];
+      const badgeHtml=badgeVal==='@'?`<span class="comm-badge comm-badge--mention">@</span>`:
+        (typeof badgeVal==='number'&&badgeVal>0)?`<div class="chat-list-item__badge">${badgeVal}</div>`:'';
+      const timeClass=badgeVal?'chat-list-item__time chat-list-item__time--unread':'chat-list-item__time';
+      const lastSender=last?(last.from==='user'?'You':(PERSONAS[last.from]?.name?.split(' ')[0]||'')):'' ;
+      const preview=last?`${lastSender}: ${last.text||''}`:c.desc;
+      const iconFile=iconMap[c.id]||'1f464';
+      const groupColor=colorMap[c.id]||'#667781';
+      const iconEl=`<div style="width:49px;height:49px;border-radius:50%;background:${groupColor};display:flex;align-items:center;justify-content:center;flex-shrink:0;"><img src="./icons/groups/${iconFile}.svg" style="width:28px;height:28px;" alt=""></div>`;
+      div.innerHTML=`<div class="chat-list-item__avatar"><div>${iconEl}</div></div><div class="chat-list-item__body"><div class="chat-list-item__top"><div class="chat-list-item__name">${c.name}</div><div class="${timeClass}">${fdate(time)}</div></div><div class="chat-list-item__bottom"><div class="chat-list-item__preview" style="display:flex;align-items:center;"><span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${preview}</span></div>${badgeHtml}</div></div>`;
+      div.onclick=()=>{const uc={...S.unreadCommunities};delete uc[c.id];set({unreadCommunities:uc});navigate('#/community/'+c.id);};
+    }
+
     list.appendChild(div);
   });
 }
 
-function filterChips(btn){document.querySelectorAll('.filter-chip').forEach(b=>b.classList.remove('active'));btn.classList.add('active');}
+/* Toggle the active chip and re-render the list with the selected filter. */
+function filterChips(btn,filter){
+  document.querySelectorAll('.filter-chip').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  buildChatList(filter);
+}
 
 /* ── STATUS VIEWER ── */
 function openStatus(personaId){
