@@ -163,12 +163,27 @@ function renderOnboarding(){
       <button class="onboarding-screen__skip" id="ob-skip">Skip for now</button>
     </div>
   `);
-  const interests=[{id:'cooking',l:'Cooking',e:'pot'},{id:'cricket',l:'Cricket',e:'cricket'},{id:'music',l:'Music',e:'music'},{id:'gardening',l:'Gardening',e:'seedling'},{id:'literature',l:'Literature',e:'books'},{id:'spirituality',l:'Spirituality',e:'prayer'}];
+  /* Bilingual labels: native script on top, English below */
+  const interestLabels = {
+    cooking:      { hi: 'खाना-पकाना', mr: 'स्वयंपाक',  en: 'Cooking' },
+    cricket:      { hi: 'क्रिकेट',    mr: 'क्रिकेट',   en: 'Cricket' },
+    music:        { hi: 'संगीत',      mr: 'संगीत',     en: 'Music' },
+    gardening:    { hi: 'बागवानी',    mr: 'बागकाम',    en: 'Gardening' },
+    literature:   { hi: 'साहित्य',    mr: 'साहित्य',   en: 'Literature' },
+    spirituality: { hi: 'अध्यात्म',   mr: 'अध्यात्म',  en: 'Spirituality' }
+  };
+  const interests=[{id:'cooking',e:'pot'},{id:'cricket',e:'cricket'},{id:'music',e:'music'},{id:'gardening',e:'seedling'},{id:'literature',e:'books'},{id:'spirituality',e:'prayer'}];
   const sel=new Set();
   const grid=$('ig');
-  interests.forEach(({id,l,e})=>{
+  interests.forEach(({id,e})=>{
+    const lb = interestLabels[id];
+    /* Show native script + English when a language is set; English-only fallback */
+    const nativeLang = S.userLang === 'hi' ? lb.hi : S.userLang === 'mr' ? lb.mr : null;
+    const labelHtml = nativeLang
+      ? `<span style="font-size:1rem;font-weight:600;">${nativeLang}</span><span style="font-size:0.78rem;color:#667781;">${lb.en}</span>`
+      : `<span class="interest-tile__label">${lb.en}</span>`;
     const t=document.createElement('button');t.className='interest-tile';
-    t.innerHTML=`<span class="interest-tile__emoji">${ej(e,'32px')}</span><span class="interest-tile__label">${l}</span>`;
+    t.innerHTML=`<span class="interest-tile__emoji">${ej(e,'32px')}</span>${labelHtml}`;
     t.onclick=()=>{sel.has(id)?(sel.delete(id),t.classList.remove('selected')):(sel.add(id),t.classList.add('selected'));$('ob-cta').disabled=!sel.size;};
     grid.appendChild(t);
   });

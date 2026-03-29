@@ -1914,6 +1914,22 @@ body {
 .tambola-empty { background: #f0f0f0; cursor: default; }
 .tambola-marked { background: #00A884; color: #fff; }
 .tambola-win { margin-top: 12px; font-size: 1.2rem; font-weight: 700; color: #00A884; }
+.tambola-win--celebrate {
+  animation: tambola-celebrate 0.6s ease-out;
+  background: #d9fdd3;
+  border: 2px solid #00A884;
+  border-radius: 12px;
+  padding: 16px;
+  text-align: center;
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: #00A884;
+}
+@keyframes tambola-celebrate {
+  0% { transform: scale(0.8); opacity: 0; }
+  60% { transform: scale(1.05); opacity: 1; }
+  100% { transform: scale(1); opacity: 1; }
+}
 .tambola-cell--row-win {
   background: #d9fdd3 !important;
   box-shadow: 0 0 0 3px #00A884;

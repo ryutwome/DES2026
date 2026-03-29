@@ -796,7 +796,7 @@ function renderTambola(gameId){
   html += `</table>`;
   if(allNums.length > 0) html += `<button class="btn-primary" onclick="callTambola('${gameId}')">Call Next Number</button>`;
   else html += `<div class="game-over-msg">All numbers called!</div>`;
-  if(win) html += `<div class="tambola-win">Tambola! You won!</div>`;
+  if(win) html += `<div class="tambola-win tambola-win--celebrate">Tambola! You won!</div>`;
   wrap.innerHTML = html;
 }
 
@@ -805,8 +805,10 @@ function markTambola(gameId, n){
   if(!gs.gameState.marked.includes(n) && gs.gameState.called.includes(n)){
     gs.gameState.marked.push(n);
     S.games[gameId]=gs; saveS(); renderGame(gameId,'tambola');
-    // Check each row for a newly-completed line (all 5 non-blank cells marked)
+    // Check for full-board Tambola win (all 15 numbers marked)
     const ts = gs.gameState;
+    if(checkTambolaWin(ts)){ toast(ej('sparkles')+' Tambola! You won! Shabash!'); return; }
+    // Check each row for a newly-completed line (all 5 non-blank cells marked)
     for(let r=0;r<3;r++){
       const rowNums = ts.ticket[r].filter(v=>v>0);
       if(rowNums.length===5 && rowNums.every(v=>ts.marked.includes(v)) && !checkTambolaWin(ts)){
