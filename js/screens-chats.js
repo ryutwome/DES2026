@@ -17,7 +17,7 @@ function renderChats(){
     <div class="screen" style="background:#fff;position:relative;">
       <div class="chats-search-bar">
         <i data-lucide="search" style="width:18px;height:18px;color:#8696a0;flex-shrink:0;"></i>
-        <span style="font-size:15px;color:#8696a0;">Search</span>
+        <input id="chat-search" type="search" placeholder="Search" style="flex:1;border:none;outline:none;font-size:15px;color:#111;background:transparent;" oninput="filterChatSearch(this.value)">
       </div>
       <div class="filter-chips">
         <button class="filter-chip active" onclick="filterChips(this,'all')">All</button>
@@ -98,6 +98,7 @@ function buildChatList(filter){
         ?`<div class="chat-avatar-story-ring${viewed?' chat-avatar-story-ring--viewed':''}" onclick="event.stopPropagation();openStatus('${id}')">${avatar(p.name,'md',id)}</div>`
         :`<div>${avatar(p.name,'md',id)}</div>`;
       // Presence dot marks every persona as online
+      div.dataset.name=p.name.toLowerCase();
       div.innerHTML=`<div class="chat-list-item__avatar">${avatarEl}<span class="presence-dot"></span></div><div class="chat-list-item__body"><div class="chat-list-item__top"><div class="chat-list-item__name">${p.name}${ai}</div><div class="${timeClass}">${fdate(time)}</div></div><div class="chat-list-item__bottom"><div class="chat-list-item__preview" style="display:flex;align-items:center;">${tickHtml}<span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${previewText}</span></div>${unread?`<div class="chat-list-item__badge">${unread}</div>`:''}</div></div>`;
       div.onclick=()=>{const u={...S.unreadChats};delete u[id];set({unreadChats:u});navigate('#/chat/'+id);};
 
@@ -112,6 +113,7 @@ function buildChatList(filter){
       const iconFile=iconMap[c.id]||'1f464';
       const groupColor=colorMap[c.id]||'#667781';
       const iconEl=`<div style="width:49px;height:49px;border-radius:50%;background:${groupColor};display:flex;align-items:center;justify-content:center;flex-shrink:0;"><img src="./icons/groups/${iconFile}.svg" style="width:28px;height:28px;" alt=""></div>`;
+      div.dataset.name=c.name.toLowerCase();
       div.innerHTML=`<div class="chat-list-item__avatar"><div>${iconEl}</div></div><div class="chat-list-item__body"><div class="chat-list-item__top"><div class="chat-list-item__name">${c.name}</div><div class="${timeClass}">${fdate(time)}</div></div><div class="chat-list-item__bottom"><div class="chat-list-item__preview" style="display:flex;align-items:center;"><span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${preview}</span></div>${badgeHtml}</div></div>`;
       div.onclick=()=>{const uc={...S.unreadCommunities};delete uc[c.id];set({unreadCommunities:uc});navigate('#/community/'+c.id);};
     }
@@ -125,6 +127,17 @@ function filterChips(btn,filter){
   document.querySelectorAll('.filter-chip').forEach(b=>b.classList.remove('active'));
   btn.classList.add('active');
   buildChatList(filter);
+  // Re-apply any active search query after rebuilding
+  const q=document.getElementById('chat-search')?.value.trim().toLowerCase();
+  if(q) filterChatSearch(q);
+}
+
+/* Filter visible chat rows by name without re-rendering — called on search input. */
+function filterChatSearch(q){
+  const term=q.trim().toLowerCase();
+  document.querySelectorAll('#chat-list .chat-list-item').forEach(row=>{
+    row.style.display=!term||row.dataset.name?.includes(term)?'':'none';
+  });
 }
 
 /* ── STATUS VIEWER ── */
@@ -224,7 +237,6 @@ function renderChat(personaId){
     </div>
   `);
   const msgs=$('msgs');
-  msgs.insertAdjacentHTML('beforeend',`<div style="text-align:center;margin:8px 0;"><div style="display:inline-block;background:#fdf4c5;color:#54656f;font-size:11.5px;padding:5px 10px;border-radius:7px;line-height:1.4;max-width:260px;">${ej('lock','11.5px')} Messages and calls are end-to-end encrypted. No one outside of this chat, not even WhatsApp, can read or listen to them.</div></div>`);
   let lastDate='';
   const chatMsgs=S.chats[personaId]||[];
   // Find the last user message index — if no persona reply follows it, show grey ticks
