@@ -114,9 +114,21 @@ function seedData(interests) {
       S.chats[p.id]=msgs;
     }
   });
+  // Seed "first contact" intro messages from 4 additional personas — as if they already messaged
+  // the user before any reply; timestamps are a few hours to ~1 day ago
+  const introOffsets=[18*HR, 14*HR+30*MIN, 26*HR, 9*HR+45*MIN];
+  PERSONA_LIST.slice(4,8).forEach((p,i)=>{
+    if(!S.chats[p.id]){
+      const introText=bi(p.intro)||(bi(p.fallbacks)||p.fallbacks)[0];
+      const msg=mkMsg(p.id,'text',introText);
+      msg.timestamp=now-introOffsets[i];
+      S.chats[p.id]=[msg];
+    }
+  });
+
   // Badge only when persona's last message is more recent than user's last
   S.unreadChats={};
-  PERSONA_LIST.slice(0,4).forEach(p=>{
+  PERSONA_LIST.slice(0,8).forEach(p=>{
     const msgs=S.chats[p.id]||[];
     const lastP=msgs.filter(m=>m.from===p.id).pop();
     const lastU=msgs.filter(m=>m.from==='user').pop();

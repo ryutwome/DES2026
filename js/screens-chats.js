@@ -56,6 +56,29 @@ function renderChats(){
     div.onclick=()=>{const u={...S.unreadChats};delete u[id];set({unreadChats:u});navigate('#/chat/'+id);};
     list.appendChild(div);
   });
+
+  // Append joined communities to the chat list, sorted by recency of last message
+  const iconMap={cricket:'1f3cf',bollywood:'1f3ac',bhajan:'1f64f',society:'1f3e2',recipes:'1f35b',shayari:'1f338',yoga:'1f9d8'};
+  const colorMap={cricket:'#E53935',bollywood:'#FB8C00',bhajan:'#8E24AA',society:'#546E7A',recipes:'#00897B',shayari:'#AD1457',yoga:'#2E7D32'};
+  const joinedComms=Object.values(COMMUNITIES)
+    .filter(c=>isJoinedComm(c.id))
+    .map(c=>{const msgs=S.communities[c.id]||[];const last=msgs[msgs.length-1];return{c,last,time:last?.timestamp||0};})
+    .sort((a,b)=>b.time-a.time);
+  joinedComms.forEach(({c,last,time})=>{
+    const badgeVal=(S.unreadCommunities||{})[c.id];
+    const badgeHtml=badgeVal==='@'?`<span class="comm-badge comm-badge--mention">@</span>`:
+      (typeof badgeVal==='number'&&badgeVal>0)?`<div class="chat-list-item__badge">${badgeVal}</div>`:'';
+    const timeClass=badgeVal?'chat-list-item__time chat-list-item__time--unread':'chat-list-item__time';
+    const lastSender=last?(last.from==='user'?'You':(PERSONAS[last.from]?.name?.split(' ')[0]||'')):'' ;
+    const preview=last?`${lastSender}: ${last.text||''}`:c.desc;
+    const iconFile=iconMap[c.id]||'1f464';
+    const groupColor=colorMap[c.id]||'#667781';
+    const iconEl=`<div style="width:49px;height:49px;border-radius:50%;background:${groupColor};display:flex;align-items:center;justify-content:center;flex-shrink:0;"><img src="./icons/groups/${iconFile}.svg" style="width:28px;height:28px;" alt=""></div>`;
+    const div=document.createElement('div');div.className='chat-list-item';
+    div.innerHTML=`<div class="chat-list-item__avatar"><div>${iconEl}</div></div><div class="chat-list-item__body"><div class="chat-list-item__top"><div class="chat-list-item__name">${c.name}</div><div class="${timeClass}">${fdate(time)}</div></div><div class="chat-list-item__bottom"><div class="chat-list-item__preview" style="display:flex;align-items:center;"><span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${preview}</span></div>${badgeHtml}</div></div>`;
+    div.onclick=()=>{const uc={...S.unreadCommunities};delete uc[c.id];set({unreadCommunities:uc});navigate('#/community/'+c.id);};
+    list.appendChild(div);
+  });
 }
 
 function filterChips(btn){document.querySelectorAll('.filter-chip').forEach(b=>b.classList.remove('active'));btn.classList.add('active');}
