@@ -873,6 +873,12 @@ body {
 }
 .story-replies-btn:active { background: #e9edef; }
 .story-replies-btn.has-replies { background: #d9fdd3; color: #008f72; font-weight: 600; }
+/* Unread reply count badge shown inside the reply button on own story cards */
+.story-reply-badge {
+  display: inline-flex; align-items: center; justify-content: center;
+  background: #E53935; color: #fff; font-size: 10px; font-weight: 700;
+  border-radius: 10px; padding: 1px 6px; margin-left: 2px; line-height: 1.4;
+}
 .story-tts-btn {
   background: none; border: none; cursor: pointer;
   color: #54656f; padding: 8px; border-radius: 50%;
