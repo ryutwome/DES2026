@@ -148,18 +148,20 @@ function commCard(comm) {
 
   let bodyHTML;
   if (joined) {
-    // Joined: name + badge right, last message preview below
+    // Joined: name + badge right, last message preview below, active count
     const msgs = S.communities[comm.id] || [];
     const last = msgs[msgs.length - 1];
     const lastSender = last ? (last.from === 'user' ? 'You' : PERSONAS[last.from]?.name?.split(' ')[0] || '') : '';
     const preview = last ? `${lastSender}: ${last.text}` : comm.desc;
     const badge = commBadge(comm.id);
+    const activeCount = (comm.personas || []).length;
     bodyHTML = `
       <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;">
         <span class="community-card__name">${comm.name}</span>
         ${badge}
       </div>
-      <div class="community-card__desc">${preview}</div>`;
+      <div class="community-card__desc">${preview}</div>
+      <div style="font-size:11px;color:#667781;margin-top:3px;"><span style="color:#25d366;">&#9679;</span> ${activeCount} active</div>`;
   } else {
     // Recommended: name + member count right, desc, tags
     bodyHTML = `
@@ -227,14 +229,22 @@ function renderCommunity(commId) {
   }
   // Clear badge on open
   const uc = {...(S.unreadCommunities||{})}; uc[commId] = 0; set({unreadCommunities: uc});
-  const right = [];
-  if (comm.voiceRoom) right.push({icon:IC.voiceRoom, label:'Voice Room', fn:`navigate('#/voiceroom/${comm.voiceRoom}')`});
+  // Always show a voice room button; disabled with tooltip when no voice room exists
+  const right = comm.voiceRoom
+    ? [{icon:IC.voiceRoom, label:'Voice Room', fn:`navigate('#/voiceroom/${comm.voiceRoom}')`}]
+    : [{icon:IC.voiceRoom, label:'Voice room coming soon', fn:'void(0)'}];
   mount(`
     ${header(comm.name, {back:true, subtitle:`${comm.members} members`, right, white:true})}
     <div class="screen chat-screen" id="comm-wrap">
       <div class="chat-messages" id="comm-msgs"></div>
     </div>
   `);
+
+  // Style the voice room button as disabled when no voice room is configured
+  if (!comm.voiceRoom) {
+    const vrBtn = document.querySelector('.header__actions .header__action-btn');
+    if (vrBtn) { vrBtn.style.opacity = '0.38'; vrBtn.style.cursor = 'not-allowed'; vrBtn.title = 'Voice room coming soon'; }
+  }
 
   const msgs = $('comm-msgs');
   msgs.insertAdjacentHTML('beforeend', `<div style="text-align:center;margin:8px 0;"><div style="display:inline-block;background:#fdf4c5;color:#54656f;font-size:11.5px;padding:5px 10px;border-radius:7px;line-height:1.4;max-width:260px;">${ej('lock','11.5px')} Messages are end-to-end encrypted.</div></div>`);
@@ -254,7 +264,17 @@ function renderCommunity(commId) {
   } else {
     scrollBot(msgs);
   }
-  renderInputBar('comm-wrap', {placeholder:'Message community', onSend: async (data) => {
+  const COMM_PLACEHOLDERS = {
+    cricket:   'Talk cricket — matches, players, memories...',
+    bollywood: 'Share a Bollywood memory or song...',
+    bhajan:    'Share a bhajan or spiritual thought...',
+    society:   'Ask your neighbours something...',
+    recipes:   'Share a recipe or ask for one...',
+    shayari:   'Share a couplet or poem...',
+    yoga:      'Share a wellness tip or question...',
+  };
+  const inputPlaceholder = COMM_PLACEHOLDERS[commId] || 'Say something to the group...';
+  renderInputBar('comm-wrap', {placeholder: inputPlaceholder, onSend: async (data) => {
     const {type, text, image, caption} = data;
     markCommActive(commId);
     const msg = mkMsg('user', type, text||caption||'');
@@ -275,7 +295,12 @@ function renderCommunity(commId) {
       if (!$('comm-msgs')) break;
       await delay(1800 + Math.random()*1500);
       if (!$('comm-msgs')) break;
-      msgs.insertAdjacentHTML('beforeend', typingHTML()); scrollBot(msgs);
+      // Show "Name is typing..." above the dots using the upcoming responder's name
+      const typingName = PERSONAS[responders[ri]]?.name?.split(' ')[0] || '';
+      const namedTypingHTML = typingName
+        ? `<div class="bubble-wrap bubble-wrap--recv" id="typing"><div class="comm-sender-name" style="color:${PERSONAS[responders[ri]]?.color||'#667781'}">${typingName}</div><div class="typing-indicator"><div class="typing-indicator__dot"></div><div class="typing-indicator__dot"></div><div class="typing-indicator__dot"></div></div></div>`
+        : typingHTML();
+      msgs.insertAdjacentHTML('beforeend', namedTypingHTML); scrollBot(msgs);
       await delay(1200 + Math.random()*1000);
       const ti = $('typing'); if (ti) ti.remove();
       if (!$('comm-msgs')) break;
