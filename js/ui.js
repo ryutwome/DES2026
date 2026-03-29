@@ -136,13 +136,55 @@ function openImageViewer(src){
   document.body.appendChild(ov);
 }
 
+/* Emoji names available for reactions (must exist in EMOJI map) */
+const REACTION_EMOJIS=['smile','prayer','sparkles','wave','rose'];
+
+/* Render the reactions strip below a bubble */
+function reactionsHTML(msg){
+  if(!msg.reactions||!Object.keys(msg.reactions).length) return '';
+  const chips=Object.entries(msg.reactions).map(([name,count])=>
+    `<span class="bubble-reaction" onclick="addReaction('${msg.id}','${name}')">${ej(name,'1em')} ${count}</span>`
+  ).join('');
+  return `<div class="bubble-reactions">${chips}</div>`;
+}
+
+/* Add or increment a reaction on a message, then re-render that bubble */
+function addReaction(msgId, emojiName){
+  const msg=findMsg(msgId);if(!msg)return;
+  if(!msg.reactions) msg.reactions={};
+  msg.reactions[emojiName]=(msg.reactions[emojiName]||0)+1;
+  saveS();
+  // Re-render the specific bubble-wrap in place
+  const wrap=document.querySelector(`.bubble-wrap[data-id="${msgId}"]`);
+  if(wrap){
+    const read=wrap.querySelector('.bubble__ticks--read')!==null||!wrap.querySelector('.bubble__ticks');
+    wrap.outerHTML=bubble(msg,{read});
+  }
+}
+
+/* Show reaction picker near the tapped bubble */
+function showReactionPicker(msgId, anchorEl){
+  document.querySelector('.reaction-picker')?.remove();
+  const picker=document.createElement('div');
+  picker.className='reaction-picker';
+  picker.innerHTML=REACTION_EMOJIS.map(name=>
+    `<button class="reaction-picker__btn" onclick="addReaction('${msgId}','${name}');document.querySelector('.reaction-picker')?.remove();">${ej(name,'1.5em')}</button>`
+  ).join('');
+  // Position above the bubble
+  const rect=anchorEl.getBoundingClientRect();
+  const appRect=app().getBoundingClientRect();
+  picker.style.cssText=`top:${rect.top-appRect.top-58}px;left:${Math.max(4,rect.left-appRect.left)}px;`;
+  app().appendChild(picker);
+  // Dismiss on outside tap
+  setTimeout(()=>document.addEventListener('click',function h(){picker.remove();document.removeEventListener('click',h);},{once:true}),10);
+}
+
 function bubble(msg, opts={}){
   const sent=msg.from==='user';
   const p=!sent&&PERSONAS[msg.from];
-  const aiBadge=(p&&S.researcherMode)?'<span class="ai-badge">AI</span>':'';
   let content='';
   if(msg.type==='image'){
-    content=`${aiBadge}<div class="img-bubble" onclick="openImageViewer('${msg.image.replace(/'/g,"\\'")}')"><img src="${msg.image}" alt="Image"></div>${msg.caption?`<div class="img-caption">${renderEmoji(msg.caption)}</div>`:''}`;
+    content=`<div class="img-bubble" onclick="openImageViewer('${msg.image.replace(/'/g,"\\'")}')"><img src="${msg.image}" alt="Image"></div>${msg.caption?`<div class="img-caption">${renderEmoji(msg.caption)}</div>`:''}`;
   } else if(msg.type==='voice'){
     const bars=Array.from({length:18},(_,i)=>{const h=4+Math.round(Math.sin(i*.8)*8+10);return`<div class="voice-bubble__bar" style="height:${h}px"></div>`;}).join('');
     content=`<div class="voice-bubble">
@@ -153,16 +195,19 @@ function bubble(msg, opts={}){
       ${msg.text?`<div class="voice-bubble__text">${renderEmoji(msg.text)}</div>`:''}
     </div>`;
   } else {
-    content=`${aiBadge}<div>${renderEmoji(msg.text)}</div>`;
+    content=`<div>${renderEmoji(msg.text)}</div>`;
   }
   const spk=canTTS()?`<button class="bubble__speaker" onclick="speakMsg(this,'${msg.id.replace(/'/g,"\\'")}','${(msg.text||'').replace(/'/g,"\\'").replace(/\n/g,' ').slice(0,200)}')" aria-label="Read aloud">${IC.speaker}</button>`:'';
   // read=true → blue ticks; read=false → grey (delivered, not yet read)
   const read=opts.read!==false;
-  return`<div class="bubble-wrap bubble-wrap--${sent?'sent':'recv'}">
-    <div class="bubble bubble--${sent?'sent':'recv'}">
+  return`<div class="bubble-wrap bubble-wrap--${sent?'sent':'recv'}" data-id="${msg.id}">
+    <div class="bubble bubble--${sent?'sent':'recv'}" data-msg-id="${msg.id}"
+      ondblclick="showReactionPicker('${msg.id}',this)"
+      data-longpress-id="${msg.id}">
       ${content}
       <div class="bubble__meta"><span class="bubble__time">${ftime(msg.timestamp)}</span>${sent?`<span class="bubble__ticks${read?' bubble__ticks--read':''}">${doubleTick()}</span>`:''}</div>
     </div>
+    ${reactionsHTML(msg)}
     ${spk}
   </div>`;
 }
@@ -247,11 +292,26 @@ function renderInputBar(containerId, {onSend,onGame=null,placeholder='Message'})
       <div class="recording-overlay__preview" id="rec-preview"> </div>
       <div class="recording-overlay__actions">
         <button class="recording-overlay__cancel" id="rec-cancel">Cancel</button>
+        <button class="recording-overlay__retry" id="rec-retry">Try again</button>
         <button class="recording-overlay__send" id="rec-send" disabled>Send</button>
       </div>`;
     app().appendChild(ov);
     $('rec-cancel').onclick=()=>{stopRec();removeOv();};
     $('rec-send').onclick=()=>{stopRec();const t=transcript.trim();removeOv();if(t)onSend({type:'voice',text:t});};
+    /* Re-record: stop current session, reset transcript, restart recognition */
+    $('rec-retry').onclick=()=>{
+      stopRec();
+      transcript='';
+      const p=$('rec-preview');if(p)p.textContent='';
+      const s=$('rec-send');if(s)s.disabled=true;
+      recording=true;
+      startRec({
+        onInterim:t=>{transcript=t;const p=$('rec-preview');if(p)p.textContent=t;},
+        onFinal:t=>{transcript=t;const p=$('rec-preview');if(p)p.textContent=t;const s=$('rec-send');if(s&&t.trim())s.disabled=false;},
+        onError:()=>{removeOv();toast('Could not hear clearly. Please try again.');},
+        onEnd:()=>{recording=false;sendBtn.innerHTML=IC.mic;sendBtn.className='message-input-bar__send message-input-bar__send--mic';const s=$('rec-send');if(s&&transcript.trim())s.disabled=false;else if(!transcript.trim())removeOv();}
+      });
+    };
   }
   function removeOv(){const o=$('rec-ov');if(o)o.remove();recording=false;transcript='';sendBtn.innerHTML=IC.mic;sendBtn.className='message-input-bar__send message-input-bar__send--mic';}
 
@@ -295,3 +355,19 @@ function sheet(innerHtml){
   bk.appendChild(sh);app().appendChild(bk);return bk;
 }
 function closeSheet(bk){if(bk&&bk.parentNode)bk.remove();}
+
+/* ── LONG-PRESS for bubble reactions ── */
+/* Delegated listener on #app: 500ms hold on any .bubble triggers reaction picker */
+(()=>{
+  let _lpTimer=null,_lpEl=null;
+  document.addEventListener('touchstart',e=>{
+    const bubble=e.target.closest('[data-longpress-id]');
+    if(!bubble)return;
+    _lpEl=bubble;
+    _lpTimer=setTimeout(()=>{
+      showReactionPicker(bubble.dataset.longpressId,bubble);
+    },500);
+  },{passive:true});
+  document.addEventListener('touchend',()=>{clearTimeout(_lpTimer);_lpTimer=null;},{passive:true});
+  document.addEventListener('touchmove',()=>{clearTimeout(_lpTimer);_lpTimer=null;},{passive:true});
+})();
