@@ -63,7 +63,7 @@ function renderLangPicker(){
         </button>
         <button class="lang-pick-tile${S.userLang==='en'?' active':''}" id="lp-en" onclick="pickLang('en')">
           <span class="lang-pick-tile__script">English</span>
-          <span class="lang-pick-tile__eng">Only English</span>
+          <span class="lang-pick-tile__eng">English</span>
         </button>
       </div>
       <div class="lang-pick-screen__name-section">
@@ -73,12 +73,12 @@ function renderLangPicker(){
         </div>
         <div class="name-prompt-screen__field-wrap" style="margin-top:12px;">
           <label class="name-prompt-screen__label" for="lp-age">${ll.age}</label>
-          <input class="name-prompt-screen__input" id="lp-age" type="tel" placeholder="${ll.agePh}" inputmode="numeric" pattern="[0-9]*" style="width:100%;" value="${S.userAge||''}" />
+          <input class="name-prompt-screen__input" id="lp-age" type="number" inputmode="numeric" placeholder="${ll.agePh}" min="50" max="110" style="width:100%;" value="${S.userAge||''}" />
         </div>
       </div>
-      <div class="persona-welcome" id="lp-persona-card" style="${(S.userLang&&S.userName)?'':'visibility:hidden;'}">
+      <div class="persona-welcome" id="lp-persona-card" style="${(S.userLang&&S.userName)?'':'display:none;'}">
         <img src="./avatars/meenakshiamma.svg" class="persona-welcome__avatar" alt="Meenakshiamma" />
-        <div class="persona-welcome__text">Meenakshiamma and 7 others would love to meet you!</div>
+        <div class="persona-welcome__text">Meenakshiamma and 7 others on Saathi would love to meet you!</div>
       </div>
       <div class="name-prompt-screen__note" style="margin-bottom:8px;">Your details are only stored on this device.</div>
       <button class="lang-pick-screen__cta" id="lp-go" ${(S.userLang&&S.userName)?'':'disabled'}>Continue →</button>
@@ -86,6 +86,9 @@ function renderLangPicker(){
     </div>
   `);
   const inp=$('lp-name'), cta=$('lp-go');
+  /* Show initial guidance so the user knows what to do */
+  const initialHint=document.getElementById('lp-hint');
+  if(initialHint&&!S.userLang&&!S.userName) initialHint.textContent='ऊपर अपनी भाषा चुनें · वर भाषा निवडा · Choose your language above';
   /* Enable Continue only when both language and name are set; show hint for what's missing */
   const validate=()=>{
     const hasLang=!!S.userLang;
@@ -100,7 +103,7 @@ function renderLangPicker(){
     }
     // Show persona card only once both lang and name are present
     const card=document.getElementById('lp-persona-card');
-    if(card) card.style.visibility=(hasLang&&hasName)?'visible':'hidden';
+    if(card) card.style.display=(hasLang&&hasName)?'flex':'none';
   };
   inp.oninput=validate;
   inp.addEventListener('keydown',e=>{if(e.key==='Enter'&&inp.value.trim()&&S.userLang)saveLangName();});
@@ -142,7 +145,7 @@ function pickLang(lang){
     else hint.textContent='';
   }
   const card=document.getElementById('lp-persona-card');
-  if(card) card.style.visibility=hasName?'visible':'hidden';
+  if(card) card.style.display=hasName?'flex':'none';
 }
 
 /* saveLangName: persist language + name/age, seed with default interests, go straight to chats */
