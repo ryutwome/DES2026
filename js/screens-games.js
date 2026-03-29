@@ -292,26 +292,17 @@ function _boardTopBars(gs){
     </div>`;
   const vbar = `
     <div class="game-voice-bar">
-      ${ej('mic','14px')}
-      <span class="gvb-count">${allVoice.length} in voice</span>
+      ${ej('circle-o','14px')}
+      <span class="gvb-count">${allVoice.length} watching</span>
       <div class="gvb-avatars">${voiceAvatars}</div>
     </div>`;
   return {pbar, vbar};
 }
 
-// Rotate the speaking ring among voice participants; registers router cleanup
+// No-op: voice animation removed — bar now shows static spectator count
 function _startVoiceAnim(gs){
-  if (_gVoiceInterval) clearInterval(_gVoiceInterval);
-  const voiceIds = ['user', gs.opponentId, ...(gs.spectators||[])];
-  let vIdx = 0;
-  _gVoiceInterval = setInterval(()=>{
-    document.querySelectorAll('.gvb-av').forEach(el=>el.classList.remove('gvb-speaking'));
-    vIdx = (vIdx+1) % voiceIds.length;
-    const el = document.getElementById('gvb-'+voiceIds[vIdx]);
-    if (el) el.classList.add('gvb-speaking');
-  }, 3500);
-  // Piggyback on the voice-room cleanup hook so the router stops the interval on navigation
-  window._vrCleanup = ()=>{ clearInterval(_gVoiceInterval); _gVoiceInterval = null; };
+  if (_gVoiceInterval) { clearInterval(_gVoiceInterval); _gVoiceInterval = null; }
+  window._vrCleanup = ()=>{};
 }
 
 // Update turn pill + speaking avatar rings + score displays
@@ -392,6 +383,34 @@ const _SPEC_COMMENTS = [
   ['Oh! Did not expect that!','Good thinking!','Ha, well played!'],
   ['Arre wah!','Kaafi accha!','Interesting choice!'],
 ];
+// Contextual comment pools keyed by situation
+const _SPEC_WIN_COMMENTS  = ['Wah! Brilliant!','You did it!','Arre wah, well played!','Yes yes yes!'];
+const _SPEC_TENSE_COMMENTS = ['Ooh, this is close!','Tension tension!','Kaafi tight game yaar!','One wrong move and it\'s over...'];
+const _SPEC_TAMBOLA_HIT   = ['Ooh, that\'s on your ticket!','Lucky number!','Mark it mark it!','Arey that one\'s yours!'];
+
+// Pick a contextual pool for the current game moment, or fall back to random neutral pool
+function _pickCommentPool(gs){
+  const type = gs.type;
+  // Win moments for turn-based games
+  if ((type==='tictactoe'||type==='connectfour') && gs.winner==='user') return _SPEC_WIN_COMMENTS;
+  // Tense moment: board almost full with no winner yet
+  if (type==='tictactoe' && !gs.winner) {
+    const filled = gs.board.filter(Boolean).length;
+    if (filled >= 6) return _SPEC_TENSE_COMMENTS;
+  }
+  if (type==='connectfour' && !gs.winner) {
+    const filled = gs.board.filter(Boolean).length;
+    if (filled >= 30) return _SPEC_TENSE_COMMENTS;
+  }
+  // Tambola: last called number is on the player's ticket
+  if (type==='tambola' && gs.gameState) {
+    const ts = gs.gameState;
+    const last = ts.called[ts.called.length-1];
+    if (last && ts.ticket.some(row=>row.includes(last))) return _SPEC_TAMBOLA_HIT;
+  }
+  return _SPEC_COMMENTS[Math.floor(Math.random()*_SPEC_COMMENTS.length)];
+}
+
 async function _triggerSpectatorComment(gameId){
   if (Math.random() > 0.42) return;
   const gs = S.games[gameId]; if (!gs || !gs.spectators?.length) return;
@@ -399,7 +418,7 @@ async function _triggerSpectatorComment(gameId){
   if (!document.getElementById('gchat-msgs')) return;
   const sid = gs.spectators[Math.floor(Math.random()*gs.spectators.length)];
   if (!PERSONAS[sid]) return;
-  const pool = _SPEC_COMMENTS[Math.floor(Math.random()*_SPEC_COMMENTS.length)];
+  const pool = _pickCommentPool(gs);
   const text = pool[Math.floor(Math.random()*pool.length)];
   const msg = mkMsg(sid,'text',text);
   gs.chatMessages = [...(gs.chatMessages||[]), msg];
@@ -725,6 +744,20 @@ function generateTambolaTicket(){
   return ticket;
 }
 
+function showTambolaRules(){
+  const ov = document.createElement('div');
+  ov.className = 'rules-overlay';
+  ov.innerHTML = `
+    <div class="rules-overlay__box">
+      <div class="rules-overlay__title">${ej('game','20px')} How to Play Tambola</div>
+      <div class="rules-overlay__body">
+        Tambola is Indian Bingo! Numbers 1&ndash;90 are called one by one. Tap a number on your ticket when it is called to mark it. First to complete a full row wins Jaldi Five! Mark all 15 numbers to win Tambola!
+      </div>
+      <button class="rules-overlay__close btn-primary" onclick="this.closest('.rules-overlay').remove()">Got it!</button>
+    </div>`;
+  document.body.appendChild(ov);
+}
+
 function renderTambola(gameId){
   const gs = S.games[gameId]; const persona = gs?PERSONAS[gs.opponentId]:null;
   if(!gs||!persona){navigate('#/games');return;}
@@ -741,8 +774,14 @@ function renderTambola(gameId){
       </div>
     </div>
   `);
+  // Show rules once per game session (flag stored on gameState)
+  if(!gs.gameState.rulesShown){
+    gs.gameState.rulesShown = true;
+    S.games[gameId]=gs; saveS();
+    showTambolaRules();
+  }
   const wrap = $('tambola-board'); if(!wrap) return;
-  let html = `<div class="tambola-called">Last called: <span class="tambola-num">${ts.called.length?ts.called[ts.called.length-1]:'--'}</span></div>`;
+  let html = `<div class="tambola-header-row"><div class="tambola-called">Last called: <span class="tambola-num">${ts.called.length?ts.called[ts.called.length-1]:'--'}</span></div><button class="tambola-info-btn" onclick="showTambolaRules()" title="How to play">?</button></div>`;
   html += `<table class="tambola-ticket">`;
   for(let r=0;r<3;r++){
     html += `<tr>`;
@@ -827,11 +866,25 @@ function renderTeenPatti(gameId){
   if(!gs.gameState||!gs.gameState.deck) tpNewGame(gameId, true);
   const ts = gs.gameState;
   const phase = ts.phase||'bet';
+  // Show hand-ranking guide once per game session
+  const rulesOpen = !ts.rulesShown;
+  if(rulesOpen){ ts.rulesShown = true; S.games[gameId]=gs; saveS(); }
 
   mount(`
     ${header(`${ej('joker')} Teen Patti`,{back:true,subtitle:`vs ${persona.name}`})}
     <div class="screen board-game-screen">
       <div class="screen__scroll board-game-scroll">
+        <details class="tp-rules" ${rulesOpen?'open':''}>
+          <summary class="tp-rules__summary">Hand rankings (tap to show/hide)</summary>
+          <ol class="tp-rules__list">
+            <li><strong>Teen Patti</strong> &mdash; Three of a kind (best hand)</li>
+            <li><strong>Straight Flush</strong> &mdash; Running sequence, same suit</li>
+            <li><strong>Flush</strong> &mdash; Same suit</li>
+            <li><strong>Straight</strong> &mdash; Running sequence</li>
+            <li><strong>Pair</strong> &mdash; Two cards of the same rank</li>
+            <li><strong>High Card</strong> &mdash; Highest single card wins</li>
+          </ol>
+        </details>
         <div class="tp-board" id="tp-board"></div>
       </div>
     </div>
@@ -887,6 +940,7 @@ function renderChess(gameId){
     <div class="screen board-game-screen">
       <div class="screen__scroll board-game-scroll">
         <div class="chess-wrap">
+          <div class="chess-ai-note">Beginner AI &mdash; plays random legal moves</div>
           <div id="${id}" style="width:min(340px,90vw)"></div>
           <button class="btn-secondary chess-reset" onclick="resetChess('${gameId}')">New Game</button>
         </div>
@@ -937,13 +991,14 @@ function initSolitaire(){
 }
 
 function renderSolitaire(gameId){
-  const gs = S.games[gameId]; const persona = gs?PERSONAS[gs.opponentId]:null;
-  if(!gs||!persona){navigate('#/games');return;}
+  const gs = S.games[gameId];
+  // Solitaire is a solo game — no opponent needed
+  if(!gs){navigate('#/games');return;}
   if(!gs.gameState||!gs.gameState.tableau) gs.gameState = initSolitaire();
   const ts = gs.gameState;
 
   mount(`
-    ${header(`${ej('joker')} Solitaire`,{back:true,subtitle:'Klondike'})}
+    ${header(`${ej('joker')} Klondike Solitaire`,{back:true,subtitle:'Move all cards to the foundations'})}
     <div class="screen board-game-screen">
       <div class="screen__scroll board-game-scroll">
         <div class="sol-board" id="sol-board"></div>
