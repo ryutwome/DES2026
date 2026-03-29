@@ -46,10 +46,6 @@ function renderLangPicker(){
       <div class="lang-pick-screen__logo">
         <svg width="64" height="64" viewBox="0 0 72 72"><circle cx="36" cy="36" r="36" fill="#00A884"/><path d="M36 16c-11 0-20 9-20 20 0 3.5.93 6.85 2.55 9.74L16 56l10.52-2.47A19.9 19.9 0 0 0 36 56c11 0 20-9 20-20S47 16 36 16zm0 3.6c9 0 16.4 7.3 16.4 16.4S45 52.4 36 52.4c-2.9 0-5.63-.76-7.98-2.1l-.57-.33-5.93 1.4 1.43-5.78-.36-.6A16.3 16.3 0 0 1 19.6 36C19.6 27 27 19.6 36 19.6z" fill="white"/></svg>
       </div>
-      <div class="persona-welcome">
-        <img src="./avatars/meenakshiamma.svg" class="persona-welcome__avatar" alt="Meenakshiamma" />
-        <div class="persona-welcome__text">Meenakshiamma and 7 others are waiting to meet you!</div>
-      </div>
       <div class="lang-pick-screen__heading">
         <span class="lang-pick-screen__hi">अपनी भाषा चुनें</span>
         <span class="lang-pick-screen__sep"> · </span>
@@ -65,6 +61,10 @@ function renderLangPicker(){
           <span class="lang-pick-tile__script">मराठी</span>
           <span class="lang-pick-tile__eng">Marathi</span>
         </button>
+        <button class="lang-pick-tile${S.userLang==='en'?' active':''}" id="lp-en" onclick="pickLang('en')">
+          <span class="lang-pick-tile__script">English</span>
+          <span class="lang-pick-tile__eng">English</span>
+        </button>
       </div>
       <div class="lang-pick-screen__name-section">
         <div class="name-prompt-screen__field-wrap">
@@ -75,6 +75,10 @@ function renderLangPicker(){
           <label class="name-prompt-screen__label" for="lp-age">${ll.age}</label>
           <input class="name-prompt-screen__input" id="lp-age" type="number" placeholder="${ll.agePh}" min="1" max="120" style="width:100%;" value="${S.userAge||''}" />
         </div>
+      </div>
+      <div class="persona-welcome">
+        <img src="./avatars/meenakshiamma.svg" class="persona-welcome__avatar" alt="Meenakshiamma" />
+        <div class="persona-welcome__text">Meenakshiamma and 7 others are waiting to meet you!</div>
       </div>
       <button class="lang-pick-screen__cta" id="lp-go" ${(S.userLang&&S.userName)?'':'disabled'}>Continue →</button>
       <div id="lp-hint" style="font-size:0.78rem;color:#E53935;text-align:center;margin-top:6px;min-height:1.2em;"></div>
@@ -106,12 +110,13 @@ function pickLang(lang){
   S.userLang=lang; saveS();
   /* Update tile active states without a full re-render */
   document.querySelectorAll('.lang-pick-tile').forEach(t=>t.classList.remove('active'));
-  const tile = lang==='hi'?$('lp-hi'):$('lp-mr');
+  const tile = lang==='hi'?$('lp-hi'):lang==='mr'?$('lp-mr'):$('lp-en');
   if(tile) tile.classList.add('active');
   /* Translate name/age labels and placeholders to the chosen language */
   const labels = {
     hi: { name: 'आपका नाम', namePh: 'अपना नाम लिखें', age: 'आपकी उम्र (वैकल्पिक)', agePh: 'उम्र लिखें' },
-    mr: { name: 'तुमचे नाव', namePh: 'नाव लिहा', age: 'तुमचे वय (पर्यायी)', agePh: 'वय लिहा' }
+    mr: { name: 'तुमचे नाव', namePh: 'नाव लिहा', age: 'तुमचे वय (पर्यायी)', agePh: 'वय लिहा' },
+    en: { name: 'Your name', namePh: 'Enter your name', age: 'Your age (optional)', agePh: 'Enter your age' }
   };
   const l=labels[lang];
   if(l){

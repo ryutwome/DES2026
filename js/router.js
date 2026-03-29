@@ -36,6 +36,8 @@ function parseRoute(hash){
 
 function render(){
   if(window._vrCleanup){window._vrCleanup();window._vrCleanup=null;}
+  // Stop tambola auto-caller when navigating away from the tambola game screen
+  if(typeof stopTambolaInterval==='function') stopTambolaInterval();
   const hash=window.location.hash||'#/';
   const{screen,params}=parseRoute(hash);
 

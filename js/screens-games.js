@@ -758,13 +758,30 @@ function showTambolaRules(){
   document.body.appendChild(ov);
 }
 
+/* Interval handle for Tambola auto-caller; cleared on win or leaving the game */
+let _tambolaInterval = null;
+
+function stopTambolaInterval(){
+  if(_tambolaInterval){ clearInterval(_tambolaInterval); _tambolaInterval=null; }
+}
+
+/* Start 3-second auto-calling loop; safe to call multiple times (clears existing first) */
+function startTambolaInterval(gameId){
+  stopTambolaInterval();
+  _tambolaInterval = setInterval(()=>{ callTambola(gameId); }, 3000);
+}
+
 function renderTambola(gameId){
   const gs = S.games[gameId]; const persona = gs?PERSONAS[gs.opponentId]:null;
   if(!gs||!persona){navigate('#/games');return;}
-  if(!gs.gameState) gs.gameState = {ticket:generateTambolaTicket(),called:[],marked:[]};
+  // Init player ticket + AI ticket (Meenakshiamma) on first render
+  if(!gs.gameState) gs.gameState = {ticket:generateTambolaTicket(),called:[],marked:[],aiTicket:generateTambolaTicket(),aiMarked:[],aiJaldiFive:false};
+  if(!gs.gameState.aiTicket) gs.gameState.aiTicket = generateTambolaTicket();
+  if(!gs.gameState.aiMarked) gs.gameState.aiMarked = [];
   const ts = gs.gameState;
   const allNums = Array.from({length:90},(_,i)=>i+1).filter(n=>!ts.called.includes(n));
   const win = checkTambolaWin(ts);
+  const aiWin = checkTambolaWin({ticket:ts.aiTicket, marked:ts.aiMarked});
 
   mount(`
     ${header(`${ej('game')} Tambola`,{back:true,subtitle:`with ${persona.name}`})}
@@ -774,15 +791,24 @@ function renderTambola(gameId){
       </div>
     </div>
   `);
-  // Show rules once per game session (flag stored on gameState)
-  if(!gs.gameState.rulesShown){
-    gs.gameState.rulesShown = true;
+  // Show rules once per session
+  if(!ts.rulesShown){
+    ts.rulesShown = true;
     S.games[gameId]=gs; saveS();
     showTambolaRules();
   }
   const wrap = $('tambola-board'); if(!wrap) return;
-  let html = `<div class="tambola-header-row"><div class="tambola-called">Last called: <span class="tambola-num">${ts.called.length?ts.called[ts.called.length-1]:'--'}</span></div><button class="tambola-info-btn" onclick="showTambolaRules()" title="How to play">?</button></div>`;
-  html += `<table class="tambola-ticket">`;
+
+  // Status row: last called number + auto-calling indicator
+  const statusText = allNums.length===0 ? 'All numbers called!' : (ts.called.length===0 ? 'Starting soon…' : 'Calling…');
+  let html = `<div class="tambola-header-row">
+    <div class="tambola-called">Last called: <span class="tambola-num">${ts.called.length?ts.called[ts.called.length-1]:'--'}</span></div>
+    <div class="tambola-status">${statusText}</div>
+    <button class="tambola-info-btn" onclick="showTambolaRules()" title="How to play">?</button>
+  </div>`;
+
+  // Player's ticket
+  html += `<div class="tambola-ticket-label">Your ticket</div><table class="tambola-ticket">`;
   for(let r=0;r<3;r++){
     html += `<tr>`;
     for(let c=0;c<9;c++){
@@ -794,10 +820,31 @@ function renderTambola(gameId){
     html += `</tr>`;
   }
   html += `</table>`;
-  if(allNums.length > 0) html += `<button class="btn-primary" onclick="callTambola('${gameId}')">Call Next Number</button>`;
-  else html += `<div class="game-over-msg">All numbers called!</div>`;
-  if(win) html += `<div class="tambola-win tambola-win--celebrate">Tambola! You won!</div>`;
+
+  if(win) html += `<div class="tambola-win tambola-win--celebrate">Tambola! You won! ${ej('sparkles')}</div>`;
+  else if(allNums.length===0) html += `<div class="game-over-msg">All numbers called!</div>`;
+
+  // AI opponent ticket (Meenakshiamma)
+  html += `<div class="tambola-ticket-label tambola-ticket-label--ai">Meenakshiamma's ticket</div><table class="tambola-ticket tambola-ticket--ai">`;
+  for(let r=0;r<3;r++){
+    html += `<tr>`;
+    for(let c=0;c<9;c++){
+      const n = ts.aiTicket[r][c];
+      const isMarked = ts.aiMarked.includes(n);
+      if(n===0) html += `<td class="tambola-cell tambola-empty"></td>`;
+      else html += `<td class="tambola-cell${isMarked?' tambola-marked tambola-marked--ai':''}">${n}</td>`;
+    }
+    html += `</tr>`;
+  }
+  html += `</table>`;
+  if(ts.aiJaldiFive) html += `<div class="tambola-ai-msg">Meenakshiamma got Jaldi Five!</div>`;
+  if(aiWin) html += `<div class="tambola-ai-msg">Meenakshiamma got Tambola!</div>`;
+
   wrap.innerHTML = html;
+
+  // Start auto-caller if the game is still in progress
+  if(!win && !aiWin && allNums.length > 0) startTambolaInterval(gameId);
+  else stopTambolaInterval();
 }
 
 function markTambola(gameId, n){
@@ -823,12 +870,28 @@ function markTambola(gameId, n){
 
 function callTambola(gameId){
   const gs = S.games[gameId]; if(!gs) return;
-  if(!gs.gameState) gs.gameState = {ticket:generateTambolaTicket(),called:[],marked:[]};
-  const remaining = Array.from({length:90},(_,i)=>i+1).filter(n=>!gs.gameState.called.includes(n));
-  if(remaining.length===0) return;
+  if(!gs.gameState) gs.gameState = {ticket:generateTambolaTicket(),called:[],marked:[],aiTicket:generateTambolaTicket(),aiMarked:[],aiJaldiFive:false};
+  const ts = gs.gameState;
+  const remaining = Array.from({length:90},(_,i)=>i+1).filter(n=>!ts.called.includes(n));
+  if(remaining.length===0){ stopTambolaInterval(); return; }
   const n = remaining[Math.floor(Math.random()*remaining.length)];
-  gs.gameState.called.push(n);
+  ts.called.push(n);
+  // Auto-mark AI ticket
+  if(ts.aiTicket && ts.aiTicket.some(row=>row.includes(n))) ts.aiMarked.push(n);
+  // Check if AI just completed a row (Jaldi Five) — only announce once
+  if(!ts.aiJaldiFive){
+    for(let r=0;r<3;r++){
+      const row = ts.aiTicket[r].filter(v=>v>0);
+      if(row.length===5 && row.every(v=>ts.aiMarked.includes(v))){
+        ts.aiJaldiFive = true;
+        toast('Meenakshiamma got Jaldi Five!');
+        break;
+      }
+    }
+  }
   S.games[gameId]=gs; saveS(); renderGame(gameId,'tambola');
+  // Stop interval if player or AI has won Tambola (full board)
+  if(checkTambolaWin(ts) || checkTambolaWin({ticket:ts.aiTicket,marked:ts.aiMarked})) stopTambolaInterval();
 }
 
 function checkTambolaWin(ts){
