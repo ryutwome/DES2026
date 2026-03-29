@@ -22,7 +22,6 @@ function renderChats(){
       <div class="filter-chips">
         <button class="filter-chip active" onclick="filterChips(this,'all')">All</button>
         <button class="filter-chip" onclick="filterChips(this,'unread')">Unread</button>
-        <button class="filter-chip" onclick="filterChips(this,'groups')">Groups</button>
       </div>
       <div class="screen__scroll" id="chat-list"></div>
     </div>
@@ -34,32 +33,19 @@ function renderChats(){
 /* Build (or rebuild) the visible chat list rows for the given filter tab.
    Called once on render and again whenever a filter chip is tapped. */
 function buildChatList(filter){
-  const iconMap={cricket:'1f3cf',bollywood:'1f3ac',bhajan:'1f64f',society:'1f3e2',recipes:'1f35b',shayari:'1f338',yoga:'1f9d8'};
-  const colorMap={cricket:'#E53935',bollywood:'#FB8C00',bhajan:'#8E24AA',society:'#546E7A',recipes:'#00897B',shayari:'#AD1457',yoga:'#2E7D32'};
-
   // Build persona items
   const personaItems=Object.keys(S.chats).filter(id=>PERSONAS[id]).map(id=>{
     const msgs=S.chats[id]||[],last=msgs[msgs.length-1];
     return{kind:'persona',id,last,time:last?.timestamp||0};
   });
 
-  // Build joined-community items
-  const commItems=Object.values(COMMUNITIES)
-    .filter(c=>isJoinedComm(c.id))
-    .map(c=>{const msgs=S.communities[c.id]||[];const last=msgs[msgs.length-1];return{kind:'comm',c,last,time:last?.timestamp||0};});
-
-  // Merge and sort all items by recency
-  const allItems=[...personaItems,...commItems].sort((a,b)=>b.time-a.time);
+  // Sort persona items by recency
+  const allItems=[...personaItems].sort((a,b)=>b.time-a.time);
 
   // Apply filter
   const visible=allItems.filter(item=>{
-    if(filter==='groups') return item.kind==='comm';
-    if(filter==='unread'){
-      if(item.kind==='persona') return (S.unreadChats[item.id]||0)>0;
-      const bv=(S.unreadCommunities||{})[item.c.id];
-      return bv==='@'||(typeof bv==='number'&&bv>0);
-    }
-    return true; // 'all' and 'favourites' (favourites not yet tracked, show all)
+    if(filter==='unread') return (S.unreadChats[item.id]||0)>0;
+    return true; // 'all'
   });
 
   const list=$('chat-list');
@@ -71,18 +57,10 @@ function buildChatList(filter){
     if(filter==='unread'){
       title='All caught up!';
       desc='No unread messages — you\'re up to date.';
-    } else if(filter==='groups'){
-      title='No group chats yet';
-      desc='Join a community to chat with others who share your interests.';
-      btn=`<button style="margin-top:12px;padding:10px 20px;background:#00A884;color:#fff;border:none;border-radius:20px;font-size:14px;font-weight:600;cursor:pointer;" onclick="navigate('#/communities')">Browse Communities</button>`;
-    } else if(filter==='favourites'){
-      title='No favourites yet';
-      desc='Long-press a chat to mark it as a favourite.';
     } else {
       // 'all' — shouldn't normally be empty since personas are always seeded
       title='आपका स्वागत है! / Swagat!';
-      desc='Browse communities or open a chat to get started.';
-      btn=`<button style="margin-top:12px;padding:10px 20px;background:#00A884;color:#fff;border:none;border-radius:20px;font-size:14px;font-weight:600;cursor:pointer;" onclick="navigate('#/communities')">Browse Communities</button>`;
+      desc='Open a chat to get started.';
     }
     list.innerHTML=`<div class="empty-state">
       <div class="empty-state__icon">${ej(icon,'48px')}</div>
@@ -115,21 +93,6 @@ function buildChatList(filter){
       div.dataset.name=p.name.toLowerCase();
       div.innerHTML=`<div class="chat-list-item__avatar">${avatarEl}<span class="presence-dot"></span></div><div class="chat-list-item__body"><div class="chat-list-item__top"><div class="chat-list-item__name">${p.name}${ai}</div><div class="${timeClass}">${fdate(time)}</div></div><div class="chat-list-item__bottom"><div class="chat-list-item__preview" style="display:flex;align-items:center;">${tickHtml}<span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${previewText}</span></div>${unread?`<div class="chat-list-item__badge">${unread}</div>`:''}</div></div>`;
       div.onclick=()=>{const u={...S.unreadChats};delete u[id];set({unreadChats:u});navigate('#/chat/'+id);};
-
-    }else{
-      const {c,last,time}=item;
-      const badgeVal=(S.unreadCommunities||{})[c.id];
-      const badgeHtml=badgeVal==='@'?`<span class="comm-badge comm-badge--mention">@</span>`:
-        (typeof badgeVal==='number'&&badgeVal>0)?`<div class="chat-list-item__badge">${badgeVal}</div>`:'';
-      const timeClass=badgeVal?'chat-list-item__time chat-list-item__time--unread':'chat-list-item__time';
-      const lastSender=last?(last.from==='user'?'You':(PERSONAS[last.from]?.name?.split(' ')[0]||'')):'' ;
-      const preview=last?`${lastSender}: ${last.text||''}`:c.desc;
-      const iconFile=iconMap[c.id]||'1f464';
-      const groupColor=colorMap[c.id]||'#667781';
-      const iconEl=`<div style="width:49px;height:49px;border-radius:50%;background:${groupColor};display:flex;align-items:center;justify-content:center;flex-shrink:0;"><img src="./icons/groups/${iconFile}.svg" style="width:28px;height:28px;" alt=""></div>`;
-      div.dataset.name=c.name.toLowerCase();
-      div.innerHTML=`<div class="chat-list-item__avatar"><div>${iconEl}</div></div><div class="chat-list-item__body"><div class="chat-list-item__top"><div class="chat-list-item__name">${c.name}</div><div class="${timeClass}">${fdate(time)}</div></div><div class="chat-list-item__bottom"><div class="chat-list-item__preview" style="display:flex;align-items:center;"><span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${preview}</span></div>${badgeHtml}</div></div>`;
-      div.onclick=()=>{const uc={...S.unreadCommunities};delete uc[c.id];set({unreadCommunities:uc});navigate('#/community/'+c.id);};
     }
 
     list.appendChild(div);
