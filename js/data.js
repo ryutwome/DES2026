@@ -437,7 +437,7 @@ const SEED_STORIES = [
       {from:'krishnaswamy', text:"This is true values, Rameshbhai. Your workers were fortunate. My father had the same philosophy — treat people well and the business takes care of itself. 🙏"},
       {from:'harbhajan', text:"Sat sri akal Ramesh bhai! In the Army we also said — a unit is only as strong as how you treat the lowest-ranked soldier. Same principle 🌹"},
     ]},
-  {personaId:'krishnaswamy', likes:7, title:"7pm Puzzle Time — Father's Greatest Gift", imageUrl:'https://images.unsplash.com/photo-1606326608606-aa0b62935f2b?w=800&h=400&fit=crop', text:"My father was a maths teacher... Every evening at 7pm sharp we had 'puzzle time' — he gave us a problem to solve before dinner... I thought it was torture then... Now I understand it was the greatest gift he gave me... Logical thinking is not taught, it is practised daily. Gottu. 🙏",
+  {personaId:'krishnaswamy', likes:7, title:"7pm Puzzle Time — Father's Greatest Gift", imageUrl:'https://images.unsplash.com/photo-1606326608606-aa0b62935f2b?w=800&h=400&fit=crop', text:"My father was a maths teacher... Every evening at 7pm sharp we had 'puzzle time' — he gave us a problem to solve before dinner... I thought it was torture then... Now I understand it was the greatest gift he gave me. Gottu. 🙏",
     seedReplies:[
       {from:'rameshbhai', text:"Krishnaswamy ji, what a beautiful memory! My father made me do accounts by hand even when calculators came. Same kind of gift 🙏"},
     ]},

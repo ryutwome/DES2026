@@ -63,7 +63,7 @@ function renderLangPicker(){
         </button>
         <button class="lang-pick-tile${S.userLang==='en'?' active':''}" id="lp-en" onclick="pickLang('en')">
           <span class="lang-pick-tile__script">English</span>
-          <span class="lang-pick-tile__eng">English</span>
+          <span class="lang-pick-tile__eng">Only English</span>
         </button>
       </div>
       <div class="lang-pick-screen__name-section">
@@ -73,16 +73,16 @@ function renderLangPicker(){
         </div>
         <div class="name-prompt-screen__field-wrap" style="margin-top:12px;">
           <label class="name-prompt-screen__label" for="lp-age">${ll.age}</label>
-          <input class="name-prompt-screen__input" id="lp-age" type="number" placeholder="${ll.agePh}" min="1" max="120" style="width:100%;" value="${S.userAge||''}" />
+          <input class="name-prompt-screen__input" id="lp-age" type="tel" placeholder="${ll.agePh}" inputmode="numeric" pattern="[0-9]*" style="width:100%;" value="${S.userAge||''}" />
         </div>
       </div>
-      <div class="persona-welcome">
+      <div class="persona-welcome" id="lp-persona-card" style="${(S.userLang&&S.userName)?'':'visibility:hidden;'}">
         <img src="./avatars/meenakshiamma.svg" class="persona-welcome__avatar" alt="Meenakshiamma" />
-        <div class="persona-welcome__text">Meenakshiamma and 7 others are waiting to meet you!</div>
+        <div class="persona-welcome__text">Meenakshiamma and 7 others would love to meet you!</div>
       </div>
+      <div class="name-prompt-screen__note" style="margin-bottom:8px;">Your details are only stored on this device.</div>
       <button class="lang-pick-screen__cta" id="lp-go" ${(S.userLang&&S.userName)?'':'disabled'}>Continue →</button>
-      <div id="lp-hint" style="font-size:0.78rem;color:#E53935;text-align:center;margin-top:6px;min-height:1.2em;"></div>
-      <div class="name-prompt-screen__note">Your details are only stored on this device.</div>
+      <div id="lp-hint" style="font-size:0.78rem;color:#8696a0;text-align:center;margin-top:6px;min-height:1.2em;"></div>
     </div>
   `);
   const inp=$('lp-name'), cta=$('lp-go');
@@ -98,6 +98,9 @@ function renderLangPicker(){
       else if(!hasName) hint.textContent=S.userLang==='hi'?'कृपया अपना नाम लिखें':S.userLang==='mr'?'कृपया नाव लिहा':'Please enter your name';
       else hint.textContent='';
     }
+    // Show persona card only once both lang and name are present
+    const card=document.getElementById('lp-persona-card');
+    if(card) card.style.visibility=(hasLang&&hasName)?'visible':'hidden';
   };
   inp.oninput=validate;
   inp.addEventListener('keydown',e=>{if(e.key==='Enter'&&inp.value.trim()&&S.userLang)saveLangName();});
@@ -138,6 +141,8 @@ function pickLang(lang){
     if(!hasName) hint.textContent=lang==='hi'?'कृपया अपना नाम लिखें':lang==='mr'?'कृपया नाव लिहा':'Please enter your name';
     else hint.textContent='';
   }
+  const card=document.getElementById('lp-persona-card');
+  if(card) card.style.visibility=hasName?'visible':'hidden';
 }
 
 /* saveLangName: persist language + name/age, seed with default interests, go straight to chats */

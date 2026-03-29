@@ -8,7 +8,7 @@ function renderChats(){
     ${desktopBanner()}
     ${resBar()}
     <div class="header header--white">
-      <div class="header__title" onclick="headerTap()"><h1 style="color:#00A884;">WhatsApp</h1></div>
+      <div class="header__title" onclick="headerTap()"><h1 style="color:#00A884;">Saathi${S.userName?` · <span style="font-size:0.75em;color:#54656f;">${S.userName}</span>`:''}</h1></div>
       <div class="header__actions">
         <button class="header__action-btn" style="color:#54656f;" aria-label="QR code" onclick="toast('QR code coming soon')">${IC.qr}</button>
         <button class="header__action-btn" style="color:#54656f;" aria-label="Settings" onclick="showSettings()">${IC.more}</button>

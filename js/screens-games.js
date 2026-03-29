@@ -889,9 +889,36 @@ function callTambola(gameId){
       }
     }
   }
-  S.games[gameId]=gs; saveS(); renderGame(gameId,'tambola');
-  // Stop interval if player or AI has won Tambola (full board)
-  if(checkTambolaWin(ts) || checkTambolaWin({ticket:ts.aiTicket,marked:ts.aiMarked})) stopTambolaInterval();
+  S.games[gameId]=gs; saveS();
+  // Update number display in-place — avoids tearing down the DOM mid-tap
+  const numEl = document.querySelector('.tambola-num');
+  if(numEl) numEl.textContent = n;
+  // Mark AI cells in-place on Meenakshiamma's ticket
+  const aiRows = document.querySelectorAll('.tambola-ticket--ai tr');
+  if(aiRows.length){
+    for(let r=0;r<3;r++){
+      const cells = aiRows[r]?.querySelectorAll('.tambola-cell:not(.tambola-empty)');
+      cells?.forEach(td=>{
+        const v=parseInt(td.textContent);
+        if(ts.aiMarked.includes(v)) td.classList.add('tambola-marked--ai');
+      });
+    }
+  }
+  // Check near-win: if AI has 4/5 on any row, add danger class to that row
+  for(let r=0;r<3;r++){
+    const row=ts.aiTicket[r].filter(v=>v>0);
+    const markedCount=row.filter(v=>ts.aiMarked.includes(v)).length;
+    if(aiRows[r]) aiRows[r].classList.toggle('tambola-ai-danger', markedCount>=4 && markedCount<5);
+  }
+  // Show AI toasts
+  if(ts.aiJaldiFive && !document.querySelector('.tambola-ai-msg')){
+    const wrap=$('tambola-board');
+    if(wrap) wrap.insertAdjacentHTML('beforeend','<div class="tambola-ai-msg">Meenakshiamma got Jaldi Five!</div>');
+  }
+  if(checkTambolaWin(ts) || checkTambolaWin({ticket:ts.aiTicket,marked:ts.aiMarked})){
+    stopTambolaInterval();
+    renderGame(gameId,'tambola'); // full re-render only on game over
+  }
 }
 
 function checkTambolaWin(ts){

@@ -1940,6 +1940,9 @@ body {
   50% { box-shadow: 0 0 0 6px #00A884, 0 0 12px #00A884; }
 }
 .game-over-msg { margin-top: 12px; font-size: 1rem; color: #666; }
+.tambola-marked--ai { background: #f44336; color: #fff; }
+.tambola-ai-danger td { outline: 2px solid #f44336; }
+.tambola-ai-msg { margin-top: 8px; font-size: 0.95rem; font-weight: 600; color: #f44336; }
 
 /* ── TEEN PATTI ── */
 .tp-board { padding: 16px; text-align: center; }

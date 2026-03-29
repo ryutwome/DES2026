@@ -346,8 +346,8 @@ function showStoryCompose(){
 
   const mr = S.userLang === 'mr';
   const chips = mr
-    ? ['माझी आवडती रेसिपी / A recipe I love','बालपणीची आठवण / A childhood memory','माझे मत... / My opinion on...','मी शिकलेली गोष्ट / Something I learned']
-    : ['मेरी पसंदीदा रेसिपी / A recipe I love','बचपन की याद / A childhood memory','मेरी राय... / My opinion on...','जो मैंने सीखा / Something I learned'];
+    ? ['माझी आवडती रेसिपी / A recipe I love','बालपणीची आठवण / A childhood memory','माझे मत... / My opinion on...','एक माणूस जो आठवतो / A person I still think about']
+    : ['मेरी पसंदीदा रेसिपी / A recipe I love','बचपन की याद / A childhood memory','मेरी राय... / My opinion on...','एक इंसान जो याद आता है / A person I still think about'];
   const chipsDiv=$('sc-chips');
   chips.forEach(c=>{const b=document.createElement('button');b.className='compose-chip';b.textContent=c;b.onclick=()=>{$('sc-text').value=c+': ';$('sc-text').focus();$('sc-post').disabled=false;};chipsDiv.appendChild(b);});
 
