@@ -135,62 +135,14 @@ function pickLang(lang){
   }
 }
 
-/* saveLangName: persist language + name/age then advance to interests */
+/* saveLangName: persist language + name/age, seed with default interests, go straight to chats */
 function saveLangName(){
   const name=($('lp-name')?.value||'').trim();
   if(!name||!S.userLang)return;
   const age=parseInt($('lp-age')?.value)||null;
-  set({userName:name,userAge:age});
-  navigate('#/onboarding');
-}
-
-/* ── ONBOARDING ── */
-function renderOnboarding(){
-  mount(`
-    <div class="onboarding-header">
-      <svg width="80" height="80" viewBox="0 0 80 80" fill="none"><circle cx="40" cy="40" r="40" fill="#25D366"/><path d="M40 18c-12.15 0-22 9.85-22 22 0 3.9 1.02 7.56 2.8 10.73L18 62l11.6-2.72A21.9 21.9 0 0 0 40 62c12.15 0 22-9.85 22-22S52.15 18 40 18zm0 4c9.94 0 18 8.06 18 18s-8.06 18-18 18c-3.2 0-6.2-.84-8.8-2.3l-.63-.37-6.55 1.54 1.58-6.38-.4-.66A17.93 17.93 0 0 1 22 40c0-9.94 8.06-18 18-18zm-5.5 9.5c-.39 0-1.02.15-1.55.73-.53.58-2.02 1.97-2.02 4.8 0 2.83 2.07 5.57 2.36 5.96.29.39 4.02 6.39 9.88 8.72 1.38.57 2.46.9 3.3 1.16 1.39.42 2.66.36 3.66.22 1.12-.16 3.44-1.41 3.93-2.77.49-1.36.49-2.52.34-2.77-.15-.25-.54-.39-1.13-.68-.59-.29-3.44-1.7-3.97-1.89-.53-.2-.92-.29-1.31.29-.39.59-1.5 1.89-1.84 2.27-.34.38-.68.44-1.27.15-.59-.29-2.5-.92-4.76-2.94-1.76-1.57-2.95-3.51-3.29-4.1-.34-.59-.04-.9.26-1.2.26-.26.59-.68.88-1.02.29-.34.39-.59.59-.98.19-.39.1-.73-.05-1.02-.15-.29-1.31-3.16-1.8-4.33-.47-1.14-.95-1-.31-1.02z" fill="white"/></svg>
-      <div class="onboarding-header__title">WhatsApp</div>
-    </div>
-    <div class="onboarding-screen">
-      <div>
-        <div class="onboarding-screen__progress">Step 2 of 2</div>
-        <div class="onboarding-screen__heading">What are you interested in?</div>
-        <div class="onboarding-screen__subheading">Select topics to find communities and start chatting.</div>
-      </div>
-      <div class="interest-grid" id="ig"></div>
-      <div class="interest-subtext">We'll connect you with people who share these interests. You can change this later.</div>
-      <button class="onboarding-screen__cta" id="ob-cta" disabled>Continue</button>
-      <button class="onboarding-screen__skip" id="ob-skip">Skip for now</button>
-    </div>
-  `);
-  /* Bilingual labels: native script on top, English below */
-  const interestLabels = {
-    cooking:      { hi: 'खाना-पकाना', mr: 'स्वयंपाक',  en: 'Cooking' },
-    cricket:      { hi: 'क्रिकेट',    mr: 'क्रिकेट',   en: 'Cricket' },
-    music:        { hi: 'संगीत',      mr: 'संगीत',     en: 'Music' },
-    gardening:    { hi: 'बागवानी',    mr: 'बागकाम',    en: 'Gardening' },
-    literature:   { hi: 'साहित्य',    mr: 'साहित्य',   en: 'Literature' },
-    spirituality: { hi: 'अध्यात्म',   mr: 'अध्यात्म',  en: 'Spirituality' }
-  };
-  const interests=[{id:'cooking',e:'pot'},{id:'cricket',e:'cricket'},{id:'music',e:'music'},{id:'gardening',e:'seedling'},{id:'literature',e:'books'},{id:'spirituality',e:'prayer'}];
-  const sel=new Set();
-  const grid=$('ig');
-  interests.forEach(({id,e})=>{
-    const lb = interestLabels[id];
-    /* Show native script + English when a language is set; English-only fallback */
-    const nativeLang = S.userLang === 'hi' ? lb.hi : S.userLang === 'mr' ? lb.mr : null;
-    const labelHtml = nativeLang
-      ? `<span style="font-size:1rem;font-weight:600;">${nativeLang}</span><span style="font-size:0.78rem;color:#667781;">${lb.en}</span>`
-      : `<span class="interest-tile__label">${lb.en}</span>`;
-    const t=document.createElement('button');t.className='interest-tile';
-    t.innerHTML=`<span class="interest-tile__emoji">${ej(e,'32px')}</span>${labelHtml}`;
-    t.onclick=()=>{sel.has(id)?(sel.delete(id),t.classList.remove('selected')):(sel.add(id),t.classList.add('selected'));$('ob-cta').disabled=!sel.size;};
-    grid.appendChild(t);
-  });
-  const finish=(chosen)=>{set({interests:chosen,onboardingDone:true});seedData(chosen);navigate('#/chats');};
-  $('ob-cta').onclick=()=>{if(!sel.size)return;finish([...sel]);};
-  /* Skip seeds sensible defaults so the app has something to work with */
-  $('ob-skip').onclick=()=>finish(['cooking','cricket','spirituality']);
+  set({userName:name,userAge:age,onboardingDone:true});
+  seedData(['cooking','cricket','spirituality']);
+  navigate('#/chats');
 }
 
 /* renderNamePrompt: kept as alias — the combined screen now handles name entry */

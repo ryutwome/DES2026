@@ -43,15 +43,14 @@ function render(){
   const isDev=new URLSearchParams(window.location.search).get('dev')==='true';
   if(screen==='setup'){if(isDev){renderSetup();return;}else{navigate('#/');return;}}
 
-  /* Onboarding gate: step 1 = lang+name combined, step 2 = interests */
+  /* Onboarding gate: show lang+name screen until both are set */
   if(!S.userLang||!S.userName){renderLangPicker();return;}
-  if(!S.onboardingDone){renderOnboarding();return;}
 
   switch(screen){
     case'':renderChats();break;
     case'lang':renderLangPicker();break;
     case'name':renderNamePrompt();break;
-    case'onboarding':renderOnboarding();break;
+    case'onboarding':navigate('#/chats');return;
     case'chats':renderChats();break;
     case'chat':renderChat(params.personaId);break;
     case'stories':renderStories();break;
