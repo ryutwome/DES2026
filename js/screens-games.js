@@ -465,20 +465,52 @@ async function tttMove(gameId,idx){
   if (!gs||gs.board[idx]||gs.winner||gs.currentTurn!=='user') return;
   gs.board[idx]='X';
   const w = _tttWinner(gs.board);
-  if (w) { gs.winner=w==='X'?'user':w==='draw'?'draw':'ai'; if(gs.winner==='user')gs.score.user=(gs.score.user||0)+1; S.games[gameId]=gs; saveS(); _tttRefresh(gameId); _triggerSpectatorComment(gameId); return; }
+  if (w) { gs.winner=w==='X'?'user':w==='draw'?'draw':'ai'; if(gs.winner==='user')gs.score.user=(gs.score.user||0)+1; S.games[gameId]=gs; _postGameResultToChat(gs); saveS(); _tttRefresh(gameId); _triggerSpectatorComment(gameId); return; }
   gs.currentTurn='ai'; S.games[gameId]=gs; saveS(); _tttRefresh(gameId);
   _triggerSpectatorComment(gameId);
   await delay(500+Math.random()*400);
   const ai = _tttBest([...gs.board]); gs.board[ai]='O';
   const w2 = _tttWinner(gs.board);
-  if (w2) { gs.winner=w2==='O'?'ai':w2==='draw'?'draw':'user'; if(gs.winner==='ai')gs.score.ai=(gs.score.ai||0)+1; }
+  if (w2) { gs.winner=w2==='O'?'ai':w2==='draw'?'draw':'user'; if(gs.winner==='ai')gs.score.ai=(gs.score.ai||0)+1; _postGameResultToChat(gs); }
   else gs.currentTurn='user';
   S.games[gameId]=gs; saveS(); _tttRefresh(gameId);
 }
 function tttRematch(gameId){
   const gs = S.games[gameId];
-  gs.board=Array(9).fill(null); gs.winner=null; gs.currentTurn='user';
+  gs.board=Array(9).fill(null); gs.winner=null; gs.currentTurn='user'; gs.resultPosted=false;
   S.games[gameId]=gs; saveS(); _tttRefresh(gameId);
+}
+
+/* Post a one-time reaction message from the persona to their 1:1 chat.
+   Uses a flag on the game object to prevent duplicate posts on re-render. */
+function _postGameResultToChat(gs) {
+  const personaId = gs.opponentId;
+  if (!personaId || gs.resultPosted) return;
+  gs.resultPosted = true;
+  const WIN_MSGS = [
+    'Arey wah! You beat me! 😄 Good game, very good game!',
+    'Wah wah! You won! I need to practise more — well played!',
+    'Arey yaar, you got me this time! Good game! 😄',
+  ];
+  const LOSE_MSGS = [
+    'Ha! I won this time! Rematch karoge? 😄',
+    'Haha, better luck next time! I was waiting for that moment! 😄',
+    'Arey, I won! Come on, one more game?',
+  ];
+  const DRAW_MSGS = [
+    'Draw! Very evenly matched we are! 😄',
+    'Haha, a draw! Neither of us will give up easily!',
+    'Tie game! We think alike — rematch?',
+  ];
+  let pool;
+  if      (gs.winner === 'user') pool = WIN_MSGS;
+  else if (gs.winner === 'ai')   pool = LOSE_MSGS;
+  else                           pool = DRAW_MSGS;
+  const text = pool[Math.floor(Math.random() * pool.length)];
+  addMsg('chats', personaId, mkMsg(personaId, 'text', text));
+  if (!S.unreadChats) S.unreadChats = {};
+  S.unreadChats[personaId] = (S.unreadChats[personaId] || 0) + 1;
+  saveS();
 }
 
 /* ── CONNECT FOUR ── */
@@ -550,19 +582,19 @@ async function c4Move(gameId,col){
   if(!gs||gs.winner||gs.currentTurn!=='user'||gs.board[col])return;
   _c4Drop(gs.board,col,'R');
   const w=_c4Winner(gs.board);
-  if(w){gs.winner=w==='R'?'user':w==='draw'?'draw':'ai';if(gs.winner==='user')gs.score.user=(gs.score.user||0)+1;S.games[gameId]=gs;saveS();_c4Refresh(gameId);_triggerSpectatorComment(gameId);return;}
+  if(w){gs.winner=w==='R'?'user':w==='draw'?'draw':'ai';if(gs.winner==='user')gs.score.user=(gs.score.user||0)+1;S.games[gameId]=gs;_postGameResultToChat(gs);saveS();_c4Refresh(gameId);_triggerSpectatorComment(gameId);return;}
   gs.currentTurn='ai'; S.games[gameId]=gs; saveS(); _c4Refresh(gameId);
   _triggerSpectatorComment(gameId);
   await delay(600+Math.random()*500);
   const ai=_c4AICol([...gs.board]); if(ai>=0) _c4Drop(gs.board,ai,'Y');
   const w2=_c4Winner(gs.board);
-  if(w2){gs.winner=w2==='Y'?'ai':w2==='draw'?'draw':'user';if(gs.winner==='ai')gs.score.ai=(gs.score.ai||0)+1;}
+  if(w2){gs.winner=w2==='Y'?'ai':w2==='draw'?'draw':'user';if(gs.winner==='ai')gs.score.ai=(gs.score.ai||0)+1;_postGameResultToChat(gs);}
   else gs.currentTurn='user';
   S.games[gameId]=gs; saveS(); _c4Refresh(gameId);
 }
 function c4Rematch(gameId){
   const gs=S.games[gameId];
-  gs.board=Array(42).fill(null); gs.winner=null; gs.currentTurn='user';
+  gs.board=Array(42).fill(null); gs.winner=null; gs.currentTurn='user'; gs.resultPosted=false;
   S.games[gameId]=gs; saveS(); _c4Refresh(gameId);
 }
 
